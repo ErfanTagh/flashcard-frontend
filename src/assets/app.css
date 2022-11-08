@@ -1,0 +1,398 @@
+.containerg{
+
+
+    height: 100vh;
+    display: flex;
+    align-items: center;
+   
+}
+
+
+.flashcard{
+
+    background-color: #ff80ff;
+
+    width:50vw;
+    float:left;
+    height: 100%;
+    text-align: center;
+    justify-content: center;
+    display: flex;
+    align-items: center;
+}
+
+.flashcard h2{
+
+    color: #fff;
+
+
+}
+
+.flashcard-item{
+
+    padding:10px;
+    border:2px solid white;
+    border-radius: 15px;
+    width:60vh;
+    text-align: center;
+}
+
+.flashcard-item:hover{
+    background-color: #00bfff;
+    padding:10px;
+    border:2px solid white;
+    border-radius: 15px;
+    text-align: center;
+    clickable: true;
+}
+
+.flashcard-bottom-margin{
+
+margin-bottom: 20px;
+
+}
+
+
+.add-flashcard-item{
+    
+    height: auto;
+    align-items: center;
+    padding:10px;
+    border:2px solid white;
+    border-radius: 15px;
+    width: 60vh;
+    margin: 10px;
+    text-align: center;
+    align-items: center;
+
+
+}
+
+
+.threedots{
+
+        
+        width: 30px;
+        height: 40px;
+        background-image: radial-gradient(circle, black 4px, transparent 5px);
+        background-size: 100% 33.33%;
+        
+    
+}
+
+h3{
+
+color: #fff;
+
+}
+.add-flashcard-item:hover{
+    background-color: #ff80ff;
+    border:2px solid white;
+    border-radius: 15px;
+
+    clickable: true;
+}
+
+
+
+
+.add-flashcard h2{
+
+    color: #fff;
+    
+}
+
+
+
+.add-flashcard{
+
+    width:50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 40px;
+
+}
+
+.add-flashcard-button-prime{
+
+  width: 160px;
+  height: 86px;
+  
+
+
+
+}
+.flashcard-blue{
+
+  background-color: #00bfff;
+  height: 100%;
+
+}
+
+
+.form-container{
+    background-color: #00bfff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    height: 100vh;
+
+
+}
+.form-group{
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: start;
+    height:auto;
+    padding:30px;
+
+}
+.form-input{
+    width:50vw;
+    margin-top:20px;
+    height:5rem;
+    border-radius:10px;
+    border:1px solid white;
+    align-self: center;
+    font-size:24px;
+padding:10px;
+}
+
+.flashcard-item-group{
+
+    background-color: white;
+    -webkit-box-shadow: 5px 5px 15px rgba(0,0,0,0.4);
+    -moz-box-shadow: 5px 5px 15px rgba(0,0,0,0.4);
+
+    color: #00bfff;
+    border-radius:10px;
+    padding:10px;
+    width:40vw;
+    height:40vh;
+    align-items: center;
+    display:flex;
+    justify-content: center;
+
+}
+
+.flashcard-container{
+
+    height:100vh;
+    background-color: #ff80ff;
+    position: relative;
+
+
+}
+
+.backgroundiv{
+
+  background: #00bfff ;
+  background-color: #00bfff;
+  height: 100%;
+  width: 100%;
+}
+
+.flashcard-g2{
+
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    height:auto;
+    align-self: center;
+    margin-top: 10px;
+
+
+}
+
+.flashbuttons{
+  position: absolute;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  height:auto;
+  align-self: center;
+  bottom: -4rem;
+
+
+}
+
+.flashcardbtn{
+
+width: 68px !important;
+height: 48px;
+margin-right: 10px !important;
+
+}
+
+
+.flashcardbtn1{
+
+  width: 68px !important;
+  height: 48px;
+  
+  
+  
+  
+  }
+
+.flashcard-g2 h2{
+
+    color: #fff;
+
+}
+
+
+
+.showLeft {
+    background-color: white !important;
+    border: 1px solid white !important;
+    text-shadow: white !important;
+    color: black !important;
+    padding: 10px;
+  }
+  .icons li {
+    background: none repeat scroll 0 0 black;
+    height: 7px;
+    width: 7px;
+    line-height: 0;
+    list-style: none outside none;
+    margin-right: 15px;
+    margin-top: 3px;
+    vertical-align: top;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .btn-left {
+    left: 0.4em;
+  }
+  .btn-right {
+    right: 0.4em;
+  }
+  .btn-left,
+  .btn-right {
+    position: absolute;
+    top: 0.24em;
+  }
+  .dropbtn {
+    background-color: #4caf50;
+    position: fixed;
+    color: white;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+  }
+  .dropbtn:hover,
+  .dropbtn:focus {
+    background-color: #3e8e41;
+  }
+  .dropdown {
+    position: absolute;
+    display: inline-block;
+    right: 0.4em;
+  }
+  .dropdown-content {
+    display: none;
+    position: relative;
+    margin-top: 60px;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    overflow: auto;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+  }
+  
+  .dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+  }
+  
+  .dropdown a:hover {
+    background-color: #f1f1f1;
+  }
+  
+  .show {
+    display: block;
+  }
+  
+
+
+  
+  .toast-buttons {
+    display: flex;
+  }
+  
+  .toast-buttons button {
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    width: 100px;
+    height: 50px;
+    margin: 0 10px;
+    border: none;
+    outline: none;
+  }
+  
+  .select {
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+    margin-top: 10px;
+  }
+  
+  .select input {
+    width: 100%;
+    padding: 10px;
+    outline: 0;
+    background-color: white;
+    border: 0;
+  }
+  
+  .position-select {
+    background-color: inherit;
+    color: #fff;
+    width: 100%;
+    height: 40px;
+    font-size: 16px;
+    padding: 10px;
+    outline: 0;
+  }
+  
+  .disabled {
+    cursor: none;
+    pointer-events: none;
+    opacity: 0.5;
+  }
+  
+  .btn-disable {
+    cursor: none;
+    pointer-events: none;
+    opacity: 0.6;
+  }
+  
+  .success {
+    background-color: #5cb85c;
+  }
+  
+  .danger {
+    background-color: #d9534f;
+  }
+  
+  .info {
+    background-color: #5bc0de;
+  }
+  
+  .warning {
+    background-color: #f0ad4e;
+  }
+

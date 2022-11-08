@@ -1,0 +1,55 @@
+
+
+
+
+body {
+    text-align: center;
+     /* <------------ */
+   
+
+}
+
+.maindiv {
+    width: 954px;
+    margin: 0px auto;
+    min-height: 100vh;
+
+ 
+    
+
+}
+@font-face {
+    font-family: myFirstFont1;
+    src: url(./Fonts/boldfreesans.ttf);
+  }
+
+@font-face {
+    font-family: myFirstFont;
+    src: url(./Fonts/freesans.ttf);
+  }
+
+h1{
+
+
+color: #fff;
+font-family: myFirstFont1;
+margin-top: 100px;
+
+
+
+}
+
+.adtitles{
+
+margin-top: 60px;
+
+    
+}
+
+h3{
+
+    color: #fff;
+font-family: myFirstFont;
+
+
+}
