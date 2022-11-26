@@ -69,12 +69,15 @@ If the POST request is successful and a status code of 200 is returned from the 
 
 ### `Flashcard`
 
-In this [component](https://github.com/ErfanTagh/flashcard-frontend/blob/main/src/Components/Flashcard.tsx) we show the users flashcards so the user can review.\
-After the GET reuqest, we store the users key and answer recieved from the server to the setPlanets (the state name probably has to change!) state.\
-This state will be passed through the component [FlashCardItem](https://github.com/ErfanTagh/flashcard-frontend/blob/main/src/Components/FlashCardItem.tsx) to the [FlipCard](https://github.com/ErfanTagh/flashcard-frontend/blob/main/src/Components/FLipCard.tsx) component.\
-The reason for all this props passing is because of the flipping animation that gets rendered when the user clicks on the card to see it's answer.\ 
+We show the users flashcards in this component (https://github.com/ErfanTagh/flashcard-frontend/blob/main/src/Components/Flashcard.tsx) so they can review them.\
 
-The [DropDown](https://github.com/ErfanTagh/flashcard-frontend/blob/main/src/Components/DropDown.tsx) component is where the user can delete or edit the cards. If the user knows the revealed answer, the green button is pressed but if the answer is not known and requires further reviewing, the red button is clicked and a label 'Reviewing' will be added next time that specific card pops up.
+Following the GET request, we store the user's key and answer in the setPlanets state (the state name probably needs to change!).\
+
+The state will be passed through the [FlashCardItem](https://github.com/ErfanTagh/flashcard-frontend/blob/main/src/Components/FlashCardItem.tsx) component to the [FlipCard](https://github.com/ErfanTagh/flashcard-frontend/blob/main/src/Components/FLipCard.tsx).\
+
+When the user clicks on a card to see its answer, a flipping animation is rendered, which explains all these props passing.\
+
+The user can delete and edit cards by using the [DropDown] component (https://github.com/ErfanTagh/flashcard-frontend/blob/main/src/Components/DropDown.tsx). A green button is pressed if the user knows the revealed answer; a red button is clicked if the answer is not known and requires further review.\
 
 ![AddFlashcard-1](flash4.png)
 ![AddFlashcard-2](flash5.png)
