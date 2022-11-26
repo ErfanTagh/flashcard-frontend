@@ -1,12 +1,18 @@
-# Getting Started with Create React App
+# Flashcard Project 
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+With React and Typescript, I developed the frontend for my website [recallcards.uk](https://recallcards.uk/).\
+You can also view the [Python back-end repository](https://github.com/ErfanTagh/flashcard-backend).\
+Feel free to give it a try!\
+It's all free, no credit cards required! 
 
-## Available Scripts
+## Project Overview 
 
-In the project directory, you can run:
+The authentication was handled by [Auth0](https://auth0.com).\
+You can see the private and public root settings as well as redirect callbacks in the root App.js file.\
+The react components can be found in the components folder.\
+To make multiple requests to the Rest API, this project uses the JS fetch API. 
 
-### `npm start`
+### `React Components`
 
 Runs the app in the development mode.\
 Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
@@ -14,7 +20,7 @@ Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 The page will reload when you make changes.\
 You may also see any lint errors in the console.
 
-### `npm test`
+### `Api Requests`
 
 Launches the test runner in the interactive watch mode.\
 See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
