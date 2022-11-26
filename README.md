@@ -18,17 +18,17 @@ The react components can be found in the components folder.\
 The folder Auth0 components is related to the Auth0 service, as its name suggests.\
 ### `MainPage`
 
-The component of the app that the user is redirected to after authentication is the [MainPage Component](https://github.com/ErfanTagh/flashcard-frontend/blob/main/src/Components/MainPage.tsx).\
-Here the user can choose between reviewing existing flashcards or adding a new card.\
+After authentication, the user is redirected to the [MainPage Component] (https://github.com/ErfanTagh/flashcard-frontend/blob/main/src/Components/MainPage.tsx).\
+
+Users can review existing flashcards or add new ones here.
 
 ![MainPage](flash1.png)
 
 
 ### `AddFlashcard` 
 
-The [AddFlashcard Component](https://github.com/ErfanTagh/flashcard-frontend/blob/main/src/Components/AddFlashcard.tsx) gets the new key and answer from the user and sends it the api for storing it in the users list of keys and values database.\
-
-The following code in the component sends the entered key and value as a POST request to the "sendwords" endpoint.
+Using the [AddFlashCard Component] (https://github.com/ErfanTagh/flashcard-frontend/blob/main/src/Components/AddFlashcard.tsx), the component receives the new key and answer from the user and stores it in the database for that user.\
+This component sends the entered key and value to the "sendwords" endpoint as a POST request.
 
 ```
 const handleSubmit = (event) => {
@@ -62,7 +62,8 @@ const handleSubmit = (event) => {
 
 ```
 
-If the POST request is successful and a status code of 200 is returned from the server, the app displays a operation successful dialog. Clearing the input box of the name and value after the user submits could be a future improvement.
+When the POST request is successful and a status code of 200 is returned from the server, the app displays an operation successful dialog.\
+A future improvement might be to clear the input box after the user submits the name and value.
 
 ![AddFlashcard](flash3.png)
 
@@ -70,14 +71,10 @@ If the POST request is successful and a status code of 200 is returned from the 
 ### `Flashcard`
 
 We show the users flashcards in this component (https://github.com/ErfanTagh/flashcard-frontend/blob/main/src/Components/Flashcard.tsx) so they can review them.\
-
 Following the GET request, we store the user's key and answer in the setPlanets state (the state name probably needs to change!).\
-
 The state will be passed through the [FlashCardItem](https://github.com/ErfanTagh/flashcard-frontend/blob/main/src/Components/FlashCardItem.tsx) component to the [FlipCard](https://github.com/ErfanTagh/flashcard-frontend/blob/main/src/Components/FLipCard.tsx).\
-
 When the user clicks on a card to see its answer, a flipping animation is rendered, which explains all these props passing.\
-
-The user can delete and edit cards by using the [DropDown] component (https://github.com/ErfanTagh/flashcard-frontend/blob/main/src/Components/DropDown.tsx). A green button is pressed if the user knows the revealed answer; a red button is clicked if the answer is not known and requires further review.\
+The user can delete and edit cards by using the [DropDown] component (https://github.com/ErfanTagh/flashcard-frontend/blob/main/src/Components/DropDown.tsx). A green button is pressed if the user knows the revealed answer; a red button is clicked if the answer is not known and requires further review.
 
 ![AddFlashcard-1](flash4.png)
 ![AddFlashcard-2](flash5.png)
