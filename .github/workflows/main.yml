@@ -36,7 +36,7 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
-            sudo sh
+          
             # Stop the old container
             docker stop flashappp
             # Pull the new image from Docker Hub
