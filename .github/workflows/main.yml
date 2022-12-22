@@ -14,9 +14,9 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-      - run: docker build -t myimage .
-      - run: docker tag myimage ${{ secrets.DOCKER_USERNAME }}/myimage:latest
-      - run: docker push ${{ secrets.DOCKER_USERNAME }}/myimage:latest
+      - run: docker build -t myimage1 .
+      - run: docker tag myimage ${{ secrets.DOCKER_USERNAME }}/myimage1:latest
+      - run: docker push ${{ secrets.DOCKER_USERNAME }}/myimage1:latest
       # Connect to the Ubuntu server and deploy the new image
       - uses:  appleboy/ssh-action@v0.1.6
         with:
@@ -27,6 +27,6 @@ jobs:
             # Stop the old container
             docker stop flashapp1
             # Pull the new image from Docker Hub
-            docker pull ${{ secrets.DOCKER_USERNAME }}/myimage:latest
+            docker pull ${{ secrets.DOCKER_USERNAME }}/myimage1:latest
             # Run the new container on port 3005
-            docker run -d --name mycontainer -p 3005:3000 ${{ secrets.DOCKER_USERNAME }}/myimage:latest
+            docker run -d --name mycontainer -p 3005:3000 ${{ secrets.DOCKER_USERNAME }}/myimage1:latest
