@@ -53,7 +53,7 @@ const NavBar = () => {
 
               </NavItem>) }
 
-              {!isAuthenticated &&(<h3 className={styles.maintitle}>Welcome to Flashbackcards.net</h3>)}
+              {!isAuthenticated &&(<h3 className={styles.maintitle}>Welcome to Recallcards!!!</h3>)}
 
 
               <div className={styles.links}>
