@@ -18,7 +18,7 @@ jobs:
       - run: docker tag myimage ${{ secrets.DOCKER_USERNAME }}/myimage:latest
       - run: docker push ${{ secrets.DOCKER_USERNAME }}/myimage:latest
       # Connect to the Ubuntu server and deploy the new image
-      - uses: actions/ssh-action@v2
+      - uses:  appleboy/ssh-action@v0.1.6
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USERNAME }}
