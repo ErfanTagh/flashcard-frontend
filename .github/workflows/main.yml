@@ -1,34 +1,31 @@
-name: Deploy
+name: ci
 
 on:
   push:
     branches:
-      - main
+      - "main"
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
-      # Build and push the Docker image to Docker Hub
-      - uses: actions/docker/login@v1
+      -
+        name: Checkout
+        uses: actions/checkout@v3
+      -
+        name: Login to Docker Hub
+        uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-   
-   
-      - run: docker build -t myimage1 .
-      - run: docker tag myimage1 ${{ secrets.DOCKER_USERNAME }}/myimage1:latest
-      - run: docker push ${{ secrets.DOCKER_USERNAME }}/myimage1:latest
-      # Connect to the Ubuntu server and deploy the new image
-      - uses:  appleboy/ssh-action@v0.1.6
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      -
+        name: Build and push
+        uses: docker/build-push-action@v3
         with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USERNAME }}
-          private-key: ${{ secrets.SERVER_KEY }}
-          script: |
-            # Stop the old container
-            docker stop flashapp1
-            # Pull the new image from Docker Hub
-            docker pull ${{ secrets.DOCKER_USERNAME }}/myimage1:latest
-            # Run the new container on port 3005
-            docker run -d --name mycontainer -p 3005:3000 ${{ secrets.DOCKER_USERNAME }}/myimage1:latest
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/myimage1:latest
