@@ -29,4 +29,4 @@ jobs:
             # Pull the new image from Docker Hub
             docker pull ${{ secrets.DOCKER_USERNAME }}/myimage:latest
             # Run the new container on port 3005
-            docker run -d --name mycontainer -p 3005:3005 ${{ secrets.DOCKER_USERNAME }}/myimage:latest
+            docker run -d --name mycontainer -p 3005:3000 ${{ secrets.DOCKER_USERNAME }}/myimage:latest
