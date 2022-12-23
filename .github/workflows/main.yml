@@ -43,4 +43,4 @@ jobs:
             # Pull the new image from Docker Hub
             docker pull ${{ secrets.DOCKER_USERNAME }}/myimage1:latest
             # Run the container
-            docker run -d -p 3005:3000 myimage1
+            docker run -d -p 3005:3000 7936819/myimage1:latest
