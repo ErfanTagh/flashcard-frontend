@@ -40,7 +40,8 @@ jobs:
             docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
             # Stop the old container
             docker stop flashapp1
+            docker rm flashapp1
             # Pull the new image from Docker Hub
             docker pull ${{ secrets.DOCKER_USERNAME }}/myimage1:latest
             # Run the container
-            docker run -d -p 3005:3000 7936819/myimage1:latest
+            docker run -d --name flashapp1 -p 3005:3000 7936819/myimage1:latest
