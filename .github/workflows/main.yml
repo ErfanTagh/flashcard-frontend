@@ -38,8 +38,8 @@ jobs:
           script: |
             echo ${{ secrets.SUDO_ASKPASS }} | sudo su -c 'echo'
             # Stop the old container
-            sudo docker stop flashapp1
+            docker stop flashapp1
             # Pull the new image from Docker Hub
-            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/myimage1:latest
+            docker pull ${{ secrets.DOCKER_USERNAME }}/myimage1:latest
             # Run the container
-            sudo docker run -d -p 3005:3000 myimage1
+            docker run -d -p 3005:3000 myimage1
