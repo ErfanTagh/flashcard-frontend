@@ -37,6 +37,7 @@ jobs:
           key: ${{ secrets.SERVER_KEY }}
           script: |
             echo ${{ secrets.SUDO_ASKPASS }} | sudo su -c 'echo'
+            sudo su
             # Stop the old container
             docker stop flashapp1
             # Pull the new image from Docker Hub
