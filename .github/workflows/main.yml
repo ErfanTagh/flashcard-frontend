@@ -36,7 +36,8 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           key: ${{ secrets.SERVER_KEY }}
           script: |
-   
+          
+            docker login -u $DOCKER_USERNAME -p "$(ssh-add -L | head -1 | xargs echo -n)"
             # Stop the old container
             docker stop flashapp1
             # Pull the new image from Docker Hub
