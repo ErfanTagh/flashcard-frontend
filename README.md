@@ -1,70 +1,83 @@
-# Getting Started with Create React App
+# Flashcard Project 
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+With React and Typescript, I developed the frontend for my website [recallcards.uk](https://recallcards.uk/).\
+You can also view the [Python back-end repository](https://github.com/ErfanTagh/flashcard-backend).\
+Feel free to give it a try!\
+It's all free, no credit cards required! 
 
-## Available Scripts
+## Project Overview 
 
-In the project directory, you can run:
+The authentication was handled by [Auth0](https://auth0.com).\
+You can see the private and public root settings as well as redirect callbacks in the root App.js file.\
+The react components can be found in the components folder.\
+To make multiple requests to the Rest API, this project uses the JS fetch API. 
 
-### `npm start`
+## `React Components`
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+The react components can be found in the components folder.\ 
+The folder Auth0 components is related to the Auth0 service, as its name suggests.\
+### `MainPage`
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+After authentication, the user is redirected to the [MainPage Component] (https://github.com/ErfanTagh/flashcard-frontend/blob/main/src/Components/MainPage.tsx).\
 
-### `npm test`
+Users can review existing flashcards or add new ones here.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+![MainPage](flash1.png)
 
-### `npm run build`
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### `AddFlashcard` 
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Using the [AddFlashCard Component] (https://github.com/ErfanTagh/flashcard-frontend/blob/main/src/Components/AddFlashcard.tsx), the component receives the new key and answer from the user and stores it in the database for that user.\
+This component sends the entered key and value to the "sendwords" endpoint as a POST request.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```
+const handleSubmit = (event) => {
+        event.preventDefault();
 
-### `npm run eject`
+        const requestOptions = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' ,'Accept': 'application/json'
+            },
+            body: JSON.stringify({ token: user.email,word: inputs["title"], ans: inputs["ans"] })
+        };
+        fetch('/sendwords', requestOptions)
+            .then(response =>
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+                response.json())
+            .then(data => {
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+                console.log(data);
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+                if(data['status'] === 200){
+                    flashref.current.show({severity: 'success', summary: 'Success', detail: 'Word Added Successfully'});
+                   
+                }
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+            }
 
-## Learn More
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+            );
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+    }
 
-### Code Splitting
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+When the POST request is successful and a status code of 200 is returned from the server, the app displays an operation successful dialog.\
+A future improvement might be to clear the input box after the user submits the name and value.
 
-### Analyzing the Bundle Size
+![AddFlashcard](flash3.png)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
 
-### Making a Progressive Web App
+### `Flashcard`
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+We show the users flashcards in this component (https://github.com/ErfanTagh/flashcard-frontend/blob/main/src/Components/Flashcard.tsx) so they can review them.\
+Following the GET request, we store the user's key and answer in the setPlanets state (the state name probably needs to change!).\
+The state will be passed through the [FlashCardItem](https://github.com/ErfanTagh/flashcard-frontend/blob/main/src/Components/FlashCardItem.tsx) component to the [FlipCard](https://github.com/ErfanTagh/flashcard-frontend/blob/main/src/Components/FLipCard.tsx).\
+When the user clicks on a card to see its answer, a flipping animation is rendered, which explains all these props passing.\
+The user can delete and edit cards by using the [DropDown] component (https://github.com/ErfanTagh/flashcard-frontend/blob/main/src/Components/DropDown.tsx). A green button is pressed if the user knows the revealed answer; a red button is clicked if the answer is not known and requires further review.
 
-### Advanced Configuration
+![AddFlashcard-1](flash4.png)
+![AddFlashcard-2](flash5.png)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
 
-### Deployment
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
