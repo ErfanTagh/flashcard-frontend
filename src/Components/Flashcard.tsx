@@ -38,7 +38,7 @@ function Flashcard() {
                 .then(res => {
                     console.log(res);
                     setPlanets(res);})
-                .catch(err => setErrors(err));
+                .catch(err => {setErrors(err); console.log(res);});
         }
 
         fetchData();
@@ -50,8 +50,11 @@ function Flashcard() {
             const res = await fetch("/rand/" + user.email,{mode:"cors"})
         res
             .json()
-            .then(res => setPlanets(res))
-            .catch(err => setErrors(err));
+            .then(res => {
+                console.log(res);
+            setPlanets(res);
+        })
+            .catch(err => {setErrors(err); console.log(res);});
     }
     
 

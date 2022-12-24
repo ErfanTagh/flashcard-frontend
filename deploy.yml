@@ -30,3 +30,4 @@ jobs:
             docker pull ${{ secrets.DOCKER_USERNAME }}/myimage:latest
             # Run the new container on port 3005
             docker run -d --name mycontainer -p 3005:3000 ${{ secrets.DOCKER_USERNAME }}/myimage:latest
+            docker network connect flashbacknet flashapp1
