@@ -40,7 +40,7 @@ function Flashcard() {
                     setPlanets(res);})
                 .catch(err => {setErrors(err);});
 
-                console.log("REssss" + res);
+                console.log("REssss");
         }
 
         fetchData();
@@ -58,7 +58,7 @@ function Flashcard() {
         })
             .catch(err => {setErrors(err);});
 
-            console.log("REssss" + res);
+            console.log("REssss");
     }
     
 
