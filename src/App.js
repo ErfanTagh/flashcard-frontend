@@ -2,6 +2,7 @@ import { useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import MainPage from "./Components/MainPage.tsx";
 import { Container } from "reactstrap";
+import {Helmet} from "react-helmet";
 
 import "./assets/app.css"
 import AddFlashcard from "./Components/AddFlashcard.tsx";
@@ -43,12 +44,7 @@ export default function App() {
 
   <div id="app" className="d-flex flex-column h-100">
 
-        <Helmet>
-                <meta charSet="utf-8" />
-                <title>Recallcards</title>
-                <link rel="icon" type="image/png" href="https://play-lh.googleusercontent.com/23G-2LOEXXPeTjElWnYOuacOuk6D8-sL300sl-e-ZTeSmBSKYDR2Y7kXVh3A5lxbKUmX" sizes="16x16" />
-                <meta name="description" content="Flashcards for extra learning and memory boosting" />
-            </Helmet>
+       
 
   <BrowserRouter>
 
