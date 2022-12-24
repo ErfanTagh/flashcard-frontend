@@ -10,12 +10,7 @@ const LoginButton = () => {
 
   return (<div className="maindiv">
 
-            <Helmet>
-                <meta charSet="utf-8" />
-                <title>Recallcards</title>
-                <link rel="icon" type="image/png" href="https://play-lh.googleusercontent.com/23G-2LOEXXPeTjElWnYOuacOuk6D8-sL300sl-e-ZTeSmBSKYDR2Y7kXVh3A5lxbKUmX" sizes="16x16" />
-                <meta name="description" content="Flashcards for extra learning and memory boosting" />
-            </Helmet>
+          
 
     <h1>Streamline Your Learning With Flashcards</h1>
     <div className="adtitles">

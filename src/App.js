@@ -15,6 +15,8 @@ import { Route, BrowserRouter, Routes, useNavigate } from 'react-router-dom';
 import { Auth0Provider, withAuthenticationRequired } from '@auth0/auth0-react';
 import Footer from './Components/Footer/Footer.tsx';
 
+
+
 const ProtectedRoute = ({ component, ...args }) => {
   const Component = withAuthenticationRequired(component, args);
   return <Component />;
@@ -40,6 +42,13 @@ export default function App() {
   return (
 
   <div id="app" className="d-flex flex-column h-100">
+
+        <Helmet>
+                <meta charSet="utf-8" />
+                <title>Recallcards</title>
+                <link rel="icon" type="image/png" href="https://play-lh.googleusercontent.com/23G-2LOEXXPeTjElWnYOuacOuk6D8-sL300sl-e-ZTeSmBSKYDR2Y7kXVh3A5lxbKUmX" sizes="16x16" />
+                <meta name="description" content="Flashcards for extra learning and memory boosting" />
+            </Helmet>
 
   <BrowserRouter>
 
