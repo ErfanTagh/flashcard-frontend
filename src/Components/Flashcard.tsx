@@ -36,9 +36,11 @@ function Flashcard() {
             res
                 .json()
                 .then(res => {
-                    console.log(res);
+                    
                     setPlanets(res);})
-                .catch(err => {setErrors(err); console.log(res);});
+                .catch(err => {setErrors(err);});
+
+                console.log("REssss" + res);
         }
 
         fetchData();
@@ -51,10 +53,12 @@ function Flashcard() {
         res
             .json()
             .then(res => {
-                console.log(res);
+               
             setPlanets(res);
         })
-            .catch(err => {setErrors(err); console.log(res);});
+            .catch(err => {setErrors(err);});
+
+            console.log("REssss" + res);
     }
     
 
