@@ -10,9 +10,7 @@ import 'primereact/resources/themes/saga-green/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 
-import {withAuthenticationRequired, useAuth0} from "@auth0/auth0-react";
-
-      
+import {withAuthenticationRequired, useAuth0} from "@auth0/auth0-react";  
 
 function AddFlashcard() {
 
@@ -50,9 +48,6 @@ function AddFlashcard() {
                 }
 
             }
-            
-
-
 
 
             );

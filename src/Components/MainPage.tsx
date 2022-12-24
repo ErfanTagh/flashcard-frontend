@@ -18,8 +18,6 @@ function MainPage (){
 
     }
 
-
-
         return (
 
             <div className={"containerg"}>

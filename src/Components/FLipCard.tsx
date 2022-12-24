@@ -69,8 +69,6 @@ function FlipCard({flashref, plantsfunction,card }) {
 
      useEffect( () => {
 
-        
-
         if(back!=undefined && back.substring(back.length - 16) === "FFFLASHBACKCARDS"){
 
             setInReview(true);                        
@@ -79,11 +77,8 @@ function FlipCard({flashref, plantsfunction,card }) {
 
             setInReview(false);                        
 
-
         }
 
-
-    
         
 
     },[back]);
@@ -238,8 +233,7 @@ function FlipCard({flashref, plantsfunction,card }) {
                             <button onClick={handleCancel}  className="btn btn-light btn-lg btn-circle">cancel</button>
                                 
                                 </div>}
-                            
-                        
+                                       
                         </div>
 
 

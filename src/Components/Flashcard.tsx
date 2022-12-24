@@ -61,9 +61,6 @@ function Flashcard() {
                 <FlashCardItem flashref={toast} plantsfunction = {fetchData} front={planets[0]} back={planets[1]}/>
             </div>
             <div className={"flashcard-g2"}>
-                
-
-    
 
                 <Toast ref={toast} position="bottom-right"/>
             

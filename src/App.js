@@ -37,12 +37,7 @@ const Auth0ProviderWithRedirectCallback = ({ children, ...props }) => {
 
 export default function App() {
 
-
-
-
   return (
-   
-  
 
   <div id="app" className="d-flex flex-column h-100">
 
