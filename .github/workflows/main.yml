@@ -28,7 +28,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/myimage1:latest111
+          tags: ${{ secrets.DOCKER_USERNAME }}/myimage1:latest1111
       -
         uses: appleboy/ssh-action@v0.1.6
         with:
@@ -42,7 +42,7 @@ jobs:
             docker stop flashapp1
             docker rm flashapp1
             # Pull the new image from Docker Hub
-            docker pull ${{ secrets.DOCKER_USERNAME }}/myimage1:latest111
+            docker pull ${{ secrets.DOCKER_USERNAME }}/myimage1:latest1111
             # Run the container
-            docker run -d --name flashapp1 -p 3005:3000 7936819/myimage1:latest111
+            docker run -d --name flashapp1 -p 3005:3000 7936819/myimage1:latest1111
             docker network connect erfan_my-network flashapp1
