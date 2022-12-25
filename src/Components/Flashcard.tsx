@@ -27,7 +27,7 @@ function Flashcard() {
 
 
     useEffect(() => {
-
+        console.log("eererere");
         
         async function fetchData() {
             
