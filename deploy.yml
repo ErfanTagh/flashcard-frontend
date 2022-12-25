@@ -26,6 +26,7 @@ jobs:
           script: |
             # Stop the old container
             docker stop flashapp1
+            docker rm 7936819/myimage1:latest
             # Pull the new image from Docker Hub
             docker pull ${{ secrets.DOCKER_USERNAME }}/myimage:latest
             # Run the new container on port 3005
