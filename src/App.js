@@ -48,14 +48,12 @@ export default function App() {
 
   <BrowserRouter>
 
-  <Auth0ProviderWithRedirectCallback
+  <Auth0Provider
         domain="dev-43bumhcy.us.auth0.com"
         clientId="k9q4k2SI9OuxDAh8YY6ykLMnEK3Bq44u"
         redirectUri={window.location.origin}
-        audience = "recallcards"
-      >
-
-        <NavBar/>
+        audience = "recallcards">
+      <NavBar/>
 
       <Routes>
         <Route path="" exact element={<Home />} />
@@ -65,7 +63,7 @@ export default function App() {
             <Route path="flashcards" element={<ProtectedRoute component={Flashcard} />} />
          
       </Routes>
-      </Auth0ProviderWithRedirectCallback>
+      </Auth0Provider>
       </BrowserRouter>
 
       <Footer/>
