@@ -28,7 +28,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/myimage1:v1
+          tags: ${{ secrets.DOCKER_USERNAME }}/myimage1:v2
       -
         uses: appleboy/ssh-action@v0.1.6
         with:
@@ -41,8 +41,9 @@ jobs:
             # Stop the old container
             docker stop flashapp1
             docker rm flashapp1
+            docker rm ${{ secrets.DOCKER_USERNAME }}/myimage1:v1
             # Pull the new image from Docker Hub
-            docker pull ${{ secrets.DOCKER_USERNAME }}/myimage1:v1
+            docker pull ${{ secrets.DOCKER_USERNAME }}/myimage1:v2
             # Run the container
-            docker run -d --name flashapp1 -p 3005:3000 ${{ secrets.DOCKER_USERNAME }}/myimage1:v1
+            docker run -d --name flashapp1 -p 3005:3000 ${{ secrets.DOCKER_USERNAME }}/myimage1:v2
             docker network connect erfan_my-network flashapp1

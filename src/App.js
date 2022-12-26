@@ -15,6 +15,7 @@ import Profile from "./views/views/Profile.tsx";
 import { Route, BrowserRouter, Routes, useNavigate } from 'react-router-dom';
 import { Auth0Provider, withAuthenticationRequired } from '@auth0/auth0-react';
 import Footer from './Components/Footer/Footer.tsx';
+import PrivateRoute from './views/views/PrivateRoute';
 
 
 
@@ -56,7 +57,7 @@ export default function App() {
       <NavBar/>
 
       <Routes>
-        <Route path="" exact element={<Home />} />
+        <Route path="" exact element={<PrivateRoute />} />
         <Route path="profile" element={<ProtectedRoute component={Profile }/>} />
         <Route path="home" element={<ProtectedRoute component={MainPage} />} />
         <Route path="addword" element={<ProtectedRoute component={AddFlashcard} />} />
