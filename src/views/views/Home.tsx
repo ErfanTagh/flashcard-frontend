@@ -1,16 +1,19 @@
-import React, { Fragment } from "react";
-
+import React, { Fragment, useEffect } from "react";
+import { Outlet, Navigate} from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 
 import  "../../assets/landingPage.css";
 import {Helmet} from "react-helmet";
 
+
 const LoginButton = () => {
-  const { loginWithRedirect } = useAuth0();
+  const { isAuthenticated,loginWithRedirect } = useAuth0();
 
   return (<div className="maindiv">
 
-          
+        {isAuthenticated && (
+          <Navigate to="/home" replace={true} />
+        )}
 
     <h1>Streamline Your Learning With Flashcards</h1>
     <div className="adtitles">
