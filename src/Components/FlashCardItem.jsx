@@ -1,9 +1,8 @@
 // @ts-ignore
-import FLipCard from "./FLipCard.tsx";
+import FLipCard from "./FLipCard.jsx";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../index.scss";
-import React from "react";
 
 
 const cards = [

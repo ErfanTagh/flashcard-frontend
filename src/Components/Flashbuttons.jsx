@@ -1,7 +1,5 @@
 import * as React from "react";
 import "../assets/app.css";
-// @ts-ignore
-import FlashCardItem from "./FlashCardItem.tsx";
 
 import {withAuthenticationRequired, useAuth0} from "@auth0/auth0-react";
 
@@ -32,29 +30,29 @@ function Flashbuttons({front, back, next}) {
 
 
 
-    const reviewStatusChanged = (f,b) => {
+    const reviewStatusChanged = async (f, b) => {
+    const requestOptions = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            token: user.email,
+            oldword: f,
+            word: f,
+            ans: b
+        })
+    };
 
-        const requestOptions = {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' ,'Accept': 'application/json'
-            },
-            body: JSON.stringify({ token: user.email,oldword:f ,word: f, ans: b })
-        };
-        fetch('/editword', requestOptions)
-            .then(response =>
-
-                response.json())
-            .then(data => {
-
-                console.log(data);
-            }
-
-
-            );
-
-
-
+    try {
+        const response = await fetch('/editword', requestOptions);
+        const data = await response.json();
+        console.log("Server response:", data);
+    } catch (error) {
+        console.error("Error updating word:", error);
     }
+};
 
     const greenBtnClicked = (back) => {
 

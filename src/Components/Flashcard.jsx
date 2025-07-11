@@ -1,14 +1,12 @@
 import * as React from "react";
 import "../assets/app.css";
 // @ts-ignore
-import FlashCardItem from "./FlashCardItem.tsx";
-import {getWords} from "../Service/CallApi";
+import FlashCardItem from "./FlashCardItem.jsx";
 import { useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import {withAuthenticationRequired, useAuth0} from "@auth0/auth0-react"
+import { useAuth0} from "@auth0/auth0-react"
 
 import { Toast } from 'primereact/toast';
-import { Button } from 'primereact/button';
 import 'primereact/resources/themes/saga-green/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
@@ -16,22 +14,18 @@ import 'primeicons/primeicons.css';
 function Flashcard() {
 
 
-    const navigate = useNavigate();
-
     const [hasError, setErrors] = useState(false);
     const [planets, setPlanets] = useState({});
-    const [click, setClicked] = useState(false);
     const {user} = useAuth0();
     const toast = useRef(null);
 
 
 
     useEffect(() => {
-        console.log("eererere");
-        
+
         async function fetchData() {
             
-            const res = await fetch("/rand/" + user.email,{mode:"cors"})
+            const res = await fetch("/words/rand/" + user.email,{mode:"cors"})
        
             res
                 .json()
@@ -40,7 +34,7 @@ function Flashcard() {
                     setPlanets(res);})
                 .catch(err => {setErrors(err);});
 
-                console.log("REssss");
+     
         }
 
         fetchData();
@@ -49,7 +43,7 @@ function Flashcard() {
     async function fetchData() {
 
         
-            const res = await fetch("/rand/" + user.email,{mode:"cors"})
+            const res = await fetch("/words/rand/" + user.email,{mode:"cors"})
         res
             .json()
             .then(res => {
@@ -58,7 +52,7 @@ function Flashcard() {
         })
             .catch(err => {setErrors(err);});
 
-            console.log("REssss");
+    
     }
     
 

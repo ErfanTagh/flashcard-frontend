@@ -2,7 +2,7 @@ import { useState } from "react";
 import * as cn from "classnames";
 import React from "react";
 import "../assets/app.css";
-import AddFlashcard from "./AddFlashcard.tsx";
+import AddFlashcard from "./AddFlashcard";
 import  { useRef, useEffect } from "react";
 import { useAuth0} from "@auth0/auth0-react";
 

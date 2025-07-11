@@ -1,8 +1,5 @@
-import * as React from "react";
 import {useState, useRef} from "react";
 import "../assets/app.css";
-import { useNavigate } from 'react-router-dom';
-import styles from '../assets/Mycss.module.css'
 
 import { Toast } from 'primereact/toast';
 import { Button } from 'primereact/button';
@@ -10,14 +7,13 @@ import 'primereact/resources/themes/saga-green/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 
-import {withAuthenticationRequired, useAuth0} from "@auth0/auth0-react";  
+import {useAuth0} from "@auth0/auth0-react";  
 
 function AddFlashcard() {
 
     const [inputs, setInputs] = useState({});
-    const navigate = useNavigate();
     const flashref = useRef(null);
-    const {user, getAccessTokenSilently} = useAuth0();
+    const {user} = useAuth0();
 
     const handleChange = (event) => {
         const name = event.target.name;
@@ -25,34 +21,29 @@ function AddFlashcard() {
         setInputs(values => ({...values, [name]: value}))
     }
 
-    const handleSubmit = (event) => {
-        event.preventDefault();
+    const handleSubmit = async (event) => {
+    event.preventDefault();
 
-        const requestOptions = {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' ,'Accept': 'application/json'
-            },
-            body: JSON.stringify({ token: user.email,word: inputs["title"], ans: inputs["ans"] })
-        };
-        fetch('/sendwords', requestOptions)
-            .then(response =>
+    const requestOptions = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({ token: user.email, word: inputs["title"], ans: inputs["ans"] })
+    };
 
-                response.json())
-            .then(data => {
+    const response = await fetch('/sendwords', requestOptions);
+    console.log("Response:::", response);
 
-                console.log(data);
+    const data = await response.json();
+    console.log("Dataaaaa::::", data);
 
-                if(data['status'] === 200){
-                    flashref.current.show({severity: 'success', summary: 'Success', detail: 'Word Added Successfully'});
-                   
-                }
-
-            }
-
-
-            );
-
+    if (data['status'] === 200) {
+        flashref.current.show({ severity: 'success', summary: 'Success', detail: 'Word Added Successfully' });
     }
+};
+
 
 
     return (

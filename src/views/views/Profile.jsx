@@ -1,7 +1,7 @@
 import React from "react";
 import { Container, Row, Col } from "reactstrap";
 
-import Loading from "../../Components/auth0components/Loading.tsx";
+import Loading from "../../Components/auth0components/Loading.jsx";
 import { useAuth0, withAuthenticationRequired } from "@auth0/auth0-react";
 
 export const ProfileComponent = () => {

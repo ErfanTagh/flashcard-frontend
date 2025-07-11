@@ -19,14 +19,14 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-helmet": "^6.1.0",
-    "react-scripts": "^5.0.1",
+    "react-scripts": "4.0.3",
     "react-transition-group": "^4.4.5",
     "reactstrap": "^9.1.4",
     "styled-components": "^5.3.6",
     "typescript": "^4.8.4",
     "web-vitals": "^2.1.4"
   },
-  "proxy": "http://172.19.0.4:5000",
+  "proxy": "http://127.0.0.1:5000",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
@@ -52,6 +52,8 @@
     ]
   },
   "devDependencies": {
+    "@types/minimatch": "^6.0.0",
+    "react-app-rewired": "^2.2.1",
     "react-router-dom": "^6.3.0",
     "sass": "^1.55.0"
   }

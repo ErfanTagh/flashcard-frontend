@@ -1,31 +1,11 @@
 import { useState } from "react";
 import * as cn from "classnames";
 import React from "react";
-import DropDown from "./DropDown.tsx";
+import DropDown from "./DropDown.jsx";
 import  { useRef, useEffect } from "react";
 import { useAuth0} from "@auth0/auth0-react";
 import styles from "../assets/myCss.module.css";
-import Flashbuttons from "./Flashbuttons.tsx";
-
-
-function useOutsideAlerter(ref) {
-    useEffect(() => {
-      /**
-       * Alert if clicked on outside of element
-       */
-      function handleClickOutside(event) {
-        if (ref.current && !ref.current.contains(event.target)) {
-          console.log("You clicked outside of me!");
-        }
-      }
-      // Bind the event listener
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => {
-        // Unbind the event listener on clean up
-        document.removeEventListener("mousedown", handleClickOutside);
-      };
-    }, [ref]);
-  }
+import Flashbuttons from "./Flashbuttons.jsx";
 
 
 function FlipCard({flashref, plantsfunction,card }) {
@@ -41,7 +21,6 @@ function FlipCard({flashref, plantsfunction,card }) {
 
     const {user} = useAuth0();
     const backclasses = `card-text fs-1 fw-bold ${styles.card}`;
-    const tmp = "";
 
     useEffect( () => {
         setShowBack(false);
@@ -92,7 +71,7 @@ function FlipCard({flashref, plantsfunction,card }) {
 
    
         
-        const res = await fetch("/rand/" + user.email)
+        const res = await fetch("/words/rand/" + user.email)
         res
             .json()
             .then(res => { 
