@@ -71,7 +71,7 @@ function FlipCard({flashref, plantsfunction,card }) {
 
    
         
-        const res = await fetch("/words/rand/" + user.email)
+        const res = await fetch("/api/words/rand/" + user.email)
         res
             .json()
             .then(res => { 
@@ -139,7 +139,7 @@ function FlipCard({flashref, plantsfunction,card }) {
             },
             body: JSON.stringify({  token: user.email, oldword:card.front ,word: inputs["title"], ans: inputs["ans"] })
         };
-        fetch('/editword', requestOptions)
+        fetch('/api/editword', requestOptions)
             .then(response =>
 
                 response.json())

@@ -33,7 +33,7 @@ function AddFlashcard() {
         body: JSON.stringify({ token: user.email, word: inputs["title"], ans: inputs["ans"] })
     };
 
-    const response = await fetch('/sendwords', requestOptions);
+    const response = await fetch('/api/sendwords', requestOptions);
     console.log("Response:::", response);
 
     const data = await response.json();

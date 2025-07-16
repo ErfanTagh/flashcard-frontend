@@ -46,7 +46,7 @@ function Flashbuttons({front, back, next}) {
     };
 
     try {
-        const response = await fetch('/editword', requestOptions);
+        const response = await fetch('/api/editword', requestOptions);
         const data = await response.json();
         console.log("Server response:", data);
     } catch (error) {

@@ -40,7 +40,7 @@ const handleSubmit = (event) => {
             },
             body: JSON.stringify({ token: user.email,word: inputs["title"], ans: inputs["ans"] })
         };
-        fetch('/sendwords', requestOptions)
+        fetch('/api/sendwords', requestOptions)
             .then(response =>
 
                 response.json())

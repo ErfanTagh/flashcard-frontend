@@ -11,7 +11,7 @@ export async function getAllUsers() {
 }
 
 export async function getWords() {
-    const response = await fetch(`/words/rand/`, {
+    const response = await fetch(`/api/words/rand/`, {
         method: 'GET',
         headers: {'Content-Type': 'application/json'}})
 

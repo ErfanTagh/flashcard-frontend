@@ -25,7 +25,7 @@ function Flashcard() {
 
         async function fetchData() {
             
-            const res = await fetch("/words/rand/" + user.email,{mode:"cors"})
+            const res = await fetch("/api/words/rand/" + user.email,{mode:"cors"})
        
             res
                 .json()
@@ -43,7 +43,7 @@ function Flashcard() {
     async function fetchData() {
 
         
-            const res = await fetch("/words/rand/" + user.email,{mode:"cors"})
+            const res = await fetch("/api/words/rand/" + user.email,{mode:"cors"})
         res
             .json()
             .then(res => {

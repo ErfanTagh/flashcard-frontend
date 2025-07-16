@@ -53,7 +53,7 @@ function DropDown({ flashref, front,etmode,plantsfunction}) {
           },
           body: JSON.stringify({  token: user?.email })
       };
-        fetch('/delword/' + front, requestOptions)
+        fetch('/api/delword/' + front, requestOptions)
             .then(response =>
 
                 response.json())
