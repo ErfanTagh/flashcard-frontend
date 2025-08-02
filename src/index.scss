@@ -6,10 +6,11 @@ body {
   background: linear-gradient(180deg, rgba(0,191,255,1) 0%, rgba(255,128,255,1) 100%);
   margin: 0;
   padding: 0;
-
-
 }
-html,body { min-height:100vh ; }
+
+html,body { 
+  min-height:100vh; 
+}
 
 .container {
   display:flex;
@@ -18,14 +19,9 @@ html,body { min-height:100vh ; }
 }
 
 .mainApp{
-
-
-
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-
-
 }
 
 footer {
@@ -34,14 +30,7 @@ footer {
   margin-top: auto;
   padding: 8px;
   color: #fff;
- 
-  
-
-
-
 }
-
-
 
 .flip-card-outer {
   width: 400px;
@@ -72,11 +61,9 @@ footer {
       backface-visibility: hidden;
       position: absolute;
       top: 0;
-      
       left: 0;
       width: 100%;
       height: 100%;
-      
 
       &.front {
         transform: rotateY(0);
@@ -87,8 +74,114 @@ footer {
       &.back {
         transform: rotateY(180deg);
         background-color: white;
+        color: #00bfff;
+      }
+    }
+  }
+}
 
-        color:  #00bfff;
+/* Responsive Design for Flip Cards and Layout */
+
+/* Small devices (phones, 576px and down) */
+@media (max-width: 576px) {
+  .flip-card-outer {
+    width: 90vw;
+    max-width: 350px;
+    height: 350px;
+    margin-top: 15px;
+  }
+  
+  .container {
+    flex-direction: column;
+    padding: 1rem;
+  }
+  
+  .mainApp {
+    padding: 0.5rem;
+  }
+  
+  footer {
+    padding: 12px 8px;
+    font-size: 0.9rem;
+  }
+}
+
+/* Medium devices (tablets, 577px to 768px) */
+@media (min-width: 577px) and (max-width: 768px) {
+  .flip-card-outer {
+    width: 80vw;
+    max-width: 450px;
+    height: 400px;
+    margin-top: 20px;
+  }
+  
+  .container {
+    padding: 1rem;
+  }
+  
+  .mainApp {
+    padding: 1rem;
+  }
+}
+
+/* Large devices (desktops, 769px to 992px) */
+@media (min-width: 769px) and (max-width: 992px) {
+  .flip-card-outer {
+    width: 60vw;
+    max-width: 500px;
+    height: 420px;
+  }
+}
+
+/* Extra large devices (large desktops, 993px and up) */
+@media (min-width: 993px) {
+  .flip-card-outer {
+    width: 500px;
+    height: 550px;
+    margin-top: 40px;
+  }
+}
+
+/* Very large screens (1200px and up) */
+@media (min-width: 1200px) {
+  .flip-card-outer {
+    width: 550px;
+    height: 605px;
+    margin-top: 45px;
+  }
+}
+
+/* Ultra-wide screens (1600px and up) */
+@media (min-width: 1600px) {
+  .flip-card-outer {
+    width: 600px;
+    height: 660px;
+    margin-top: 50px;
+  }
+}
+
+/* Landscape orientation adjustments for mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+  .flip-card-outer {
+    width: 70vw;
+    max-width: 400px;
+    height: 300px;
+    margin-top: 10px;
+  }
+  
+  .mainApp {
+    min-height: auto;
+  }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .flip-card-outer {
+    .card {
+      &.front,
+      &.back {
+        font-smooth: antialiased;
+        -webkit-font-smoothing: antialiased;
       }
     }
   }

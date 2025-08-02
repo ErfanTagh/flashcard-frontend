@@ -1,5 +1,6 @@
 import MainPage from "./Components/MainPage.jsx";
 import "./assets/app.css";
+import "./assets/responsive.css";
 import AddFlashcard from "./Components/AddFlashcard.jsx";
 import Flashcard from "./Components/Flashcard.jsx";
 import Home from "./views/views/Home.jsx";

@@ -1,0 +1,295 @@
+/* Responsive Design Enhancements */
+
+/* Touch-friendly button sizes */
+@media (max-width: 768px) {
+  button, 
+  .btn,
+  input[type="button"],
+  input[type="submit"] {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 12px 16px;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+  
+  /* Improve touch targets */
+  .flashcard-item,
+  .add-flashcard-item {
+    min-height: 60px;
+    padding: 15px;
+  }
+  
+  /* Better spacing for mobile */
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  /* Improve form inputs */
+  input, 
+  textarea, 
+  select {
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 12px;
+    border-radius: 8px;
+  }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .flip-card-inner {
+    transition: none !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .flashcard-item,
+  .add-flashcard-item {
+    border-width: 3px;
+    border-color: #000;
+  }
+  
+  .form-input {
+    border-width: 2px;
+    border-color: #000;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .flashcard-item-group {
+    background-color: #2d2d2d;
+    color: #ffffff;
+  }
+  
+  .form-input {
+    background-color: #2d2d2d;
+    color: #ffffff;
+    border-color: #666;
+  }
+}
+
+/* Print styles */
+@media print {
+  .nav-container,
+  .flashbuttons,
+  .toast-buttons {
+    display: none !important;
+  }
+  
+  .flashcard-item-group {
+    box-shadow: none;
+    border: 1px solid #000;
+  }
+}
+
+/* Focus styles for better accessibility */
+.flashcard-item:focus,
+.add-flashcard-item:focus,
+button:focus,
+input:focus,
+textarea:focus,
+select:focus {
+  outline: 2px solid #00bfff;
+  outline-offset: 2px;
+}
+
+/* Improved hover states for touch devices */
+@media (hover: hover) {
+  .flashcard-item:hover,
+  .add-flashcard-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  }
+}
+
+/* Loading states */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Error states */
+.error {
+  border-color: #d9534f !important;
+  background-color: #f2dede !important;
+}
+
+/* Success states */
+.success {
+  border-color: #5cb85c !important;
+  background-color: #dff0d8 !important;
+}
+
+/* Responsive typography */
+@media (max-width: 576px) {
+  h1 { font-size: 1.8rem; }
+  h2 { font-size: 1.5rem; }
+  h3 { font-size: 1.3rem; }
+  p { font-size: 1rem; }
+}
+
+@media (min-width: 577px) and (max-width: 768px) {
+  h1 { font-size: 2rem; }
+  h2 { font-size: 1.7rem; }
+  h3 { font-size: 1.4rem; }
+  p { font-size: 1.05rem; }
+}
+
+@media (min-width: 769px) {
+  h1 { font-size: 2.2rem; }
+  h2 { font-size: 1.8rem; }
+  h3 { font-size: 1.5rem; }
+  p { font-size: 1.1rem; }
+}
+
+/* Improved spacing for different screen sizes */
+@media (max-width: 576px) {
+  .container,
+  .containerg {
+    padding: 0.5rem;
+    gap: 1rem;
+  }
+  
+  .form-group {
+    gap: 0.5rem;
+  }
+}
+
+@media (min-width: 577px) and (max-width: 768px) {
+  .container,
+  .containerg {
+    padding: 1rem;
+    gap: 1.5rem;
+  }
+  
+  .form-group {
+    gap: 1rem;
+  }
+}
+
+@media (min-width: 769px) {
+  .container,
+  .containerg {
+    padding: 1.5rem;
+    gap: 2rem;
+  }
+  
+  .form-group {
+    gap: 1.5rem;
+  }
+}
+
+/* Improved card layouts for different orientations */
+@media (max-width: 768px) and (orientation: portrait) {
+  .flashcard-item-group {
+    aspect-ratio: 4/3;
+  }
+}
+
+@media (max-width: 768px) and (orientation: landscape) {
+  .flashcard-item-group {
+    aspect-ratio: 3/2;
+  }
+}
+
+/* Better button layouts for mobile */
+@media (max-width: 576px) {
+  .flashbuttons {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .toast-buttons {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+/* Improved navigation for mobile */
+@media (max-width: 768px) {
+  .nav-container {
+    padding: 0.5rem;
+  }
+  
+  .navbar-brand {
+    font-size: 1.2rem;
+  }
+  
+  .navbar-nav {
+    text-align: center;
+  }
+  
+  .navbar-nav .nav-link {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+  }
+}
+
+/* Better form layouts */
+@media (max-width: 576px) {
+  .form-container {
+    padding: 1rem;
+  }
+  
+  .form-group {
+    width: 100%;
+    max-width: none;
+  }
+  
+  .form-input {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+/* Improved dropdown positioning */
+@media (max-width: 768px) {
+  .dropdown {
+    position: relative;
+    right: auto;
+  }
+  
+  .dropdown-content {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    margin-top: 0;
+  }
+}
+
+/* Better toast positioning */
+@media (max-width: 576px) {
+  .p-toast {
+    width: 90vw !important;
+    max-width: 350px !important;
+  }
+}
+
+/* Improved loading states */
+@media (max-width: 768px) {
+  .loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+  }
+}
+
+/* Better error handling display */
+@media (max-width: 576px) {
+  .error-message {
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+  }
+} 

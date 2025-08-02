@@ -1,9 +1,63 @@
 .footerDiv{
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 10px 20px;
+    min-height: 50px;
+    background-color: black;
+    color: white;
+    position: relative;
+    z-index: 1;
+}
 
-display: flex;
-justify-content: space-around;
-align-items: center;
+/* Hide footer on small screens to prioritize flashcard buttons */
+@media (max-width: 768px) {
+    .footerDiv {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        height: 0 !important;
+        min-height: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: hidden !important;
+    }
+    
+    footer {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        height: 0 !important;
+        min-height: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: hidden !important;
+    }
+}
 
+/* Responsive footer adjustments for larger screens */
+@media (min-width: 769px) and (max-width: 992px) {
+    .footerDiv {
+        padding: 10px 20px;
+        min-height: 50px;
+        z-index: 10;
+    }
+    
+    .footerDiv h5 {
+        font-size: 1rem;
+        margin: 0;
+    }
+}
 
-
+@media (min-width: 993px) {
+    .footerDiv {
+        padding: 10px 20px;
+        min-height: 50px;
+        z-index: 10;
+    }
+    
+    .footerDiv h5 {
+        font-size: 1.1rem;
+        margin: 0;
+    }
 }
