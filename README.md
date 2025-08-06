@@ -1,6 +1,6 @@
 # Flashcard Project 
 
-With React and Typescript, I developed the frontend for my website [recallcards.uk](https://recallcards.uk/).\
+With React and Typescript, I developed the frontend for my website [recallcards.uk](https://recallcards.net/).\
 You can also view the [Python back-end repository](https://github.com/ErfanTagh/flashcard-backend).\
 Feel free to give it a try!\
 It's all free, no credit cards required! 
