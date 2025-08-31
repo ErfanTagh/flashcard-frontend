@@ -7,7 +7,8 @@
     background-color: black;
     color: white;
     position: relative;
-    z-index: 1;
+
+    z-index: -1;
 }
 
 /* Hide footer on small screens to prioritize flashcard buttons */

@@ -1,7 +1,9 @@
+
+
 .containerg{
-    height: 100vh;
     display: flex;
     align-items: center;
+    height: fit-content;
     flex-direction: row;
     flex-wrap: nowrap;
     margin: 0 !important;
@@ -166,7 +168,6 @@ h3{
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    z-index: 100;
 }
 
 .backgroundiv{

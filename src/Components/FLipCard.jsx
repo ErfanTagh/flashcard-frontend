@@ -162,9 +162,7 @@ function FlipCard({flashref, plantsfunction,card }) {
 
     return (
         <div
-            className="flip-card-outer"
-            
-        >
+            className="flip-card-outer z-100">
             <div
                 className={cn("flip-card-inner", {
                     showBack,

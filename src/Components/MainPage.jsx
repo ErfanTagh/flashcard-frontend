@@ -1,16 +1,9 @@
-import * as React from "react";
 import "../assets/app.css";
 import { useNavigate } from 'react-router-dom';
-import { useEffect } from "react";
-import {withAuthenticationRequired, useAuth0} from "@auth0/auth0-react"
-
-
 
 
 function MainPage (){
     const navigate = useNavigate();
-    const {user, getAccessTokenSilently} = useAuth0();
-
 
     function f() {
 

@@ -1,4 +1,3 @@
-import React from "react";
 
 import { Button } from 'primereact/button';
 import 'primereact/resources/themes/saga-green/theme.css';
@@ -19,8 +18,8 @@ const openTelegram=()=>{
 const Footer = () => {
 return (
 
-    <footer>
-        <div className={styles.footerDiv}>
+    <footer className={styles.footerDiv}>
+        <div>
         <h5>Developed by Erfan Taghvaei</h5>
         <Button onClick={openTelegram}>Contact</Button>
         </div>

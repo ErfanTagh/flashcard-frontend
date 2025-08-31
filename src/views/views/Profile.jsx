@@ -8,21 +8,12 @@ export const ProfileComponent = () => {
   const { user } = useAuth0();
 
   return (
-    <Container className="mb-5">
-      <Row className="align-items-center profile-header mb-5 text-center text-md-left">
-        <Col md={2}>
-          <img
-            src={user.picture}
-            alt="Profile"
-            className="rounded-circle img-fluid profile-picture mb-3 mb-md-0"
-          />
-        </Col>
-        <Col md>
-          <h2>{user.name}</h2>
+    <Container className="mb-5 d-flex align-items-center justify-content-center" style={{ minHeight: '80vh' }}>
+      <Row className="align-items-center profile-header text-center bg-white p-5">
+        <Col md={12} className="text-center">
+          <h2 className="mb-3">{user.name}</h2>
           <p className="lead text-muted">{user.email}</p>
         </Col>
-      </Row>
-      <Row>
       </Row>
     </Container>
   );

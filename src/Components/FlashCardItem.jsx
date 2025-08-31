@@ -22,7 +22,7 @@ export default function FlashCardItem({ flashref,front,back,plantsfunction}) {
     return (
         <div className="container">
 
-            <div className="row h-80 ">
+            <div className="row h-160 ">
                 <div className="col d-flex flex-column flex-md-row  align-items-center">
                     
                     {cards.map((card) => (
