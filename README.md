@@ -1,83 +1,272 @@
-# Flashcard Project 
+# 🎴 RecallCards - Modern Flashcard Learning Platform
 
-With React and Typescript, I developed the frontend for my website [recallcards.uk](https://recallcards.net/).\
-You can also view the [Python back-end repository](https://github.com/ErfanTagh/flashcard-backend).\
-Feel free to give it a try!\
-It's all free, no credit cards required! 
+<div align="center">
 
-## Project Overview 
+![React](https://img.shields.io/badge/React-18.2-blue?style=for-the-badge&logo=react)
+![Vite](https://img.shields.io/badge/Vite-5.4-purple?style=for-the-badge&logo=vite)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38bdf8?style=for-the-badge&logo=tailwind-css)
+![Docker](https://img.shields.io/badge/Docker-Ready-blue?style=for-the-badge&logo=docker)
 
-The authentication was handled by [Auth0](https://auth0.com).\
-You can see the private and public root settings as well as redirect callbacks in the root App.js file.\
-The react components can be found in the components folder.\
-To make multiple requests to the Rest API, this project uses the JS fetch API. 
+**A beautiful, modern flashcard application built with React and Vite**
 
-## `React Components`
+[🌐 Live Website](https://recallcards.net) • [🔧 Backend Repo](https://github.com/ErfanTagh/flashcard-backend)
 
-The react components can be found in the components folder.\ 
-The folder Auth0 components is related to the Auth0 service, as its name suggests.\
-### `MainPage`
+</div>
 
-After authentication, the user is redirected to the [MainPage Component] (https://github.com/ErfanTagh/flashcard-frontend/blob/main/src/Components/MainPage.tsx).\
+---
 
-Users can review existing flashcards or add new ones here.
+## ✨ Features
 
-![MainPage](flash1.png)
+- 🎨 **Modern UI** - Beautiful interface with Tailwind CSS and shadcn/ui components
+- 🔐 **Auth0 Authentication** - Secure login and user management
+- 📝 **Create Flashcards** - Add terms and definitions with a clean form
+- 🎲 **Review Mode** - Interactive 3D flip cards for studying
+- 📊 **Progress Tracking** - Monitor your learning journey
+- 📱 **Responsive Design** - Works perfectly on desktop, tablet, and mobile
+- 🚀 **Fast Performance** - Built with Vite for lightning-fast development
+- 🎯 **SPA Routing** - Smooth navigation with React Router
 
+## 🛠️ Tech Stack
 
-### `AddFlashcard` 
+| Category             | Technology           |
+| -------------------- | -------------------- |
+| **Framework**        | React 18.2           |
+| **Build Tool**       | Vite 5.4             |
+| **Styling**          | Tailwind CSS 3.4     |
+| **UI Components**    | shadcn/ui, Radix UI  |
+| **Icons**            | Lucide React         |
+| **Authentication**   | Auth0                |
+| **Routing**          | React Router DOM 6.3 |
+| **State Management** | React Hooks          |
+| **Deployment**       | Docker, Nginx        |
 
-Using the [AddFlashCard Component] (https://github.com/ErfanTagh/flashcard-frontend/blob/main/src/Components/AddFlashcard.tsx), the component receives the new key and answer from the user and stores it in the database for that user.\
-This component sends the entered key and value to the "sendwords" endpoint as a POST request.
+## 🎯 Key Components
+
+### 🏠 **Home Page**
+
+- Landing page for unauthenticated users
+- Dashboard with action cards for authenticated users
+- Welcome section with personalized greeting
+
+### ➕ **Add Card**
+
+- Clean form with validation
+- Real-time character counter
+- Toast notifications for feedback
+- Preview card before submission
+
+### 📚 **Review Cards**
+
+- Interactive 3D flip animation
+- Click to reveal definitions
+- Next card button for continuous review
+- Beautiful card-based UI
+
+### 👤 **Profile**
+
+- User information display
+- Auth0 integration
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Node.js 18+
+- npm or yarn
+- Docker (optional, for containerized deployment)
+
+### Local Development
+
+1. **Clone the repository**
+
+   ```bash
+   git clone https://github.com/ErfanTagh/flashcard-frontend.git
+   cd flashcard-frontend
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables**
+   Create a `.env` file:
+
+   ```env
+   VITE_API_BASE_URL=http://localhost:5000
+   ```
+
+4. **Start development server**
+
+   ```bash
+   npm run dev
+   ```
+
+   Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+### Build for Production
+
+```bash
+npm run build
+```
+
+The built files will be in the `dist/` directory.
+
+### Docker Deployment
+
+1. **Build Docker image**
+
+   ```bash
+   docker build -t flashcard-frontend .
+   ```
+
+2. **Run with Docker Compose**
+   ```bash
+   cd ../flashcard-backend
+   docker compose up -d frontend
+   ```
+
+## 📁 Project Structure
 
 ```
-const handleSubmit = (event) => {
-        event.preventDefault();
+flashcard-frontend/
+├── src/
+│   ├── components/          # Reusable UI components
+│   │   ├── ui/              # shadcn/ui components
+│   │   └── ModernNavbar.tsx # Navigation bar
+│   ├── Components/          # Feature components
+│   │   ├── AddFlashcard.jsx # Add card form
+│   │   ├── Flashcard.jsx    # Review cards
+│   │   └── ...
+│   ├── views/               # Page components
+│   │   └── views/
+│   │       ├── Home.jsx     # Landing/Dashboard
+│   │       └── Profile.jsx   # User profile
+│   ├── hooks/               # Custom React hooks
+│   │   └── use-toast.ts     # Toast notifications
+│   ├── lib/                 # Utility functions
+│   │   └── utils.ts         # Helper functions
+│   ├── config/              # Configuration
+│   │   └── api.js           # API URL builder
+│   ├── App.jsx              # Main app component
+│   └── main.jsx             # Entry point
+├── public/                  # Static assets
+├── .github/                 # GitHub Actions workflows
+├── Dockerfile              # Docker configuration
+├── nginx.conf              # Nginx configuration
+├── tailwind.config.js      # Tailwind CSS config
+├── vite.config.js          # Vite configuration
+└── package.json            # Dependencies
+```
 
-        const requestOptions = {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' ,'Accept': 'application/json'
-            },
-            body: JSON.stringify({ token: user.email,word: inputs["title"], ans: inputs["ans"] })
-        };
-        fetch('/api/sendwords', requestOptions)
-            .then(response =>
+## 🎨 Design System
 
-                response.json())
-            .then(data => {
+The project uses a custom design system with Tailwind CSS:
 
-                console.log(data);
+- **Colors**: HSL-based color palette with light/dark mode support
+- **Components**: shadcn/ui components for consistency
+- **Icons**: Lucide React for modern iconography
+- **Typography**: Custom font stack with Ubuntu
 
-                if(data['status'] === 200){
-                    flashref.current.show({severity: 'success', summary: 'Success', detail: 'Word Added Successfully'});
-                   
-                }
+### Theme Colors
 
-            }
+- **Primary**: Purple (`262 83% 58%`)
+- **Accent**: Pink (`340 82% 65%`)
+- **Background**: Light gray (`220 25% 97%`)
+- **Foreground**: Dark gray (`220 15% 20%`)
 
+## 🔧 Configuration
 
-            );
+### Vite Proxy
 
+The development server proxies API requests:
+
+```javascript
+// vite.config.js
+server: {
+  proxy: {
+    '/api': {
+      target: 'http://127.0.0.1:5000',
+      changeOrigin: true
     }
-
+  }
+}
 ```
 
-When the POST request is successful and a status code of 200 is returned from the server, the app displays an operation successful dialog.\
-A future improvement might be to clear the input box after the user submits the name and value.
+### Auth0 Setup
 
-![AddFlashcard](flash3.png)
+Update `App.jsx` with your Auth0 credentials:
 
+```javascript
+<Auth0Provider
+  domain="dev-43bumhcy.us.auth0.com"
+  clientId="your-client-id"
+  redirectUri={window.location.origin}
+  audience="recallcards"
+>
+```
 
-### `Flashcard`
+## 📦 Available Scripts
 
-We show the users flashcards in this component (https://github.com/ErfanTagh/flashcard-frontend/blob/main/src/Components/Flashcard.tsx) so they can review them.\
-Following the GET request, we store the user's key and answer in the setPlanets state (the state name probably needs to change!).\
-The state will be passed through the [FlashCardItem](https://github.com/ErfanTagh/flashcard-frontend/blob/main/src/Components/FlashCardItem.tsx) component to the [FlipCard](https://github.com/ErfanTagh/flashcard-frontend/blob/main/src/Components/FLipCard.tsx).\
-When the user clicks on a card to see its answer, a flipping animation is rendered, which explains all these props passing.\
-The user can delete and edit cards by using the [DropDown] component (https://github.com/ErfanTagh/flashcard-frontend/blob/main/src/Components/DropDown.tsx). A green button is pressed if the user knows the revealed answer; a red button is clicked if the answer is not known and requires further review.
+| Script            | Description              |
+| ----------------- | ------------------------ |
+| `npm run dev`     | Start development server |
+| `npm run build`   | Build for production     |
+| `npm run preview` | Preview production build |
 
-![AddFlashcard-1](flash4.png)
-![AddFlashcard-2](flash5.png)
+## 🔄 CI/CD
 
+Automated deployment via GitHub Actions:
 
+- **Trigger**: Push to `main` or `master`
+- **Actions**: Pull code, rebuild Docker container, restart services
+- **Workflow**: `.github/workflows/deploy.yml`
 
+## 🐛 Troubleshooting
+
+### Build Issues
+
+```bash
+# Clear node_modules and reinstall
+rm -rf node_modules package-lock.json
+npm install
+```
+
+### Docker Issues
+
+```bash
+# Rebuild without cache
+docker compose build --no-cache frontend
+docker compose up -d --force-recreate frontend
+```
+
+## 📝 License
+
+This project is open source and available for personal use.
+
+## 🤝 Contributing
+
+Contributions are welcome! Feel free to:
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
+
+## 📧 Contact
+
+For questions or issues, please open an issue on GitHub.
+
+---
+
+<div align="center">
+
+**Made with ❤️ and ☕ for learners everywhere**
+
+[⭐ Star this repo](https://github.com/ErfanTagh/flashcard-frontend) • [🌐 Visit Website](https://recallcards.net)
+
+**Start learning today - it's free! 🎉**
+
+</div>

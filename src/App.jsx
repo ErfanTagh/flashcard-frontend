@@ -1,4 +1,3 @@
-import MainPage from "./Components/MainPage.jsx";
 import "./assets/app.css";
 import "./assets/responsive.css";
 import AddFlashcard from "./Components/AddFlashcard.jsx";
@@ -39,7 +38,7 @@ const AppContent = () => {
           path="profile"
           element={<ProtectedRoute component={Profile} />}
         />
-        <Route path="home" element={<ProtectedRoute component={MainPage} />} />
+        <Route path="home" element={<ProtectedRoute component={Home} />} />
         <Route
           path="addword"
           element={<ProtectedRoute component={AddFlashcard} />}
