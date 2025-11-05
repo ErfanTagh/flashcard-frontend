@@ -59,7 +59,7 @@ const Home = () => {
                   Your Progress
                 </h3>
                 <p className="text-sm text-muted-foreground mb-4">Track your learning progress and achievements</p>
-                <Link to="/profile" className="inline-flex items-center justify-center rounded-md h-10 px-4 py-2 bg-secondary text-secondary-foreground hover:bg-secondary/80 w-full no-underline">View Stats</Link>
+                <Link to="/progress" className="inline-flex items-center justify-center rounded-md h-10 px-4 py-2 bg-secondary text-secondary-foreground hover:bg-secondary/80 w-full no-underline">View Stats</Link>
               </div>
             </div>
           </div>

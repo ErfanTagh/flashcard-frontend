@@ -5,6 +5,7 @@ import Flashcard from "./Components/Flashcard.jsx";
 import Home from "./views/views/Home.jsx";
 import ModernNavbar from "./components/ModernNavbar.tsx";
 import Profile from "./views/views/Profile.jsx";
+import Progress from "./views/views/Progress.jsx";
 
 import { Route, BrowserRouter, Routes } from "react-router-dom";
 import {
@@ -37,6 +38,10 @@ const AppContent = () => {
         <Route
           path="profile"
           element={<ProtectedRoute component={Profile} />}
+        />
+        <Route
+          path="progress"
+          element={<ProtectedRoute component={Progress} />}
         />
         <Route path="home" element={<ProtectedRoute component={Home} />} />
         <Route
