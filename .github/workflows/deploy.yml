@@ -1,0 +1,61 @@
+name: Deploy Frontend
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: 65.109.168.192
+          username: work
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -e  # Exit on error
+
+            # Navigate to frontend directory
+            FRONTEND_DIR=~/website/flashcard-frontend
+            if [ ! -d "$FRONTEND_DIR" ]; then
+              echo "Error: Frontend directory not found at $FRONTEND_DIR"
+              exit 1
+            fi
+
+            cd "$FRONTEND_DIR"
+
+            # Pull latest changes
+            git pull origin main || git pull origin master
+
+            # Navigate to backend directory (where docker-compose.yml is located)
+            BACKEND_DIR=~/website/flashcard-backend
+            if [ ! -d "$BACKEND_DIR" ]; then
+              echo "Error: Backend directory not found at $BACKEND_DIR"
+              exit 1
+            fi
+
+            cd "$BACKEND_DIR"
+
+            # Rebuild frontend service
+            sudo docker compose build --no-cache frontend
+
+            # Stop old container and start new one
+            sudo docker compose up -d --force-recreate frontend
+
+            # Verify container is running
+            sudo docker compose ps frontend
+
+            # Restart nginx (adjust command based on your nginx setup)
+            if sudo docker ps | grep -q nginx; then
+              sudo docker restart nginx
+            else
+              echo "Warning: nginx container not found, skipping restart"
+            fi
+
+            echo "Frontend deployment completed successfully!"
