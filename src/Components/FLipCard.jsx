@@ -1,5 +1,5 @@
 import { useState } from "react";
-import * as cn from "classnames";
+import cn from "classnames";
 import React from "react";
 import DropDown from "./DropDown.jsx";
 import  { useRef, useEffect } from "react";

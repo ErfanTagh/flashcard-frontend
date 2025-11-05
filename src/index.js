@@ -1,21 +1,18 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.scss';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import "./index.scss";
+// import "./index.css"; // Temporarily disabled for Docker build
+import App from "./App";
+import reportWebVitals from "./reportWebVitals";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 // Bootstrap Bundle JS
 import "bootstrap/dist/js/bootstrap.bundle.min";
 
-
-
-const root = ReactDOM.createRoot(document.getElementById('root'));
+const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
-    
-    
-    <App className="mainApp"/>
+    <App className="mainApp" />
   </React.StrictMode>
 );
 

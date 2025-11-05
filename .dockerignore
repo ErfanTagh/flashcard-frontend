@@ -4,6 +4,7 @@ exec.*
 npm-debug.log*
 yarn-error.log
 README.md
+react-frontend-temp/
 
 # testing
 /coverage

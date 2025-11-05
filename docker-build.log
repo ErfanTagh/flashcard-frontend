@@ -1,0 +1,41 @@
+ERROR: permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Head "http://%2Fvar%2Frun%2Fdocker.sock/_ping": dial unix /var/run/docker.sock: connect: permission denied
+41823 v0.26.1 /usr/libexec/docker/cli-plugins/docker-buildx buildx build -t flashcard-frontend .
+github.com/docker/docker/client.(*Client).doRequest
+	github.com/docker/docker@v28.3.2+incompatible/client/request.go:149
+github.com/docker/docker/client.(*Client).Ping
+	github.com/docker/docker@v28.3.2+incompatible/client/ping.go:31
+github.com/docker/buildx/builder.(*Builder).Factory.func1
+	github.com/docker/buildx/builder/builder.go:250
+sync.(*Once).doSlow
+	sync/once.go:78
+sync.(*Once).Do
+	sync/once.go:69
+github.com/docker/buildx/builder.(*Builder).Factory
+	github.com/docker/buildx/builder/builder.go:231
+github.com/docker/buildx/builder.(*Builder).LoadNodes
+	github.com/docker/buildx/builder/node.go:92
+github.com/docker/buildx/commands.runBuild
+	github.com/docker/buildx/commands/build.go:314
+github.com/docker/buildx/commands.buildCmd.func1
+	github.com/docker/buildx/commands/build.go:488
+github.com/docker/cli/cli-plugins/plugin.RunPlugin.func1.1.2
+	github.com/docker/cli@v28.3.2+incompatible/cli-plugins/plugin/plugin.go:65
+github.com/spf13/cobra.(*Command).execute
+	github.com/spf13/cobra@v1.9.1/command.go:1015
+github.com/spf13/cobra.(*Command).ExecuteC
+	github.com/spf13/cobra@v1.9.1/command.go:1148
+github.com/spf13/cobra.(*Command).Execute
+	github.com/spf13/cobra@v1.9.1/command.go:1071
+github.com/docker/cli/cli-plugins/plugin.RunPlugin
+	github.com/docker/cli@v28.3.2+incompatible/cli-plugins/plugin/plugin.go:80
+main.runPlugin
+	github.com/docker/buildx/cmd/buildx/main.go:64
+main.run
+	github.com/docker/buildx/cmd/buildx/main.go:78
+main.main
+	github.com/docker/buildx/cmd/buildx/main.go:88
+runtime.main
+	runtime/proc.go:283
+runtime.goexit
+	runtime/asm_amd64.s:1700
+

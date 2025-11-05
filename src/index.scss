@@ -2,8 +2,8 @@
 
 body {
   font-family: 'Ubuntu', sans-serif;
-  background: rgb(0,191,255);
-  background: linear-gradient(180deg, rgba(0,191,255,1) 0%, rgba(255,128,255,1) 100%);
+  /* background handled by Tailwind theme variables in index.css */
+  background: none;
   margin: 0;
   padding: 0;
 }

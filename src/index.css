@@ -1,0 +1,124 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 220 25% 97%;
+    --foreground: 220 15% 20%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 15% 20%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 15% 20%;
+
+    --primary: 262 83% 58%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 100% 92%;
+    --secondary-foreground: 220 15% 20%;
+
+    --muted: 220 20% 94%;
+    --muted-foreground: 220 10% 45%;
+
+    --accent: 340 82% 65%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 220 15% 88%;
+    --input: 220 15% 88%;
+    --ring: 262 83% 58%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 100%;
+
+    --sidebar-foreground: 220 15% 20%;
+
+    --sidebar-primary: 262 83% 58%;
+
+    --sidebar-primary-foreground: 0 0% 100%;
+
+    --sidebar-accent: 220 20% 94%;
+
+    --sidebar-accent-foreground: 220 15% 20%;
+
+    --sidebar-border: 220 15% 88%;
+
+    --sidebar-ring: 262 83% 58%;
+  }
+
+  .dark {
+    --background: 220 20% 10%;
+    --foreground: 220 15% 95%;
+
+    --card: 220 18% 14%;
+    --card-foreground: 220 15% 95%;
+
+    --popover: 220 18% 14%;
+    --popover-foreground: 220 15% 95%;
+
+    --primary: 262 83% 58%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 20% 18%;
+    --secondary-foreground: 220 15% 95%;
+
+    --muted: 220 20% 18%;
+    --muted-foreground: 220 10% 60%;
+
+    --accent: 340 82% 65%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 220 15% 95%;
+
+    --border: 220 15% 25%;
+    --input: 220 15% 25%;
+    --ring: 262 83% 58%;
+    --sidebar-background: 220 18% 14%;
+    --sidebar-foreground: 220 15% 95%;
+    --sidebar-primary: 262 83% 58%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 20% 18%;
+    --sidebar-accent-foreground: 220 15% 95%;
+    --sidebar-border: 220 15% 25%;
+    --sidebar-ring: 262 83% 58%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  /* 3D Transform utilities for flashcard flip animation */
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+  
+  .transform-style-preserve-3d {
+    transform-style: preserve-3d;
+  }
+  
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+  
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
+}
