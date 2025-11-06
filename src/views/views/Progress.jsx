@@ -105,7 +105,7 @@ function Progress() {
           </div>
         ) : (
             <div className="flex flex-col gap-8">
-            <div className="grid gap-4 grid-cols-1 md:grid-cols-2 justify-start">
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 justify-start">
               <Card className="group hover:shadow-xl hover:scale-105 transition-all duration-300 border-2 hover:border-primary/50 bg-gradient-to-br from-card to-primary/5 animate-fade-in">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4">
                   <CardTitle className="text-sm font-medium">Total Cards</CardTitle>
