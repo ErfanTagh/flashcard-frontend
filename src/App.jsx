@@ -63,6 +63,7 @@ const AppContent = () => {
           element={<ProtectedRoute component={Flashcard} />}
         />
       </Routes>
+      <Footer />
     </>
   );
 };
@@ -93,8 +94,6 @@ export default function App() {
           </Auth0Provider>
         )}
       </BrowserRouter>
-
-      <Footer />
     </div>
   );
 }
