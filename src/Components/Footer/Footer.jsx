@@ -5,50 +5,50 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="border-t bg-background mt-auto">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+    <footer className="bg-card border-t border-border mt-auto w-full">
+      <div className="container mx-auto max-w-6xl px-4 sm:px-6">
+        {/* Main Footer Content */}
+        <div className="py-12 sm:py-16 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {/* Brand Section */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-6 w-6 text-primary" />
+          <div className="col-span-2 sm:col-span-1">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-primary-foreground" />
+              </div>
               <span className="text-xl font-bold text-foreground">RecallCards</span>
             </div>
-            <p className="text-sm text-muted-foreground max-w-xs">
+            <p className="text-sm text-muted-foreground leading-relaxed">
               Master your learning with interactive flashcards. Build knowledge, track progress, and achieve your goals.
             </p>
           </div>
 
           {/* Quick Links */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">
+          <div>
+            <h3 className="font-semibold text-foreground mb-4">
               Quick Links
             </h3>
             <ul className="space-y-3">
               <li>
                 <Link
                   to="/home"
-                  className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 no-underline"
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
                 >
-                  <Home className="h-4 w-4" />
                   Home
                 </Link>
               </li>
               <li>
                 <Link
                   to="/flashcards"
-                  className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 no-underline"
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
                 >
-                  <BookOpen className="h-4 w-4" />
                   Review Cards
                 </Link>
               </li>
               <li>
                 <Link
                   to="/progress"
-                  className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 no-underline"
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
                 >
-                  <BarChart3 className="h-4 w-4" />
                   Progress
                 </Link>
               </li>
@@ -56,8 +56,8 @@ const Footer = () => {
           </div>
 
           {/* Resources */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">
+          <div>
+            <h3 className="font-semibold text-foreground mb-4">
               Resources
             </h3>
             <ul className="space-y-3">
@@ -66,7 +66,7 @@ const Footer = () => {
                   href="https://recallcards.net"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-muted-foreground hover:text-primary transition-colors no-underline"
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
                 >
                   Website
                 </a>
@@ -76,9 +76,8 @@ const Footer = () => {
                   href="https://github.com/ErfanTagh/flashcard-frontend"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 no-underline"
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
                 >
-                  <Github className="h-4 w-4" />
                   Frontend Repo
                 </a>
               </li>
@@ -87,9 +86,8 @@ const Footer = () => {
                   href="https://github.com/ErfanTagh/flashcard-backend"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 no-underline"
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
                 >
-                  <Github className="h-4 w-4" />
                   Backend Repo
                 </a>
               </li>
@@ -97,8 +95,8 @@ const Footer = () => {
           </div>
 
           {/* Contact */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">
+          <div>
+            <h3 className="font-semibold text-foreground mb-4">
               Contact
             </h3>
             <ul className="space-y-3">
@@ -107,9 +105,8 @@ const Footer = () => {
                   href="https://erfantagh.github.io"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 no-underline"
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
                 >
-                  <Mail className="h-4 w-4" />
                   Get in Touch
                 </a>
               </li>
@@ -118,8 +115,8 @@ const Footer = () => {
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-12 pt-8 border-t border-border">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="py-6 border-t border-border">
+          <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
             <p className="text-sm text-muted-foreground">
               © {currentYear} RecallCards. All rights reserved.
             </p>
@@ -128,7 +125,7 @@ const Footer = () => {
                 href="https://recallcards.net"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm text-muted-foreground hover:text-primary transition-colors no-underline"
+                className="text-sm text-muted-foreground hover:text-primary transition-colors"
               >
                 Privacy Policy
               </a>
@@ -136,7 +133,7 @@ const Footer = () => {
                 href="https://recallcards.net"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm text-muted-foreground hover:text-primary transition-colors no-underline"
+                className="text-sm text-muted-foreground hover:text-primary transition-colors"
               >
                 Terms of Service
               </a>
