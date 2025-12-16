@@ -43,17 +43,17 @@ jobs:
             cd "$BACKEND_DIR"
 
             # Rebuild frontend service
-            sudo docker compose build --no-cache frontend
+            docker compose build --no-cache frontend
 
             # Stop old container and start new one
-            sudo docker compose up -d --force-recreate frontend
+            docker compose up -d --force-recreate frontend
 
             # Verify container is running
-            sudo docker compose ps frontend
+            docker compose ps frontend
 
             # Restart nginx (adjust command based on your nginx setup)
-            if sudo docker ps | grep -q nginx; then
-              sudo docker restart nginx
+            if docker ps | grep -q nginx; then
+              docker restart nginx
             else
               echo "Warning: nginx container not found, skipping restart"
             fi
