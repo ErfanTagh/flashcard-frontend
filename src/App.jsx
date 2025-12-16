@@ -11,23 +11,33 @@ import { Route, BrowserRouter, Routes } from "react-router-dom";
 import {
   Auth0Provider,
   withAuthenticationRequired,
-  useAuth0,
 } from "@auth0/auth0-react";
 import Footer from "./Components/Footer/Footer.jsx";
 import { Toaster } from "@/components/ui/toaster";
+import { DevAuthProvider, withDevAuthenticationRequired } from "./utils/devAuth";
+import { useAuth } from "./hooks/useAuth";
+
+// Check if we're in development mode and should bypass Auth0
+const isDevMode = import.meta.env.DEV && (import.meta.env.VITE_BYPASS_AUTH === 'true' || import.meta.env.MODE === 'development');
 
 const ProtectedRoute = ({ component, ...args }) => {
-  const Component = withAuthenticationRequired(component, args);
+  const Component = isDevMode 
+    ? withDevAuthenticationRequired(component, args)
+    : withAuthenticationRequired(component, args);
   return <Component />;
 };
 
 const AppContent = () => {
-  const { user, logout } = useAuth0();
+  const { user, logout } = useAuth();
 
   const handleLogout = () => {
-    logout({
-      returnTo: window.location.origin,
-    });
+    if (isDevMode) {
+      logout();
+    } else {
+      logout({
+        returnTo: window.location.origin,
+      });
+    }
   };
 
   return (
@@ -58,18 +68,30 @@ const AppContent = () => {
 };
 
 export default function App() {
+  // Show dev mode indicator
+  if (isDevMode) {
+    console.log('🔓 DEV MODE: Auth0 authentication bypassed');
+  }
+
   return (
     <div id="app" className="d-flex flex-column h-100">
       <BrowserRouter>
-        <Auth0Provider
-          domain="dev-43bumhcy.us.auth0.com"
-          clientId="k9q4k2SI9OuxDAh8YY6ykLMnEK3Bq44u"
-          redirectUri={window.location.origin}
-          audience="recallcards"
-        >
-          <AppContent />
-          <Toaster />
-        </Auth0Provider>
+        {isDevMode ? (
+          <DevAuthProvider>
+            <AppContent />
+            <Toaster />
+          </DevAuthProvider>
+        ) : (
+          <Auth0Provider
+            domain="dev-43bumhcy.us.auth0.com"
+            clientId="k9q4k2SI9OuxDAh8YY6ykLMnEK3Bq44u"
+            redirectUri={window.location.origin}
+            audience="recallcards"
+          >
+            <AppContent />
+            <Toaster />
+          </Auth0Provider>
+        )}
       </BrowserRouter>
 
       <Footer />

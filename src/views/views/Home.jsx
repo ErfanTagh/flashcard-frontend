@@ -1,5 +1,5 @@
 import { Navigate, Link } from "react-router-dom";
-import { useAuth0 } from "@auth0/auth0-react";
+import { useAuth } from "@/hooks/useAuth";
 import { Sparkles, Zap, Target, BookOpen, Plus, BarChart3 } from "lucide-react";
 
 
@@ -7,7 +7,7 @@ import { Sparkles, Zap, Target, BookOpen, Plus, BarChart3 } from "lucide-react";
 
 
 const Home = () => {
-  const { isAuthenticated, loginWithRedirect, user } = useAuth0();
+  const { isAuthenticated, loginWithRedirect, user } = useAuth();
 
   if (isAuthenticated) {
     return (

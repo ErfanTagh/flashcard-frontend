@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
-import { useAuth0 } from "@auth0/auth0-react";
+import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,7 +22,7 @@ function Flashcard() {
   const [isInReview, setIsInReview] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editInputs, setEditInputs] = useState({ term: "", definition: "" });
-  const { user } = useAuth0();
+  const { user } = useAuth();
   const { toast } = useToast();
 
   const REVIEW_KEY = "FFFLASHBACKCARDS";

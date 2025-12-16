@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAuth0 } from "@auth0/auth0-react";
+import { useAuth } from "@/hooks/useAuth";
 import { Plus, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 
 function AddFlashcard() {
-  const { user } = useAuth0();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [inputs, setInputs] = useState({ title: "", ans: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -65,15 +65,15 @@ function AddFlashcard() {
             <p className="text-muted-foreground text-lg">Create a new card to expand your learning collection</p>
           </div>
 
-          <Card className="mb-6 border-primary/20 shadow-lg shadow-primary/5">
-            <CardHeader className="bg-gradient-to-br from-primary/5 to-accent/5 border-b border-primary/10">
-              <CardTitle className="flex items-center gap-2 text-primary">New Flashcard</CardTitle>
+          <Card className="mb-6 border-primary/20 shadow-xl shadow-primary/10 overflow-hidden">
+            <CardHeader className="bg-gradient-to-br from-primary/10 to-accent/10 border-b border-primary/10 px-8 py-6">
+              <CardTitle className="text-primary text-xl">New Flashcard</CardTitle>
             </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="title" className="text-sm font-medium flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-primary"></span>
+            <CardContent className="p-8">
+              <form onSubmit={handleSubmit} className="space-y-8">
+                <div className="space-y-3">
+                  <Label htmlFor="title" className="text-sm font-semibold flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-primary"></span>
                     Term *
                   </Label>
                   <Input
@@ -83,15 +83,17 @@ function AddFlashcard() {
                     placeholder="Enter the term or concept"
                     value={inputs.title}
                     onChange={handleChange}
-                    className="w-full border-primary/30 focus:border-primary focus:ring-primary/20"
+                    className="w-full h-12 px-4 border-primary/30 focus:border-primary focus:ring-primary/20 text-base"
                     maxLength={100}
                   />
-                  <p className="text-xs text-muted-foreground">{inputs.title.length}/100 characters</p>
+                  <p className="text-xs text-muted-foreground pl-1">
+                    {inputs.title.length}/100 characters
+                  </p>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="ans" className="text-sm font-medium flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-accent"></span>
+                <div className="space-y-3">
+                  <Label htmlFor="ans" className="text-sm font-semibold flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-accent"></span>
                     Definition *
                   </Label>
                   <Textarea
@@ -100,14 +102,20 @@ function AddFlashcard() {
                     placeholder="Enter the definition or explanation"
                     value={inputs.ans}
                     onChange={handleChange}
-                    className="w-full min-h-[120px] resize-none border-accent/30 focus:border-accent focus:ring-accent/20"
+                    className="w-full min-h-[140px] p-4 resize-none border-accent/30 focus:border-accent focus:ring-accent/20 text-base leading-relaxed"
                     maxLength={500}
                   />
-                  <p className="text-xs text-muted-foreground">{inputs.ans.length}/500 characters</p>
+                  <p className="text-xs text-muted-foreground pl-1">
+                    {inputs.ans.length}/500 characters
+                  </p>
                 </div>
 
-                <div className="flex gap-3 pt-4">
-                  <Button type="submit" disabled={isSubmitting || !inputs.title.trim() || !inputs.ans.trim()} className="flex-1">
+                <div className="flex gap-4 pt-6 border-t border-border/50">
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting || !inputs.title.trim() || !inputs.ans.trim()}
+                    className="flex-1 h-12 text-base font-medium"
+                  >
                     {isSubmitting ? (
                       <>
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2" />
@@ -115,12 +123,18 @@ function AddFlashcard() {
                       </>
                     ) : (
                       <>
-                        <Check className="h-4 w-4 mr-2" />
+                        <Check className="h-5 w-5 mr-2" />
                         Add Card
                       </>
                     )}
                   </Button>
-                  <Button type="button" variant="outline" onClick={handleReset} disabled={isSubmitting}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleReset}
+                    disabled={isSubmitting}
+                    className="h-12 px-6 text-base"
+                  >
                     Reset
                   </Button>
                 </div>

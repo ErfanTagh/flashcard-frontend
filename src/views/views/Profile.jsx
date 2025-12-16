@@ -1,5 +1,6 @@
 import React from "react";
-import { useAuth0, withAuthenticationRequired } from "@auth0/auth0-react";
+import { useAuth } from "@/hooks/useAuth";
+import { withAuthenticationRequired } from "@auth0/auth0-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -7,7 +8,7 @@ import { Mail, User, Calendar, Shield, Globe, Clock, CheckCircle } from "lucide-
 import Loading from "../../Components/auth0components/Loading.jsx";
 
 export const ProfileComponent = () => {
-  const { user } = useAuth0();
+  const { user } = useAuth();
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
