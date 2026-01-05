@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Menu, User, LogOut, FolderOpen } from "lucide-react";
+import { Menu, User, LogOut } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface NavbarProps {
@@ -23,18 +23,6 @@ const ModernNavbar = ({ user, onLogout }: NavbarProps) => {
     return null;
   }
 
-       const NavLinks = () => (
-         <>
-           <Link 
-             to="/collections" 
-             className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-           >
-             <FolderOpen className="h-4 w-4" />
-             Collections
-           </Link>
-         </>
-       );
-
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
@@ -44,11 +32,6 @@ const ModernNavbar = ({ user, onLogout }: NavbarProps) => {
             <div className="h-8 w-8 rounded-md bg-primary"></div>
             <span className="hidden font-bold sm:inline-block">FlashCards</span>
           </Link>
-        </div>
-
-        {/* Desktop Navigation */}
-        <div className="hidden md:flex md:items-center md:space-x-4">
-          <NavLinks />
         </div>
 
         {/* Desktop User Menu */}
@@ -108,10 +91,6 @@ const ModernNavbar = ({ user, onLogout }: NavbarProps) => {
                     </div>
                   </div>
                 )}
-                
-                <div className="flex flex-col space-y-2">
-                  <NavLinks />
-                </div>
                 
                 {user && (
                   <div className="flex flex-col space-y-2 pt-4 border-t">
