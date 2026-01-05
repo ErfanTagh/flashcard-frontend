@@ -1,14 +1,17 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useCollections } from "@/hooks/useCollections";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress as ProgressBar } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
-import { BookOpen, Target, TrendingUp, Calendar } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { BookOpen, Target, TrendingUp, Calendar, FolderOpen } from "lucide-react";
 
 const REVIEW_KEY = "FFFLASHBACKCARDS";
 
 function Progress() {
   const { user, isLoading } = useAuth();
+  const { collections, selectedCollection, setSelectedCollection, loading: collectionsLoading } = useCollections();
   const [stats, setStats] = useState({
     totalCards: 0,
     reviewedCards: 0,
@@ -19,14 +22,14 @@ function Progress() {
 
   useEffect(() => {
     const fetchStats = async () => {
-      if (!user || isLoading) return;
+      if (!user || isLoading || !selectedCollection) return;
 
       try {
         const res = await fetch("/api/words", { mode: "cors" });
         const data = await res.json();
         
-        if (data && data[user.email]) {
-          const cards = data[user.email];
+        if (data && data[user.email] && data[user.email][selectedCollection]) {
+          const cards = data[user.email][selectedCollection];
           const cardEntries = Object.entries(cards);
           
           let totalCards = cardEntries.length;
@@ -67,7 +70,7 @@ function Progress() {
     };
 
     fetchStats();
-  }, [user, isLoading]);
+  }, [user, isLoading, selectedCollection]);
 
   if (isLoading || !user) {
     return null;
@@ -87,7 +90,22 @@ function Progress() {
           <h1 className="text-5xl font-bold mb-3 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
             Your Progress
           </h1>
-          <p className="text-lg text-muted-foreground">Track your learning journey and celebrate your achievements</p>
+          <p className="text-lg text-muted-foreground mb-4">Track your learning journey and celebrate your achievements</p>
+          <div className="flex items-center gap-2">
+            <FolderOpen className="h-4 w-4 text-muted-foreground" />
+            <Select value={selectedCollection} onValueChange={setSelectedCollection} disabled={collectionsLoading}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Select collection" />
+              </SelectTrigger>
+              <SelectContent>
+                {collections.map((collection) => (
+                  <SelectItem key={collection} value={collection}>
+                    {collection}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {loading ? (

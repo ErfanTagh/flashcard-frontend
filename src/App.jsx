@@ -6,8 +6,9 @@ import Home from "./views/views/Home.jsx";
 import ModernNavbar from "./components/ModernNavbar.tsx";
 import Profile from "./views/views/Profile.jsx";
 import Progress from "./views/views/Progress.jsx";
+import Collections from "./views/views/Collections.jsx";
 
-import { Route, BrowserRouter, Routes } from "react-router-dom";
+import { Route, BrowserRouter, Routes, Navigate } from "react-router-dom";
 import {
   Auth0Provider,
   withAuthenticationRequired,
@@ -16,6 +17,7 @@ import Footer from "./Components/Footer/Footer.jsx";
 import { Toaster } from "@/components/ui/toaster";
 import { DevAuthProvider, withDevAuthenticationRequired } from "./utils/devAuth";
 import { useAuth } from "./hooks/useAuth";
+import { CollectionsProvider } from "./hooks/useCollections";
 
 // Check if we're in development mode and should bypass Auth0
 const isDevMode = import.meta.env.DEV && (import.meta.env.VITE_BYPASS_AUTH === 'true' || import.meta.env.MODE === 'development');
@@ -44,7 +46,7 @@ const AppContent = () => {
     <>
       <ModernNavbar user={user} onLogout={handleLogout} />
       <Routes>
-        <Route path="" exact element={<Home />} />
+        <Route path="" element={<Navigate to="/collections" replace />} />
         <Route
           path="profile"
           element={<ProtectedRoute component={Profile} />}
@@ -53,7 +55,7 @@ const AppContent = () => {
           path="progress"
           element={<ProtectedRoute component={Progress} />}
         />
-        <Route path="home" element={<ProtectedRoute component={Home} />} />
+        <Route path="home" element={<Navigate to="/collections" replace />} />
         <Route
           path="addword"
           element={<ProtectedRoute component={AddFlashcard} />}
@@ -61,6 +63,10 @@ const AppContent = () => {
         <Route
           path="flashcards"
           element={<ProtectedRoute component={Flashcard} />}
+        />
+        <Route
+          path="collections"
+          element={<ProtectedRoute component={Collections} />}
         />
       </Routes>
       <Footer />
@@ -79,8 +85,10 @@ export default function App() {
       <BrowserRouter>
         {isDevMode ? (
           <DevAuthProvider>
-            <AppContent />
-            <Toaster />
+            <CollectionsProvider>
+              <AppContent />
+              <Toaster />
+            </CollectionsProvider>
           </DevAuthProvider>
         ) : (
           <Auth0Provider
@@ -89,8 +97,10 @@ export default function App() {
             redirectUri={window.location.origin}
             audience="recallcards"
           >
-            <AppContent />
-            <Toaster />
+            <CollectionsProvider>
+              <AppContent />
+              <Toaster />
+            </CollectionsProvider>
           </Auth0Provider>
         )}
       </BrowserRouter>

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Menu, User, LogOut, Home, BookOpen, Plus } from "lucide-react";
+import { Menu, User, LogOut, FolderOpen } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface NavbarProps {
@@ -23,31 +23,17 @@ const ModernNavbar = ({ user, onLogout }: NavbarProps) => {
     return null;
   }
 
-  const NavLinks = () => (
-    <>
-      <Link 
-        to="/home" 
-        className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-      >
-        <Home className="h-4 w-4" />
-        Home
-      </Link>
-      <Link 
-        to="/flashcards" 
-        className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-      >
-        <BookOpen className="h-4 w-4" />
-        Review Cards
-      </Link>
-      <Link 
-        to="/addword" 
-        className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-      >
-        <Plus className="h-4 w-4" />
-        Add Card
-      </Link>
-    </>
-  );
+       const NavLinks = () => (
+         <>
+           <Link 
+             to="/collections" 
+             className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+           >
+             <FolderOpen className="h-4 w-4" />
+             Collections
+           </Link>
+         </>
+       );
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

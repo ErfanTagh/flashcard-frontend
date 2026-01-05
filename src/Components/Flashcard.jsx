@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useCollections } from "@/hooks/useCollections";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,7 +12,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { RotateCcw, Check, X, MoreHorizontal, Edit, Trash2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RotateCcw, Check, X, MoreHorizontal, Edit, Trash2, FolderOpen } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Input } from "@/components/ui/input";
 
@@ -24,6 +26,7 @@ function Flashcard() {
   const [editInputs, setEditInputs] = useState({ term: "", definition: "" });
   const { user } = useAuth();
   const { toast } = useToast();
+  const { collections, selectedCollection, setSelectedCollection, loading: collectionsLoading } = useCollections();
 
   const REVIEW_KEY = "FFFLASHBACKCARDS";
 
@@ -42,7 +45,8 @@ function Flashcard() {
 
   const fetchData = async () => {
     try {
-      const res = await fetch("/api/words/rand/" + user.email, { mode: "cors" });
+      const collection = selectedCollection || 'Default';
+      const res = await fetch(`/api/words/rand/${user.email}?collection=${encodeURIComponent(collection)}`, { mode: "cors" });
       const data = await res.json();
       setCard(data);
       setIsFlipped(false);
@@ -67,9 +71,11 @@ function Flashcard() {
   };
 
   useEffect(() => {
-    fetchData();
+    if (selectedCollection && !collectionsLoading) {
+      fetchData();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [selectedCollection, collectionsLoading]);
 
   const reviewStatusChanged = async (term, definition) => {
     const requestOptions = {
@@ -80,6 +86,7 @@ function Flashcard() {
         oldword: term,
         word: term,
         ans: definition,
+        collection: selectedCollection || 'Default',
       }),
     };
 
@@ -146,6 +153,7 @@ function Flashcard() {
         oldword: card[0],
         word: editInputs.term,
         ans: editInputs.definition,
+        collection: selectedCollection || 'Default',
       }),
     };
 
@@ -179,7 +187,10 @@ function Flashcard() {
     const requestOptions = {
       method: "DELETE",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify({ token: user.email }),
+      body: JSON.stringify({ 
+        token: user.email,
+        collection: selectedCollection || 'Default'
+      }),
     };
 
     try {
@@ -213,7 +224,22 @@ function Flashcard() {
         <div className="max-w-xl mx-auto">
           <div className="text-center mb-6">
             <h1 className="text-3xl font-bold text-foreground">Review Cards</h1>
-            <p className="text-muted-foreground">Click the card to flip between term and definition.</p>
+            <p className="text-muted-foreground mb-4">Click the card to flip between term and definition.</p>
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <FolderOpen className="h-4 w-4 text-muted-foreground" />
+              <Select value={selectedCollection} onValueChange={setSelectedCollection} disabled={collectionsLoading}>
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder="Select collection" />
+                </SelectTrigger>
+                <SelectContent>
+                  {collections.map((collection) => (
+                    <SelectItem key={collection} value={collection}>
+                      {collection}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div className="perspective-1000 relative">
@@ -317,24 +343,27 @@ function Flashcard() {
           {/* Action Buttons */}
           {!editMode && (
             <div className="mt-6 flex flex-col gap-3">
-              <div className="flex justify-center gap-3">
-                <Button
-                  onClick={handleKnown}
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-                  size="lg"
-                >
-                  <Check className="h-5 w-5 mr-2" />
-                  I Know This
-                </Button>
-                <Button
-                  onClick={handleUnknown}
-                  className="flex-1 bg-red-600 hover:bg-red-700 text-white"
-                  size="lg"
-                >
-                  <X className="h-5 w-5 mr-2" />
-                  Need Review
-                </Button>
-              </div>
+              {/* Only show "I Know This" and "Need Review" when card is flipped to definition side */}
+              {isFlipped && (
+                <div className="flex justify-center gap-3">
+                  <Button
+                    onClick={handleUnknown}
+                    className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                    size="lg"
+                  >
+                    <X className="h-5 w-5 mr-2" />
+                    Need Review
+                  </Button>
+                  <Button
+                    onClick={handleKnown}
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                    size="lg"
+                  >
+                    <Check className="h-5 w-5 mr-2" />
+                    I Know This
+                  </Button>
+                </div>
+              )}
               <div className="flex justify-center gap-3">
                 <Button onClick={fetchData} variant="outline" className="w-full">
                   Next Card

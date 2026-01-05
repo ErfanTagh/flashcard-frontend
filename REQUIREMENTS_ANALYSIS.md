@@ -1,7 +1,7 @@
 # RecallCards - Anforderungsanalyse
 
 **Version:** 1.0  
-**Datum:** Dezember 2024  
+**Datum:** Dezember 2025  
 **Projekt:** RecallCards - Moderne Lernkarten-Plattform  
 **Website:** https://recallcards.net
 
@@ -65,7 +65,7 @@ Die Anwendung ist kostenlos und für Studenten sowie Berufstätige zugänglich. 
 Nutzer müssen sich über Auth0 anmelden können. Die Session bleibt über Seitenaktualisierungen hinweg bestehen. Nicht authentifizierte Nutzer werden zur Anmeldung weitergeleitet.
 
 **FR-AUTH-002: Entwicklungsmodus**
-Für lokale Entwicklung kann Auth0 umgangen werden, wenn `VITE_BYPASS_AUTH=true` gesetzt ist. Ein Mock-User wird für Tests bereitgestellt.
+Für lokale Entwicklung kann Auth0 umgangen werden, wenn eine entsprechende Umgebungsvariable gesetzt ist. Ein Mock-User wird für Tests bereitgestellt.
 
 **FR-AUTH-003: Geschützte Routen**
 Folgende Routen erfordern Authentifizierung: `/home`, `/addword`, `/flashcards`, `/progress`, `/profile`.
@@ -85,7 +85,7 @@ Nutzer können bestehende Karten bearbeiten. Es gibt einen Bearbeitungsmodus mit
 Karten können über ein Dropdown-Menü gelöscht werden. Vor dem Löschen erfolgt eine Bestätigung.
 
 **FR-FLASH-005: Review-Status**
-Nutzer können Karten als "Ich weiß das" (gemeistert) oder "Brauche Wiederholung" markieren. Der Status wird durch ein Suffix ("FFFLASHBACKCARDS") gespeichert und bleibt über Sessions hinweg erhalten.
+Nutzer können Karten als "Ich weiß das" (gemeistert) oder "Brauche Wiederholung" markieren. Der Status wird persistent gespeichert und bleibt über Sessions hinweg erhalten.
 
 **FR-FLASH-006: Flip-Animation**
 Karten haben eine 3D-Flip-Animation, um die Definition zu zeigen. Die Animation ist flüssig und bietet visuelles Feedback.
@@ -146,14 +146,21 @@ Diese Technologien wurden wegen ihrer modernen Fähigkeiten, Community-Unterstü
 - MongoDB als einzige Datenbank
 - Nginx als Reverse Proxy und für SSL-Terminierung
 
+**Backend-Implementierung:**
+
+- Flask-basierte REST API mit JWT-Authentifizierung über Auth0
+- PyMongo für MongoDB-Integration mit automatischer Verbindungsverwaltung
+- CORS-Unterstützung für Frontend-Kommunikation
+- Fehlerbehandlung mit strukturierten JSON-Responses
+- Umgebungsvariablen für flexible Konfiguration (MongoDB-Host, Port, Credentials)
+
 ### Betriebliche Einschränkungen
 
 **Deployment:**
 
-- Server: `65.109.168.192`
-- Benutzer: `work`
-- Verzeichnisse: `~/website/flashcard-frontend` und `~/website/flashcard-backend`
-- Externes Docker-Netzwerk: `web`
+- Deployment erfolgt auf einem dedizierten Server
+- Frontend und Backend werden in separaten Verzeichnissen deployt
+- Externes Docker-Netzwerk wird für Service-Kommunikation verwendet
 
 **Wartung:**
 
@@ -200,7 +207,7 @@ System erholt sich elegant von Fehlern. Fehler werden für Debugging geloggt. Nu
 Sichere Authentifizierung über Auth0 mit JWT-Tokens. Tokens werden bei jeder Anfrage validiert. Abgelaufene Tokens werden abgelehnt.
 
 **NFR-SEC-002: Datenisolation**
-Nutzerdaten sind isoliert - Nutzer können nur auf ihre eigenen Karten zugreifen. User-Email wird zur Datenfilterung verwendet. API validiert Nutzereigentum.
+Nutzerdaten sind isoliert - Nutzer können nur auf ihre eigenen Karten zugreifen. Ein eindeutiger Benutzer-Identifier wird zur Datenfilterung verwendet. API validiert Nutzereigentum.
 
 **NFR-SEC-003: HTTPS-Verschlüsselung**
 Alle Kommunikation nutzt HTTPS mit gültigen SSL-Zertifikaten. HTTP-Anfragen werden zu HTTPS umgeleitet. TLS 1.2+ wird verwendet.
@@ -262,7 +269,7 @@ Footer-Elemente stapelten sich auf Mobile nicht korrekt. Gelöst durch verbesser
 Projekt nutzt sowohl PrimeReact als auch shadcn/ui Komponenten. Empfehlung: Vollständige Migration zu shadcn/ui für Konsistenz.
 
 **DEBT-002: Review-Status-Implementierung**
-Review-Status wird über String-Suffix ("FFFLASHBACKCARDS") verwaltet. Empfehlung: Dediziertes Review-Status-Feld im Datenbankschema erwägen.
+Review-Status wird aktuell über einen String-Suffix verwaltet. Empfehlung: Dediziertes Review-Status-Feld im Datenbankschema erwägen.
 
 **DEBT-003: Fehlerbehandlung**
 Einige API-Endpunkte haben unzureichende Fehlerbehandlung. Empfehlung: Konsistente Fehlerbehandlung über alle Endpunkte implementieren.
@@ -325,12 +332,16 @@ Alle 16 funktionalen Anforderungen sind implementiert:
 
 ### API-Endpunkte
 
+**Backend REST API (Flask):**
+
 - `GET /api/words` - Alle Lernkarten für alle Nutzer
-- `GET /api/words/rand/<email>` - Zufällige Karte für Nutzer
-- `POST /api/sendwords` - Neue Karte erstellen
-- `POST /api/editword` - Karte bearbeiten
-- `DELETE /api/delword/<word>` - Karte löschen
-- `POST /api/token` - JWT-Token validieren (Auth erforderlich)
+- `GET /api/words/rand/<user_identifier>` - Zufällige Karte für Nutzer
+- `POST /api/sendwords` - Neue Karte erstellen (Body: token, word, ans)
+- `POST /api/editword` - Karte bearbeiten (Body: token, oldword, word, ans)
+- `DELETE /api/delword/<word>` - Karte löschen (Body: token)
+- `POST /api/token` - JWT-Token validieren (Auth0)
+
+**Authentifizierung:** Alle Endpunkte erfordern JWT-Token im Authorization-Header (Bearer Token). Token-Validierung erfolgt über Auth0 mit RS256-Algorithmus.
 
 ### Datenbankschema
 
@@ -339,10 +350,10 @@ Alle 16 funktionalen Anforderungen sind implementiert:
 ```json
 {
   "_id": ObjectId,
-  "user_email": "user@example.com",
+  "user_identifier": "user@example.com",
   "cards": {
     "begriff1": "definition1",
-    "begriff2": "definition2FFFLASHBACKCARDS"
+    "begriff2": "definition2[status_marker]"
   },
   "created_at": ISODate,
   "updated_at": ISODate
@@ -354,6 +365,10 @@ Alle 16 funktionalen Anforderungen sind implementiert:
 **Frontend:** React 18.2, Vite 5.4, Tailwind CSS 3.4, shadcn/ui, React Router DOM 6.3, Auth0 React SDK 1.11.0, Lucide React
 
 **Backend:** Flask 2.2.2, Python 3.9+, PyMongo 4.6.1, python-jose 3.3.0, Flask-CORS 3.0.10
+
+- **Backend-Struktur:** Monolithische Flask-Anwendung mit modularen Endpunkten
+- **Datenbankverbindung:** PyMongo Client mit Umgebungsvariablen-Konfiguration
+- **Authentifizierung:** JWT-Validierung über Auth0 mit RS256, Error-Handling für Auth-Fehler
 
 **Infrastruktur:** Docker & Docker Compose, Nginx, MongoDB 7.0, GitHub Actions
 
