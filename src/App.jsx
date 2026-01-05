@@ -10,7 +10,6 @@ import Collections from "./views/views/Collections.jsx";
 
 import { Route, BrowserRouter, Routes, Navigate } from "react-router-dom";
 import {
-  Auth0Provider,
   withAuthenticationRequired,
 } from "@auth0/auth0-react";
 import Footer from "./Components/Footer/Footer.jsx";
@@ -91,17 +90,10 @@ export default function App() {
             </CollectionsProvider>
           </DevAuthProvider>
         ) : (
-          <Auth0Provider
-            domain="dev-43bumhcy.us.auth0.com"
-            clientId="k9q4k2SI9OuxDAh8YY6ykLMnEK3Bq44u"
-            redirectUri={window.location.origin}
-            audience="recallcards"
-          >
-            <CollectionsProvider>
-              <AppContent />
-              <Toaster />
-            </CollectionsProvider>
-          </Auth0Provider>
+          <CollectionsProvider>
+            <AppContent />
+            <Toaster />
+          </CollectionsProvider>
         )}
       </BrowserRouter>
     </div>
