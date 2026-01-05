@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { RotateCcw, Check, X, MoreHorizontal, Edit, Trash2, FolderOpen } from "lucide-react";
+import { RotateCcw, Check, X, MoreHorizontal, Edit, Trash2, FolderOpen, ChevronLeft, ChevronRight } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Input } from "@/components/ui/input";
 
@@ -24,6 +24,8 @@ function Flashcard() {
   const [isInReview, setIsInReview] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editInputs, setEditInputs] = useState({ term: "", definition: "" });
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [totalCards, setTotalCards] = useState(0);
   const { user } = useAuth();
   const { toast } = useToast();
   const { collections, selectedCollection, setSelectedCollection, loading: collectionsLoading } = useCollections();
@@ -43,14 +45,15 @@ function Flashcard() {
     }
   };
 
-  const fetchData = async () => {
+  const fetchData = async (index = 0) => {
     try {
       const collection = selectedCollection || 'Default';
-      const res = await fetch(`/api/words/rand/${user.email}?collection=${encodeURIComponent(collection)}`, { mode: "cors" });
+      const res = await fetch(`/api/words/rand/${user.email}?collection=${encodeURIComponent(collection)}&index=${index}`, { mode: "cors" });
       const data = await res.json();
       setCard(data);
       setIsFlipped(false);
       setEditMode(false);
+      setCurrentIndex(index);
       
       // Check if card is in review state
       if (data[1] && data[1].substring(data[1].length - 16) === REVIEW_KEY) {
@@ -70,9 +73,45 @@ function Flashcard() {
     }
   };
 
+  // Fetch total card count when collection changes
+  useEffect(() => {
+    const fetchCardCount = async () => {
+      if (!user?.email || !selectedCollection) return;
+      try {
+        const res = await fetch(`/api/collections/${user.email}/stats`, { mode: "cors" });
+        const data = await res.json();
+        if (data.stats && data.stats[selectedCollection] !== undefined) {
+          setTotalCards(data.stats[selectedCollection]);
+        }
+      } catch (e) {
+        console.error('Error fetching card count:', e);
+      }
+    };
+    fetchCardCount();
+  }, [selectedCollection, user]);
+
+  const handleNextCard = () => {
+    if (currentIndex < totalCards - 1) {
+      fetchData(currentIndex + 1);
+    } else {
+      // Loop back to first card
+      fetchData(0);
+    }
+  };
+
+  const handlePreviousCard = () => {
+    if (currentIndex > 0) {
+      fetchData(currentIndex - 1);
+    } else {
+      // Loop to last card
+      fetchData(totalCards - 1);
+    }
+  };
+
   useEffect(() => {
     if (selectedCollection && !collectionsLoading) {
-      fetchData();
+      setCurrentIndex(0); // Reset to first card when collection changes
+      fetchData(0);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCollection, collectionsLoading]);
@@ -115,7 +154,7 @@ function Flashcard() {
         });
       }
     }
-    fetchData();
+    handleNextCard();
   };
 
   const handleUnknown = async () => {
@@ -131,7 +170,7 @@ function Flashcard() {
         });
       }
     }
-    fetchData();
+    handleNextCard();
   };
 
   const handleEdit = () => {
@@ -166,7 +205,7 @@ function Flashcard() {
           description: "Your flashcard has been updated successfully.",
         });
         setEditMode(false);
-        fetchData();
+        fetchData(currentIndex);
       } else {
         toast({
           title: "Error",
@@ -201,15 +240,28 @@ function Flashcard() {
           title: "Card Deleted",
           description: "Your flashcard has been deleted successfully.",
         });
-        fetchData();
+        
+        // Update total cards count
+        const newTotal = Math.max(0, totalCards - 1);
+        setTotalCards(newTotal);
+        
+        // After deletion, adjust index and fetch next card
+        if (newTotal === 0) {
+          setCard(["You Don't Have Anything to Memorize ", "Please Add Cards!"]);
+        } else if (currentIndex >= newTotal && currentIndex > 0) {
+          fetchData(currentIndex - 1);
+        } else {
+          fetchData(currentIndex);
+        }
       } else {
         toast({
           title: "Error",
-          description: "Failed to delete card. Please try again.",
+          description: data.error || "Failed to delete card. Please try again.",
           variant: "destructive",
         });
       }
     } catch (error) {
+      console.error('Error deleting card:', error);
       toast({
         title: "Error",
         description: "Failed to delete card. Please try again.",
@@ -221,7 +273,7 @@ function Flashcard() {
   return (
     <div className="min-h-screen bg-background">
       <main className="container py-8 px-4">
-        <div className="max-w-xl mx-auto">
+        <div className="max-w-2xl mx-auto">
           <div className="text-center mb-6">
             <h1 className="text-3xl font-bold text-foreground">Review Cards</h1>
             <p className="text-muted-foreground mb-4">Click the card to flip between term and definition.</p>
@@ -278,7 +330,7 @@ function Flashcard() {
             )}
 
             <div
-              className={`relative w-full h-64 transition-transform duration-700 transform-style-preserve-3d ${
+              className={`relative w-full h-96 transition-transform duration-700 transform-style-preserve-3d ${
                 editMode ? "" : "cursor-pointer"
               } ${isFlipped ? "rotate-y-180" : ""}`}
               onClick={handleFlip}
@@ -302,7 +354,7 @@ function Flashcard() {
               </Card>
 
               {/* Back of card */}
-              <Card className="absolute inset-0 w-full h-full backface-hidden rotate-y-180 bg-muted/30 border-2 border-muted-foreground/20">
+              <Card className="absolute inset-0 w-full h-full backface-hidden rotate-y-180 bg-card border-2 hover:border-muted-foreground/20 transition-colors">
                 <CardContent className="flex flex-col items-center justify-center h-full p-6 text-center">
                   {editMode ? (
                     <div className="w-full space-y-4" onClick={(e) => e.stopPropagation()}>
@@ -364,10 +416,22 @@ function Flashcard() {
                   </Button>
                 </div>
               )}
-              <div className="flex justify-center gap-3">
-                <Button onClick={fetchData} variant="outline" className="w-full">
-                  Next Card
-                </Button>
+              <div className="space-y-3">
+                <div className="flex justify-center gap-3">
+                  <Button onClick={handlePreviousCard} variant="outline" disabled={totalCards === 0}>
+                    <ChevronLeft className="h-4 w-4 mr-1" />
+                    Previous
+                  </Button>
+                  <Button onClick={handleNextCard} variant="outline" className="flex-1" disabled={totalCards === 0}>
+                    Next Card
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </div>
+                {totalCards > 0 && (
+                  <p className="text-center text-sm text-muted-foreground">
+                    Card {currentIndex + 1} of {totalCards}
+                  </p>
+                )}
                 <Button variant="outline" onClick={handleFlip} className="w-full">
                   {isFlipped ? "Show Term" : "Show Definition"}
                 </Button>

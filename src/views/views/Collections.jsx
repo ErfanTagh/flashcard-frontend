@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FolderOpen, Trash2, Edit2, Star, StarOff, Plus, BookOpen, Check, Play } from "lucide-react";
+import { FolderOpen, Trash2, Edit2, Star, StarOff, Plus, BookOpen, Check, Play, GraduationCap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -46,6 +46,7 @@ function Collections() {
   const [newCollectionNameInput, setNewCollectionNameInput] = useState("");
   const [isCreatingCollection, setIsCreatingCollection] = useState(false);
   const [showAddCardDialog, setShowAddCardDialog] = useState(false);
+  const [shouldKeepDialogOpen, setShouldKeepDialogOpen] = useState(false);
   const [selectedCollectionForCard, setSelectedCollectionForCard] = useState(null);
   const [newCardInputs, setNewCardInputs] = useState({ term: "", definition: "" });
   const [isAddingCard, setIsAddingCard] = useState(false);
@@ -216,11 +217,11 @@ function Collections() {
       if (data.status === 200) {
         toast({ title: "Card Added Successfully!", description: `"${newCardInputs.term.trim()}" has been added to ${selectedCollectionForCard}.` });
         setNewCardInputs({ term: "", definition: "" });
-        setShowAddCardDialog(false);
-        setSelectedCollectionForCard(null);
+        setShouldKeepDialogOpen(true); // Flag to keep dialog open
         // Refresh stats after a short delay to ensure backend has processed the request
         setTimeout(() => {
           fetchStats();
+          setShouldKeepDialogOpen(false); // Reset flag after stats update
         }, 300);
       } else {
         toast({ title: "Error", description: "Failed to add the card.", variant: "destructive" });
@@ -235,6 +236,7 @@ function Collections() {
 
   const handleOpenAddCardDialog = (collectionName) => {
     setSelectedCollectionForCard(collectionName);
+    setShouldKeepDialogOpen(false); // Reset flag when opening
     setShowAddCardDialog(true);
   };
 
@@ -309,6 +311,15 @@ function Collections() {
                     >
                       <Play className="h-4 w-4 mr-2" />
                       Review Cards
+                    </Button>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={() => navigate(`/quiz?collection=${encodeURIComponent(collection)}`)}
+                      className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
+                    >
+                      <GraduationCap className="h-4 w-4 mr-2" />
+                      Quiz
                     </Button>
                     <Button
                       variant="outline"
@@ -450,7 +461,19 @@ function Collections() {
       </Dialog>
 
       {/* Add Card Dialog */}
-      <Dialog open={showAddCardDialog} onOpenChange={setShowAddCardDialog}>
+      <Dialog 
+        open={showAddCardDialog} 
+        onOpenChange={(open) => {
+          // Only close if we're not in the middle of keeping it open
+          if (!open && !shouldKeepDialogOpen) {
+            setShowAddCardDialog(false);
+            setNewCardInputs({ term: "", definition: "" });
+            setSelectedCollectionForCard(null);
+          } else if (open) {
+            setShowAddCardDialog(true);
+          }
+        }}
+      >
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>Add New Card to "{selectedCollectionForCard}"</DialogTitle>
@@ -507,7 +530,11 @@ function Collections() {
             </Button>
             <Button
               type="button"
-              onClick={handleAddCard}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleAddCard();
+              }}
               disabled={isAddingCard || !newCardInputs.term.trim() || !newCardInputs.definition.trim()}
             >
               {isAddingCard ? (

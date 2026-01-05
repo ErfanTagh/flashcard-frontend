@@ -28,9 +28,15 @@ const ModernNavbar = ({ user, onLogout }: NavbarProps) => {
       <div className="container flex h-16 items-center justify-between">
         {/* Logo */}
         <div className="flex items-center">
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="h-8 w-8 rounded-md bg-primary"></div>
-            <span className="hidden font-bold sm:inline-block">FlashCards</span>
+          <Link to="/" className="flex items-center space-x-2 no-underline hover:opacity-80 transition-opacity">
+            <img 
+              src="/recallcards-logo.svg" 
+              alt="RecallCards Logo" 
+              className="h-8 w-8 flex-shrink-0"
+              width="32"
+              height="32"
+            />
+            <span className="hidden font-bold sm:inline-block text-foreground">RecallCards</span>
           </Link>
         </div>
 

@@ -25,17 +25,24 @@ function Progress() {
       if (!user || isLoading || !selectedCollection) return;
 
       try {
-        const res = await fetch("/api/words", { mode: "cors" });
-        const data = await res.json();
+        // Use the stats endpoint which is more efficient
+        const res = await fetch(`/api/collections/${user.email}/stats`, { mode: "cors" });
+        const statsData = await res.json();
         
-        if (data && data[user.email] && data[user.email][selectedCollection]) {
-          const cards = data[user.email][selectedCollection];
+        // Get all cards for the selected collection to check review status
+        const wordsRes = await fetch("/api/words", { mode: "cors" });
+        const wordsData = await wordsRes.json();
+        
+        let totalCards = 0;
+        let reviewedCards = 0;
+        let masteredCards = 0;
+        let learningCards = 0;
+        
+        if (wordsData && wordsData[user.email] && wordsData[user.email][selectedCollection]) {
+          const cards = wordsData[user.email][selectedCollection];
           const cardEntries = Object.entries(cards);
           
-          let totalCards = cardEntries.length;
-          let reviewedCards = 0;
-          let masteredCards = 0;
-          let learningCards = 0;
+          totalCards = cardEntries.length;
           
           cardEntries.forEach(([term, definition]) => {
             if (definition && typeof definition === 'string' && definition.substring(definition.length - 16) === REVIEW_KEY) {
@@ -47,23 +54,25 @@ function Progress() {
               masteredCards++;
             }
           });
-          
-          setStats({
-            totalCards,
-            reviewedCards,
-            masteredCards,
-            learningCards,
-          });
-        } else {
-          setStats({
-            totalCards: 0,
-            reviewedCards: 0,
-            masteredCards: 0,
-            learningCards: 0,
-          });
+        } else if (statsData && statsData.stats && statsData.stats[selectedCollection] !== undefined) {
+          // Fallback: use stats endpoint if words endpoint doesn't have the data
+          totalCards = statsData.stats[selectedCollection] || 0;
         }
+        
+        setStats({
+          totalCards,
+          reviewedCards,
+          masteredCards,
+          learningCards,
+        });
       } catch (error) {
         console.error("Error fetching stats:", error);
+        setStats({
+          totalCards: 0,
+          reviewedCards: 0,
+          masteredCards: 0,
+          learningCards: 0,
+        });
       } finally {
         setLoading(false);
       }

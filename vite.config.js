@@ -11,8 +11,8 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: 'dist',
-    assetsDir: 'assets',
+    outDir: "dist",
+    assetsDir: "assets",
     sourcemap: false,
     rollupOptions: {
       output: {
@@ -21,11 +21,18 @@ export default defineConfig({
     },
   },
   server: {
-    host: '0.0.0.0',
+    host: "0.0.0.0",
     port: 3000,
+    hmr: {
+      host: "localhost",
+      port: 3000,
+    },
+    watch: {
+      usePolling: true,
+    },
     proxy: {
       "/api": {
-        target: "http://127.0.0.1:5000",
+        target: "http://backend:5000",
         changeOrigin: true,
         secure: false,
       },

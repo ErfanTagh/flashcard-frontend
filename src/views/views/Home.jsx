@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { Sparkles, Zap, Target, BookOpen, Plus, BarChart3, ArrowRight, CheckCircle2, Star } from "lucide-react";
+import { Sparkles, Zap, Target, BookOpen, BarChart3, ArrowRight, CheckCircle2, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Home = () => {
@@ -24,10 +24,10 @@ const Home = () => {
         </div>
 
         <main className="container py-12 px-4">
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2">
             <Link 
               to="/collections" 
-              className="rounded-lg border bg-card text-card-foreground shadow-sm hover:shadow-xl hover:border-primary/50 transition-all duration-300 hover:-translate-y-1 group"
+              className="rounded-lg border bg-card text-card-foreground shadow-sm hover:shadow-xl hover:border-primary/50 transition-all duration-300 hover:-translate-y-1 group no-underline"
             >
               <div className="p-6">
                 <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
@@ -44,44 +44,8 @@ const Home = () => {
             </Link>
 
             <Link 
-              to="/flashcards" 
-              className="rounded-lg border bg-card text-card-foreground shadow-sm hover:shadow-xl hover:border-primary/50 transition-all duration-300 hover:-translate-y-1 group"
-            >
-              <div className="p-6">
-                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                  <BookOpen className="h-7 w-7 text-primary" />
-                </div>
-                <h3 className="flex items-center gap-2 text-2xl font-semibold leading-none tracking-tight mb-2 text-foreground">
-                  Review Cards
-                </h3>
-                <p className="text-sm text-muted-foreground mb-4">Practice with your existing flashcards and test your knowledge</p>
-                <div className="flex items-center text-primary font-medium text-sm group-hover:gap-2 transition-all">
-                  Start Reviewing <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
-                </div>
-              </div>
-            </Link>
-
-            <Link 
-              to="/addword" 
-              className="rounded-lg border bg-card text-card-foreground shadow-sm hover:shadow-xl hover:border-primary/50 transition-all duration-300 hover:-translate-y-1 group"
-            >
-              <div className="p-6">
-                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                  <Plus className="h-7 w-7 text-primary" />
-                </div>
-                <h3 className="flex items-center gap-2 text-2xl font-semibold leading-none tracking-tight mb-2 text-foreground">
-                  Add New Card
-                </h3>
-                <p className="text-sm text-muted-foreground mb-4">Create new flashcards to expand your learning collection</p>
-                <div className="flex items-center text-primary font-medium text-sm group-hover:gap-2 transition-all">
-                  Add Card <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
-                </div>
-              </div>
-            </Link>
-
-            <Link 
               to="/progress" 
-              className="rounded-lg border bg-card text-card-foreground shadow-sm hover:shadow-xl hover:border-primary/50 transition-all duration-300 hover:-translate-y-1 group md:col-span-2 lg:col-span-1"
+              className="rounded-lg border bg-card text-card-foreground shadow-sm hover:shadow-xl hover:border-primary/50 transition-all duration-300 hover:-translate-y-1 group no-underline"
             >
               <div className="p-6">
                 <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">

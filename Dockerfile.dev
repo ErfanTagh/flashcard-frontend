@@ -8,9 +8,16 @@ COPY package*.json ./
 # Install dependencies
 RUN npm install
 
+# Copy .env files if they exist
+COPY .env* ./
+
+# Accept build args for environment variables
+ARG VITE_AUTH0_DOMAIN
+ARG VITE_AUTH0_CLIENT_ID
+ARG VITE_AUTH0_AUDIENCE
+
 # Expose Vite dev server port
 EXPOSE 3000
 
 # Start Vite dev server
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
-
+CMD ["npm", "run", "dev"]

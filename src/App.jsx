@@ -7,6 +7,7 @@ import ModernNavbar from "./components/ModernNavbar.tsx";
 import Profile from "./views/views/Profile.jsx";
 import Progress from "./views/views/Progress.jsx";
 import Collections from "./views/views/Collections.jsx";
+import Quiz from "./views/views/Quiz.jsx";
 
 import { Route, BrowserRouter, Routes, Navigate } from "react-router-dom";
 import {
@@ -63,11 +64,15 @@ const AppContent = () => {
           path="flashcards"
           element={<ProtectedRoute component={Flashcard} />}
         />
-        <Route
-          path="collections"
-          element={<ProtectedRoute component={Collections} />}
-        />
-      </Routes>
+                <Route
+                  path="collections"
+                  element={<ProtectedRoute component={Collections} />}
+                />
+                <Route
+                  path="quiz"
+                  element={<ProtectedRoute component={Quiz} />}
+                />
+              </Routes>
       <Footer />
     </>
   );
