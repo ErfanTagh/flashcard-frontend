@@ -38,10 +38,10 @@ ReactDOM.createRoot(rootElement).render(
     <Auth0Provider
       domain={domain}
       clientId={clientId}
-      authorizationParams={{
-        redirect_uri: window.location.origin,
-        audience: audience,
-      }}
+      redirectUri={window.location.origin}
+      audience={audience}
+      useRefreshTokens={true}
+      cacheLocation="localstorage"
     >
       <App className="mainApp" />
     </Auth0Provider>
