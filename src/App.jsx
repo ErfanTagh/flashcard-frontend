@@ -46,7 +46,8 @@ const AppContent = () => {
     <>
       <ModernNavbar user={user} onLogout={handleLogout} />
       <Routes>
-        <Route path="" element={<Navigate to="/collections" replace />} />
+        <Route path="" element={<Home />} />
+        <Route path="home" element={<Home />} />
         <Route
           path="profile"
           element={<ProtectedRoute component={Profile} />}
@@ -55,7 +56,6 @@ const AppContent = () => {
           path="progress"
           element={<ProtectedRoute component={Progress} />}
         />
-        <Route path="home" element={<Navigate to="/collections" replace />} />
         <Route
           path="addword"
           element={<ProtectedRoute component={AddFlashcard} />}
