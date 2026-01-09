@@ -28,17 +28,28 @@ if (!domain.includes('.auth0.com') && !domain.includes('.us.auth0.com') && !doma
   console.warn("Auth0 domain format might be incorrect. Expected format: your-domain.auth0.com");
 }
 
+// Normalize origin to handle both www and non-www versions
+const normalizeOrigin = (origin) => {
+  // If origin includes www, remove it to ensure consistency with Auth0 callback URLs
+  if (origin.includes('www.')) {
+    return origin.replace('www.', '');
+  }
+  return origin;
+};
+
 const rootElement = document.getElementById("root");
 if (!rootElement) {
   throw new Error("Root element not found");
 }
+
+const normalizedOrigin = normalizeOrigin(window.location.origin);
 
 ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
     <Auth0Provider
       domain={domain}
       clientId={clientId}
-      redirectUri={window.location.origin}
+      redirectUri={normalizedOrigin}
       audience={audience}
       useRefreshTokens={true}
       cacheLocation="localstorage"

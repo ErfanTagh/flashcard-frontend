@@ -32,12 +32,20 @@ const ProtectedRoute = ({ component, ...args }) => {
 const AppContent = () => {
   const { user, logout } = useAuth();
 
+  // Normalize origin to handle both www and non-www versions
+  const normalizeOrigin = (origin) => {
+    if (origin.includes('www.')) {
+      return origin.replace('www.', '');
+    }
+    return origin;
+  };
+
   const handleLogout = () => {
     if (isDevMode) {
       logout();
     } else {
       logout({
-        returnTo: window.location.origin,
+        returnTo: normalizeOrigin(window.location.origin),
       });
     }
   };
@@ -46,8 +54,8 @@ const AppContent = () => {
     <>
       <ModernNavbar user={user} onLogout={handleLogout} />
       <Routes>
-        <Route path="" element={<Home />} />
-        <Route path="home" element={<Home />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/home" element={<Home />} />
         <Route
           path="profile"
           element={<ProtectedRoute component={Profile} />}

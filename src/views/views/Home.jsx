@@ -119,6 +119,12 @@ const Home = () => {
               <Button
                 size="lg"
                 variant="outline"
+                onClick={() => {
+                  const featuresSection = document.getElementById('features-section');
+                  if (featuresSection) {
+                    featuresSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }
+                }}
                 className="text-lg px-8 py-6 h-auto border-2 hover:bg-accent/10 hover:border-accent transition-all"
               >
                 Learn More
@@ -127,7 +133,7 @@ const Home = () => {
           </div>
 
           {/* Features Grid */}
-          <div className="grid md:grid-cols-3 gap-6 md:gap-8 w-full mb-16">
+          <div id="features-section" className="grid md:grid-cols-3 gap-6 md:gap-8 w-full mb-16">
             <div className="rounded-xl border-2 bg-card/50 backdrop-blur-sm text-card-foreground shadow-lg hover:shadow-2xl hover:border-primary/50 transition-all duration-300 hover:-translate-y-2 group">
               <div className="p-8">
                 <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">

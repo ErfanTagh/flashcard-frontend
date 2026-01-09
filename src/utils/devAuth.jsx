@@ -1,4 +1,4 @@
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 // Mock user for development
 const mockUser = {
@@ -13,17 +13,18 @@ const mockUser = {
   updated_at: new Date().toISOString(),
 };
 
+const DEV_AUTH_KEY = 'dev_auth_authenticated';
+
 // Mock Auth0 Context for development
 const DevAuthContext = createContext({
-  user: mockUser,
-  isAuthenticated: true,
+  user: null,
+  isAuthenticated: false,
   isLoading: false,
   loginWithRedirect: () => {
-    console.log('[DEV MODE] loginWithRedirect called - already authenticated');
+    console.log('[DEV MODE] loginWithRedirect called');
   },
   logout: () => {
     console.log('[DEV MODE] logout called');
-    window.location.reload();
   },
   getAccessTokenSilently: async () => {
     console.log('[DEV MODE] getAccessTokenSilently called');
@@ -39,17 +40,42 @@ export const useDevAuth = () => useContext(DevAuthContext);
 
 // Mock Auth0 Provider for development
 export const DevAuthProvider = ({ children }) => {
-  const value = {
-    user: mockUser,
-    isAuthenticated: true,
-    isLoading: false,
-    loginWithRedirect: () => {
-      console.log('[DEV MODE] loginWithRedirect called - already authenticated');
-    },
-    logout: () => {
-      console.log('[DEV MODE] logout called');
+  // Initialize auth state from localStorage or default to false
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    const stored = localStorage.getItem(DEV_AUTH_KEY);
+    return stored === 'true';
+  });
+  const [isLoading, setIsLoading] = useState(false);
+
+  const loginWithRedirect = () => {
+    console.log('[DEV MODE] loginWithRedirect called');
+    setIsLoading(true);
+    // Simulate login redirect delay
+    setTimeout(() => {
+      setIsAuthenticated(true);
+      localStorage.setItem(DEV_AUTH_KEY, 'true');
+      setIsLoading(false);
+    }, 100);
+  };
+
+  const logout = (options = {}) => {
+    console.log('[DEV MODE] logout called');
+    setIsAuthenticated(false);
+    localStorage.setItem(DEV_AUTH_KEY, 'false');
+    // If returnTo is specified, navigate there, otherwise reload
+    if (options?.returnTo) {
+      window.location.href = options.returnTo;
+    } else {
       window.location.reload();
-    },
+    }
+  };
+
+  const value = {
+    user: isAuthenticated ? mockUser : null,
+    isAuthenticated,
+    isLoading,
+    loginWithRedirect,
+    logout,
     getAccessTokenSilently: async () => {
       console.log('[DEV MODE] getAccessTokenSilently called');
       return 'dev-token';
