@@ -30,8 +30,20 @@ jobs:
 
             cd "$FRONTEND_DIR"
 
-            # Pull latest changes
-            git pull origin main || git pull origin master
+            # Save .env file if it exists (shouldn't be in git)
+            if [ -f "$FRONTEND_DIR/.env" ]; then
+              cp "$FRONTEND_DIR/.env" "$FRONTEND_DIR/.env.backup"
+            fi
+
+            # Fetch latest changes and reset to match remote exactly
+            # This discards any local changes to match the repository
+            git fetch origin
+            git reset --hard origin/main || git reset --hard origin/master
+
+            # Restore .env file if it was backed up
+            if [ -f "$FRONTEND_DIR/.env.backup" ]; then
+              mv "$FRONTEND_DIR/.env.backup" "$FRONTEND_DIR/.env"
+            fi
 
             # Navigate to backend directory (where docker-compose.yml is located)
             BACKEND_DIR=~/website/flashcard-backend
