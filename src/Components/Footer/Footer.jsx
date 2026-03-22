@@ -1,129 +1,134 @@
 import { Link } from "react-router-dom";
-import { BookOpen } from "lucide-react";
+import { BookOpen, Github, Globe, Mail } from "lucide-react";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-background border-t border-border mt-auto w-full">
-      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Main Footer Content */}
-        <div className="py-12 sm:py-16">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+    <footer className="bg-slate-50 border-t border-slate-200 mt-auto w-full">
+      <div className="container mx-auto max-w-6xl px-6 lg:px-8">
+        <div className="py-12">
+          <div className="flex flex-col lg:flex-row lg:justify-between gap-10">
             {/* Brand Section */}
-            <div className="col-span-1 sm:col-span-2 lg:col-span-1">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-sm">
-                  <BookOpen className="w-5 h-5 text-primary-foreground" />
+            <div className="lg:max-w-xs">
+              <div className="flex items-center gap-2.5 mb-3">
+                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-sm">
+                  <BookOpen className="w-4 h-4 text-primary-foreground" />
                 </div>
-                <span className="text-xl font-bold text-foreground">RecallCards</span>
+                <span className="text-lg font-bold text-slate-900">RecallCards</span>
               </div>
-              <p className="text-sm text-muted-foreground leading-relaxed">
+              <p className="text-sm text-slate-500 leading-relaxed max-w-[260px]">
                 Master your learning with interactive flashcards. Build knowledge, track progress, and achieve your goals.
               </p>
             </div>
 
-            {/* Quick Links */}
-            <div>
-              <h3 className="font-semibold text-foreground mb-4 text-base">
-                Quick Links
-              </h3>
-              <ul className="space-y-2.5">
-                <li>
-                  <Link
-                    to="/home"
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors no-underline"
-                  >
-                    Home
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/collections"
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors no-underline"
-                  >
-                    Collections
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/progress"
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors no-underline"
-                  >
-                    Progress
-                  </Link>
-                </li>
-              </ul>
-            </div>
+            {/* Links Columns */}
+            <div className="grid grid-cols-3 gap-16">
+              {/* Quick Links */}
+              <div>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-4">
+                  Quick Links
+                </h3>
+                <ul className="space-y-2.5">
+                  <li>
+                    <Link
+                      to="/home"
+                      className="text-sm text-slate-600 hover:text-primary transition-colors no-underline"
+                    >
+                      Home
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/collections"
+                      className="text-sm text-slate-600 hover:text-primary transition-colors no-underline"
+                    >
+                      Collections
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/progress"
+                      className="text-sm text-slate-600 hover:text-primary transition-colors no-underline"
+                    >
+                      Progress
+                    </Link>
+                  </li>
+                </ul>
+              </div>
 
-            {/* Resources */}
-            <div>
-              <h3 className="font-semibold text-foreground mb-4 text-base">
-                Resources
-              </h3>
-              <ul className="space-y-2.5">
-                <li>
-                  <a
-                    href="https://recallcards.net"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors no-underline"
-                  >
-                    Website
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://github.com/ErfanTagh/flashcard-frontend"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors no-underline"
-                  >
-                    Frontend Repo
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://github.com/ErfanTagh/flashcard-backend"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors no-underline"
-                  >
-                    Backend Repo
-                  </a>
-                </li>
-              </ul>
-            </div>
+              {/* Resources */}
+              <div>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-4">
+                  Resources
+                </h3>
+                <ul className="space-y-2.5">
+                  <li>
+                    <a
+                      href="https://recallcards.net"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-slate-600 hover:text-primary transition-colors no-underline inline-flex items-center gap-1.5"
+                    >
+                      <Globe className="w-3.5 h-3.5" />
+                      Website
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="https://github.com/ErfanTagh/flashcard-frontend"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-slate-600 hover:text-primary transition-colors no-underline inline-flex items-center gap-1.5"
+                    >
+                      <Github className="w-3.5 h-3.5" />
+                      Frontend Repo
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="https://github.com/ErfanTagh/flashcard-backend"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-slate-600 hover:text-primary transition-colors no-underline inline-flex items-center gap-1.5"
+                    >
+                      <Github className="w-3.5 h-3.5" />
+                      Backend Repo
+                    </a>
+                  </li>
+                </ul>
+              </div>
 
-            {/* Contact */}
-            <div>
-              <h3 className="font-semibold text-foreground mb-4 text-base">
-                Contact
-              </h3>
-              <ul className="space-y-2.5">
-                <li>
-                  <a
-                    href="https://erfantagh.github.io"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors no-underline"
-                  >
-                    Get in Touch
-                  </a>
-                </li>
-              </ul>
+              {/* Contact */}
+              <div>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-4">
+                  Contact
+                </h3>
+                <ul className="space-y-2.5">
+                  <li>
+                    <a
+                      href="https://erfantagh.github.io"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-slate-600 hover:text-primary transition-colors no-underline inline-flex items-center gap-1.5"
+                    >
+                      <Mail className="w-3.5 h-3.5" />
+                      Get in Touch
+                    </a>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Bottom Bar - Completely separate from main content */}
-      <div className="border-t border-border">
-        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
-          <div className="text-center">
-            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
-              <span>© {currentYear} RecallCards. All rights reserved.</span>
-              <span className="hidden sm:inline">•</span>
+      {/* Bottom Bar */}
+      <div className="border-t border-slate-200">
+        <div className="container mx-auto max-w-6xl px-6 lg:px-8 py-5">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
+            <span>© {currentYear} RecallCards. All rights reserved.</span>
+            <div className="flex items-center gap-4">
               <a
                 href="https://recallcards.net"
                 target="_blank"
@@ -132,7 +137,6 @@ const Footer = () => {
               >
                 Privacy Policy
               </a>
-              <span className="hidden sm:inline">•</span>
               <a
                 href="https://recallcards.net"
                 target="_blank"
