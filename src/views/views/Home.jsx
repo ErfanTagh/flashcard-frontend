@@ -94,7 +94,7 @@ const Home = () => {
           <div className="text-center mb-16 animate-fade-in">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-6">
               <Star className="h-4 w-4 text-primary fill-primary" />
-              <span className="text-sm font-medium text-primary">Trusted by thousands of learners</span>
+              <span className="text-sm font-medium text-primary">Your personal flashcard study tool</span>
             </div>
             <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-fade-in">
               Master Anything with
