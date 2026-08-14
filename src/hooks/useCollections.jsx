@@ -14,12 +14,17 @@ export const CollectionsProvider = ({ children }) => {
     if (user?.email) {
       fetchCollections();
       setSelectedCollection('Default');
+    } else {
+      // Logged out or still resolving: settle the flag so consumers gated on
+      // `loading` don't sit on a spinner forever.
+      setLoading(false);
     }
-  }, [user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.email]);
 
   const fetchCollections = async () => {
     if (!user?.email) return;
-    
+
     try {
       const response = await fetch(`/api/collections/${user.email}`, { mode: "cors" });
       const data = await response.json();

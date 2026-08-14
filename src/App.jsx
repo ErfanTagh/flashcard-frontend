@@ -22,10 +22,22 @@ import { CollectionsProvider } from "./hooks/useCollections";
 // Check if we're in development mode and should bypass Auth0
 const isDevMode = import.meta.env.DEV && (import.meta.env.VITE_BYPASS_AUTH === 'true' || import.meta.env.MODE === 'development');
 
+// Memoised per component: building the wrapper during render produced a brand
+// new component type on every render, so React unmounted and remounted the
+// page underneath it and every piece of its state was thrown away.
+const protectedCache = new Map();
+
 const ProtectedRoute = ({ component, ...args }) => {
-  const Component = isDevMode 
-    ? withDevAuthenticationRequired(component, args)
-    : withAuthenticationRequired(component, args);
+  if (!protectedCache.has(component)) {
+    protectedCache.set(
+      component,
+      isDevMode
+        ? withDevAuthenticationRequired(component, args)
+        : withAuthenticationRequired(component, args)
+    );
+  }
+
+  const Component = protectedCache.get(component);
   return <Component />;
 };
 

@@ -1,16 +1,19 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useCollections } from "@/hooks/useCollections";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress as ProgressBar } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { BookOpen, Target, TrendingUp, Calendar, FolderOpen } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { BookOpen, Target, TrendingUp, Calendar, FolderOpen, ArrowLeft } from "lucide-react";
 
 const REVIEW_KEY = "FFFLASHBACKCARDS";
 
 function Progress() {
   const { user, isLoading } = useAuth();
+  const navigate = useNavigate();
   const { collections, selectedCollection, setSelectedCollection, loading: collectionsLoading } = useCollections();
   const [stats, setStats] = useState({
     totalCards: 0,
@@ -30,7 +33,7 @@ function Progress() {
         const statsData = await res.json();
         
         // Get all cards for the selected collection to check review status
-        const wordsRes = await fetch("/api/words", { mode: "cors" });
+        const wordsRes = await fetch(`/api/words?email=${encodeURIComponent(user.email)}`, { mode: "cors" });
         const wordsData = await wordsRes.json();
         
         let totalCards = 0;
@@ -95,6 +98,15 @@ function Progress() {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-primary/5 to-accent/5">
       <main className="w-full max-w-full px-6 py-8 flex flex-col">
+        <Button
+          variant="ghost"
+          onClick={() => navigate("/")}
+          className="mb-6 self-start"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Home
+        </Button>
+
         <div className="mb-12 animate-fade-in">
           <h1 className="text-5xl font-bold mb-3 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
             Your Progress

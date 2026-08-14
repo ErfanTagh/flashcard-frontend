@@ -1,5 +1,6 @@
 import * as React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useCollections } from "@/hooks/useCollections";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { RotateCcw, Check, X, MoreHorizontal, Edit, Trash2, FolderOpen, ChevronLeft, ChevronRight } from "lucide-react";
+import { RotateCcw, Check, X, MoreHorizontal, Edit, Trash2, FolderOpen, ChevronLeft, ChevronRight, ArrowLeft } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Input } from "@/components/ui/input";
 
@@ -28,9 +29,15 @@ function Flashcard() {
   const [totalCards, setTotalCards] = useState(0);
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const { collections, selectedCollection, setSelectedCollection, loading: collectionsLoading } = useCollections();
 
   const REVIEW_KEY = "FFFLASHBACKCARDS";
+  // Must match the duration-500 on the flip container below.
+  const FLIP_MS = 500;
+  const flipTimer = useRef(null);
+
+  useEffect(() => () => clearTimeout(flipTimer.current), []);
 
   const processBack = (back) => {
     if (back && back.substring(back.length - 16) === REVIEW_KEY) {
@@ -46,6 +53,10 @@ function Flashcard() {
   };
 
   const fetchData = async (index = 0) => {
+    // Auth0 resolves the user asynchronously; without this the first render
+    // requested /api/words/rand/undefined.
+    if (!user?.email) return;
+
     try {
       const collection = selectedCollection || 'Default';
       const res = await fetch(`/api/words/rand/${user.email}?collection=${encodeURIComponent(collection)}&index=${index}`, { mode: "cors" });
@@ -90,21 +101,36 @@ function Flashcard() {
     fetchCardCount();
   }, [selectedCollection, user]);
 
+  // Moving on while the definition is showing means the card rotates back to
+  // its term. Swapping the data straight away would paint the next card's
+  // definition onto the back face while it is still turned towards the user, so
+  // hold the swap until the card is edge-on and neither face is readable.
+  const goToCard = (index) => {
+    clearTimeout(flipTimer.current);
+
+    if (isFlipped) {
+      setIsFlipped(false);
+      flipTimer.current = setTimeout(() => fetchData(index), FLIP_MS / 2);
+    } else {
+      fetchData(index);
+    }
+  };
+
   const handleNextCard = () => {
     if (currentIndex < totalCards - 1) {
-      fetchData(currentIndex + 1);
+      goToCard(currentIndex + 1);
     } else {
       // Loop back to first card
-      fetchData(0);
+      goToCard(0);
     }
   };
 
   const handlePreviousCard = () => {
     if (currentIndex > 0) {
-      fetchData(currentIndex - 1);
+      goToCard(currentIndex - 1);
     } else {
       // Loop to last card
-      fetchData(totalCards - 1);
+      goToCard(totalCards - 1);
     }
   };
 
@@ -114,7 +140,7 @@ function Flashcard() {
       fetchData(0);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCollection, collectionsLoading]);
+  }, [selectedCollection, collectionsLoading, user?.email]);
 
   const reviewStatusChanged = async (term, definition) => {
     const requestOptions = {
@@ -132,9 +158,7 @@ function Flashcard() {
     try {
       const response = await fetch("/api/editword", requestOptions);
       const data = await response.json();
-      if (data.status === 200) {
-        return true;
-      }
+      return data.status === 200;
     } catch (error) {
       console.error("Error updating word:", error);
       return false;
@@ -160,7 +184,9 @@ function Flashcard() {
   const handleUnknown = async () => {
     const currentBack = card[1];
     if (!currentBack || currentBack.substring(currentBack.length - 16) !== REVIEW_KEY) {
-      const newBack = currentBack + REVIEW_KEY;
+      // currentBack is empty on the "no cards yet" placeholder, and string
+      // concatenation there used to write the literal "undefined" into the card.
+      const newBack = (currentBack || "") + REVIEW_KEY;
       const success = await reviewStatusChanged(card[0], newBack);
       if (success) {
         setIsInReview(true);
@@ -247,11 +273,12 @@ function Flashcard() {
         
         // After deletion, adjust index and fetch next card
         if (newTotal === 0) {
+          setIsFlipped(false);
           setCard(["You Don't Have Anything to Memorize ", "Please Add Cards!"]);
         } else if (currentIndex >= newTotal && currentIndex > 0) {
-          fetchData(currentIndex - 1);
+          goToCard(currentIndex - 1);
         } else {
-          fetchData(currentIndex);
+          goToCard(currentIndex);
         }
       } else {
         toast({
@@ -273,7 +300,16 @@ function Flashcard() {
   return (
     <div className="min-h-screen bg-background">
       <main className="container py-8 px-4">
-        <div className="max-w-2xl mx-auto">
+        <div className="w-full max-w-[800px] mx-auto">
+          <Button
+            variant="ghost"
+            onClick={() => navigate("/collections")}
+            className="mb-6"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Collections
+          </Button>
+
           <div className="text-center mb-6">
             <h1 className="text-3xl font-bold text-foreground">Review Cards</h1>
             <p className="text-muted-foreground mb-4">Click the card to flip between term and definition.</p>
@@ -330,14 +366,14 @@ function Flashcard() {
             )}
 
             <div
-              className={`relative w-full h-96 transition-transform duration-700 transform-style-preserve-3d ${
+              className={`relative w-full h-[26rem] sm:h-[30rem] lg:h-[34rem] transition-transform duration-500 ease-out transform-style-preserve-3d ${
                 editMode ? "" : "cursor-pointer"
               } ${isFlipped ? "rotate-y-180" : ""}`}
               onClick={handleFlip}
             >
               {/* Front of card */}
               <Card className="absolute inset-0 w-full h-full backface-hidden bg-card border-2 hover:border-muted-foreground/20 transition-colors">
-                <CardContent className="flex flex-col items-center justify-center h-full p-6 text-center">
+                <CardContent className="flex flex-col items-center justify-center h-full p-8 md:p-10 text-center">
                   {editMode && isFlipped ? (
                     <Input
                       value={editInputs.term}
@@ -346,7 +382,7 @@ function Flashcard() {
                       onClick={(e) => e.stopPropagation()}
                     />
                   ) : (
-                    <h2 className="text-2xl font-semibold text-foreground mb-4">{card[0]}</h2>
+                    <h2 className="text-3xl md:text-4xl font-semibold text-foreground mb-4">{card[0]}</h2>
                   )}
                   <p className="text-sm text-muted-foreground mb-4">Click to reveal definition</p>
                   <RotateCcw className="h-4 w-4 text-muted-foreground" />
@@ -355,7 +391,7 @@ function Flashcard() {
 
               {/* Back of card */}
               <Card className="absolute inset-0 w-full h-full backface-hidden rotate-y-180 bg-card border-2 hover:border-muted-foreground/20 transition-colors">
-                <CardContent className="flex flex-col items-center justify-center h-full p-6 text-center">
+                <CardContent className="flex flex-col items-center justify-center h-full p-8 md:p-10 text-center">
                   {editMode ? (
                     <div className="w-full space-y-4" onClick={(e) => e.stopPropagation()}>
                       <Input
@@ -382,7 +418,7 @@ function Flashcard() {
                     </div>
                   ) : (
                     <>
-                      <p className="text-lg text-foreground leading-relaxed mb-4">{processBack(card[1])}</p>
+                      <p className="text-xl md:text-2xl text-foreground leading-relaxed mb-4">{processBack(card[1])}</p>
                       <p className="text-sm text-muted-foreground mb-4">Click to see term again</p>
                       <RotateCcw className="h-4 w-4 text-muted-foreground" />
                     </>

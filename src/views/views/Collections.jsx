@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FolderOpen, Trash2, Edit2, Star, StarOff, Plus, BookOpen, Check, Play, GraduationCap } from "lucide-react";
+import { FolderOpen, Trash2, Edit2, Star, StarOff, Plus, BookOpen, Check, Play, GraduationCap, ArrowLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -252,6 +252,15 @@ function Collections() {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-primary/5 to-accent/5">
       <main className="w-full max-w-full px-6 py-8 flex flex-col">
+        <Button
+          variant="ghost"
+          onClick={() => navigate("/")}
+          className="mb-6 self-start"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Home
+        </Button>
+
         <div className="mb-12 animate-fade-in">
           <div className="flex items-center justify-between mb-4">
             <div>

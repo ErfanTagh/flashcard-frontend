@@ -96,7 +96,7 @@ const Home = () => {
               <Star className="h-4 w-4 text-primary fill-primary" />
               <span className="text-sm font-medium text-primary">Your personal flashcard study tool</span>
             </div>
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-fade-in">
+            <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
               Master Anything with
               <br />
               <span className="bg-gradient-to-r from-accent via-primary to-accent bg-clip-text text-transparent">

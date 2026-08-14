@@ -24,8 +24,10 @@ export default defineConfig({
     host: "0.0.0.0",
     port: 3001,
     hmr: {
-      host: "localhost",
-      port: 3001,
+      host: process.env.VITE_HMR_HOST || "localhost",
+      // Port the browser dials, which differs from the server port whenever the
+      // dev server is published on a remapped host port.
+      clientPort: Number(process.env.VITE_HMR_CLIENT_PORT) || 3001,
     },
     watch: {
       usePolling: true,

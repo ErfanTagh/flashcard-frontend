@@ -33,14 +33,17 @@ function Quiz() {
       setSelectedCollection(collectionName);
       fetchCards();
     }
-  }, [collectionName]);
+    // user?.email matters: fetchCards bails out until Auth0 resolves the user,
+    // and without it here the page would stay on the loading spinner forever.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [collectionName, user?.email]);
 
   const fetchCards = async () => {
     if (!user?.email) return;
     
     setLoading(true);
     try {
-      const res = await fetch("/api/words", { mode: "cors" });
+      const res = await fetch(`/api/words?email=${encodeURIComponent(user.email)}`, { mode: "cors" });
       const data = await res.json();
       
       if (data && data[user.email] && data[user.email][collectionName]) {
@@ -100,17 +103,15 @@ function Quiz() {
     }
 
     const currentCard = shuffledCards[currentIndex];
-    const correctAnswer = currentCard.definition.trim().toLowerCase();
-    const userAnswerLower = userAnswer.trim().toLowerCase();
-    
-    // Check if answer is correct (exact match or contains the correct answer)
-    const correct = userAnswerLower === correctAnswer || 
-                    correctAnswer.includes(userAnswerLower) ||
-                    userAnswerLower.includes(correctAnswer);
+    // Compare on collapsed whitespace and case, but require the whole answer.
+    // The old substring check marked a single letter correct whenever the
+    // definition happened to contain it.
+    const normalise = (s) => s.trim().toLowerCase().replace(/\s+/g, " ");
+    const correct = normalise(userAnswer) === normalise(currentCard.definition);
 
     setIsCorrect(correct);
     setShowResult(true);
-    
+
     if (correct) {
       setScore(prev => ({ ...prev, correct: prev.correct + 1 }));
       toast({
@@ -172,7 +173,7 @@ function Quiz() {
     return (
       <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-primary/5 to-accent/5">
         <main className="container py-8 px-4 flex-1">
-          <div className="max-w-2xl mx-auto">
+          <div className="w-full max-w-[800px] mx-auto">
             <Button
               variant="ghost"
               onClick={() => navigate('/collections')}
@@ -199,7 +200,7 @@ function Quiz() {
                     <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
                       <li>You'll see the term, type the definition</li>
                       <li>Answers are case-insensitive</li>
-                      <li>Partial matches are accepted</li>
+                      <li>Extra spacing is ignored, but the full answer is required</li>
                       <li>Total cards: {shuffledCards.length}</li>
                     </ul>
                   </div>
@@ -231,7 +232,7 @@ function Quiz() {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-primary/5 to-accent/5">
       <main className="container py-8 px-4 flex-1">
-        <div className="max-w-2xl mx-auto">
+        <div className="w-full max-w-[800px] mx-auto">
           <Button
             variant="ghost"
             onClick={() => {

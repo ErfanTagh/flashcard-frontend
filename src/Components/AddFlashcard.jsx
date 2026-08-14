@@ -135,7 +135,7 @@ function AddFlashcard() {
   return (
     <div className="min-h-screen bg-background">
       <main className="container py-8 px-4">
-        <div className="max-w-2xl mx-auto">
+        <div className="w-full max-w-[800px] mx-auto">
           <div className="mb-8 text-center">
             <div className="inline-block p-3 bg-primary/10 rounded-2xl mb-4">
               <Plus className="h-8 w-8 text-primary" />
