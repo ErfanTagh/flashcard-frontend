@@ -20,31 +20,28 @@ import { Input } from "@/components/ui/input";
 
 function Flashcard() {
   const [error, setError] = useState(null);
-  const [card, setCard] = useState(["", ""]);
+  const [cards, setCards] = useState([]);
   const [isFlipped, setIsFlipped] = useState(false);
-  const [isInReview, setIsInReview] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editInputs, setEditInputs] = useState({ term: "", definition: "" });
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [totalCards, setTotalCards] = useState(0);
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const { collections, selectedCollection, setSelectedCollection, loading: collectionsLoading } = useCollections();
 
-  const REVIEW_KEY = "FFFLASHBACKCARDS";
   // Must match the duration-500 on the flip container below.
   const FLIP_MS = 500;
   const flipTimer = useRef(null);
 
   useEffect(() => () => clearTimeout(flipTimer.current), []);
 
-  const processBack = (back) => {
-    if (back && back.substring(back.length - 16) === REVIEW_KEY) {
-      return back.slice(0, -16);
-    }
-    return back;
-  };
+  const collection = selectedCollection || "Default";
+  const totalCards = cards.length;
+  const card = cards[currentIndex] || null;
+  const isInReview = Boolean(card?.needs_review);
+  const frontText = card ? card.term : "You Don't Have Anything to Memorize";
+  const backText = card ? card.definition : "Please Add Cards!";
 
   const handleFlip = () => {
     if (!editMode) {
@@ -52,54 +49,37 @@ function Flashcard() {
     }
   };
 
-  const fetchData = async (index = 0) => {
-    // Auth0 resolves the user asynchronously; without this the first render
-    // requested /api/words/rand/undefined.
+  // The whole collection arrives in one request and is paged through locally,
+  // which also replaces the separate card-count lookup this page used to make.
+  const fetchCards = async (keepIndex = 0) => {
     if (!user?.email) return;
 
     try {
-      const collection = selectedCollection || 'Default';
-      const res = await fetch(`/api/words/rand/${user.email}?collection=${encodeURIComponent(collection)}&index=${index}`, { mode: "cors" });
+      const res = await fetch(
+        `/api/cards?email=${encodeURIComponent(user.email)}&collection=${encodeURIComponent(collection)}`,
+        { mode: "cors" }
+      );
       const data = await res.json();
-      setCard(data);
+      const list = Array.isArray(data.cards) ? data.cards : [];
+
+      setCards(list);
+      setCurrentIndex(list.length ? Math.min(keepIndex, list.length - 1) : 0);
       setIsFlipped(false);
       setEditMode(false);
-      setCurrentIndex(index);
-      
-      // Check if card is in review state
-      if (data[1] && data[1].substring(data[1].length - 16) === REVIEW_KEY) {
-        setIsInReview(true);
-      } else {
-        setIsInReview(false);
-      }
-      
-      setEditInputs({ term: data[0] || "", definition: processBack(data[1]) || "" });
+      setError(null);
     } catch (e) {
       setError(e);
       toast({
         title: "Error",
-        description: "Failed to load card. Please try again.",
+        description: "Failed to load cards. Please try again.",
         variant: "destructive",
       });
     }
   };
 
-  // Fetch total card count when collection changes
   useEffect(() => {
-    const fetchCardCount = async () => {
-      if (!user?.email || !selectedCollection) return;
-      try {
-        const res = await fetch(`/api/collections/${user.email}/stats`, { mode: "cors" });
-        const data = await res.json();
-        if (data.stats && data.stats[selectedCollection] !== undefined) {
-          setTotalCards(data.stats[selectedCollection]);
-        }
-      } catch (e) {
-        console.error('Error fetching card count:', e);
-      }
-    };
-    fetchCardCount();
-  }, [selectedCollection, user]);
+    setEditInputs({ term: card?.term || "", definition: card?.definition || "" });
+  }, [card?.term, card?.definition]);
 
   // Moving on while the definition is showing means the card rotates back to
   // its term. Swapping the data straight away would paint the next card's
@@ -108,117 +88,102 @@ function Flashcard() {
   const goToCard = (index) => {
     clearTimeout(flipTimer.current);
 
+    const settle = () => {
+      setCurrentIndex(index);
+      setEditMode(false);
+    };
+
     if (isFlipped) {
       setIsFlipped(false);
-      flipTimer.current = setTimeout(() => fetchData(index), FLIP_MS / 2);
+      flipTimer.current = setTimeout(settle, FLIP_MS / 2);
     } else {
-      fetchData(index);
+      settle();
     }
   };
 
   const handleNextCard = () => {
-    if (currentIndex < totalCards - 1) {
-      goToCard(currentIndex + 1);
-    } else {
-      // Loop back to first card
-      goToCard(0);
-    }
+    if (!totalCards) return;
+    goToCard(currentIndex < totalCards - 1 ? currentIndex + 1 : 0);
   };
 
   const handlePreviousCard = () => {
-    if (currentIndex > 0) {
-      goToCard(currentIndex - 1);
-    } else {
-      // Loop to last card
-      goToCard(totalCards - 1);
-    }
+    if (!totalCards) return;
+    goToCard(currentIndex > 0 ? currentIndex - 1 : totalCards - 1);
   };
 
   useEffect(() => {
     if (selectedCollection && !collectionsLoading) {
-      setCurrentIndex(0); // Reset to first card when collection changes
-      fetchData(0);
+      fetchCards(0);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCollection, collectionsLoading, user?.email]);
 
-  const reviewStatusChanged = async (term, definition) => {
-    const requestOptions = {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify({
-        token: user.email,
-        oldword: term,
-        word: term,
-        ans: definition,
-        collection: selectedCollection || 'Default',
-      }),
-    };
+  // Every answer is recorded, so the progress page can report what was actually
+  // studied rather than inferring it from the text of the definition.
+  const recordOutcome = async (outcome) => {
+    if (!card) return false;
 
     try {
-      const response = await fetch("/api/editword", requestOptions);
+      const response = await fetch("/api/review", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          token: user.email,
+          collection,
+          word: card.term,
+          outcome,
+        }),
+      });
       const data = await response.json();
-      return data.status === 200;
-    } catch (error) {
-      console.error("Error updating word:", error);
-      return false;
+
+      if (data.status === 200 && data.card) {
+        setCards((prev) => prev.map((c) => (c.term === data.card.term ? data.card : c)));
+        return true;
+      }
+    } catch (e) {
+      console.error("Error recording review:", e);
     }
+
+    toast({
+      title: "Error",
+      description: "Could not save your answer. Please try again.",
+      variant: "destructive",
+    });
+    return false;
   };
 
   const handleKnown = async () => {
-    const currentBack = card[1];
-    if (currentBack && currentBack.substring(currentBack.length - 16) === REVIEW_KEY) {
-      const newBack = currentBack.slice(0, -16);
-      const success = await reviewStatusChanged(card[0], newBack);
-      if (success) {
-        setIsInReview(false);
-        toast({
-          title: "Card Marked as Known",
-          description: "This card will not appear in review mode.",
-        });
-      }
-    }
+    await recordOutcome("correct");
     handleNextCard();
   };
 
   const handleUnknown = async () => {
-    const currentBack = card[1];
-    if (!currentBack || currentBack.substring(currentBack.length - 16) !== REVIEW_KEY) {
-      // currentBack is empty on the "no cards yet" placeholder, and string
-      // concatenation there used to write the literal "undefined" into the card.
-      const newBack = (currentBack || "") + REVIEW_KEY;
-      const success = await reviewStatusChanged(card[0], newBack);
-      if (success) {
-        setIsInReview(true);
-        toast({
-          title: "Card Marked for Review",
-          description: "This card will appear in review mode.",
-        });
-      }
-    }
+    await recordOutcome("incorrect");
     handleNextCard();
   };
 
   const handleEdit = () => {
     setEditMode(true);
-    setEditInputs({ term: card[0] || "", definition: processBack(card[1]) || "" });
+    setEditInputs({ term: card?.term || "", definition: card?.definition || "" });
   };
 
   const handleCancelEdit = () => {
     setEditMode(false);
-    setEditInputs({ term: card[0] || "", definition: processBack(card[1]) || "" });
+    setEditInputs({ term: card?.term || "", definition: card?.definition || "" });
   };
 
   const handleSaveEdit = async () => {
+    if (!card) return;
+
     const requestOptions = {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
       body: JSON.stringify({
         token: user.email,
-        oldword: card[0],
+        oldword: card.term,
         word: editInputs.term,
         ans: editInputs.definition,
-        collection: selectedCollection || 'Default',
+        collection,
       }),
     };
 
@@ -231,7 +196,7 @@ function Flashcard() {
           description: "Your flashcard has been updated successfully.",
         });
         setEditMode(false);
-        fetchData(currentIndex);
+        fetchCards(currentIndex);
       } else {
         toast({
           title: "Error",
@@ -249,37 +214,30 @@ function Flashcard() {
   };
 
   const handleDelete = async () => {
+    if (!card) return;
+
     const requestOptions = {
       method: "DELETE",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         token: user.email,
-        collection: selectedCollection || 'Default'
+        collection,
       }),
     };
 
     try {
-      const response = await fetch("/api/delword/" + encodeURIComponent(card[0]), requestOptions);
+      const response = await fetch("/api/delword/" + encodeURIComponent(card.term), requestOptions);
       const data = await response.json();
       if (data.status === 200) {
         toast({
           title: "Card Deleted",
           description: "Your flashcard has been deleted successfully.",
         });
-        
-        // Update total cards count
-        const newTotal = Math.max(0, totalCards - 1);
-        setTotalCards(newTotal);
-        
-        // After deletion, adjust index and fetch next card
-        if (newTotal === 0) {
-          setIsFlipped(false);
-          setCard(["You Don't Have Anything to Memorize ", "Please Add Cards!"]);
-        } else if (currentIndex >= newTotal && currentIndex > 0) {
-          goToCard(currentIndex - 1);
-        } else {
-          goToCard(currentIndex);
-        }
+
+        // fetchCards clamps the index to the shortened list, so the page lands
+        // on the neighbouring card (or the empty state) on its own.
+        setIsFlipped(false);
+        fetchCards(currentIndex);
       } else {
         toast({
           title: "Error",
@@ -382,7 +340,7 @@ function Flashcard() {
                       onClick={(e) => e.stopPropagation()}
                     />
                   ) : (
-                    <h2 className="text-3xl md:text-4xl font-semibold text-foreground mb-4">{card[0]}</h2>
+                    <h2 className="text-3xl md:text-4xl font-semibold text-foreground mb-4">{frontText}</h2>
                   )}
                   <p className="text-sm text-muted-foreground mb-4">Click to reveal definition</p>
                   <RotateCcw className="h-4 w-4 text-muted-foreground" />
@@ -418,7 +376,7 @@ function Flashcard() {
                     </div>
                   ) : (
                     <>
-                      <p className="text-xl md:text-2xl text-foreground leading-relaxed mb-4">{processBack(card[1])}</p>
+                      <p className="text-xl md:text-2xl text-foreground leading-relaxed mb-4">{backText}</p>
                       <p className="text-sm text-muted-foreground mb-4">Click to see term again</p>
                       <RotateCcw className="h-4 w-4 text-muted-foreground" />
                     </>

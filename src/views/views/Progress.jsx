@@ -9,18 +9,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { BookOpen, Target, TrendingUp, Calendar, FolderOpen, ArrowLeft } from "lucide-react";
 
-const REVIEW_KEY = "FFFLASHBACKCARDS";
+const EMPTY_STATS = {
+  total: 0,
+  studied: 0,
+  unseen: 0,
+  needs_review: 0,
+  known: 0,
+  attempts: 0,
+  accuracy: 0,
+  last_reviewed: null,
+};
 
 function Progress() {
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
   const { collections, selectedCollection, setSelectedCollection, loading: collectionsLoading } = useCollections();
-  const [stats, setStats] = useState({
-    totalCards: 0,
-    reviewedCards: 0,
-    masteredCards: 0,
-    learningCards: 0,
-  });
+  const [stats, setStats] = useState(EMPTY_STATS);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -28,54 +32,17 @@ function Progress() {
       if (!user || isLoading || !selectedCollection) return;
 
       try {
-        // Use the stats endpoint which is more efficient
-        const res = await fetch(`/api/collections/${user.email}/stats`, { mode: "cors" });
-        const statsData = await res.json();
-        
-        // Get all cards for the selected collection to check review status
-        const wordsRes = await fetch(`/api/words?email=${encodeURIComponent(user.email)}`, { mode: "cors" });
-        const wordsData = await wordsRes.json();
-        
-        let totalCards = 0;
-        let reviewedCards = 0;
-        let masteredCards = 0;
-        let learningCards = 0;
-        
-        if (wordsData && wordsData[user.email] && wordsData[user.email][selectedCollection]) {
-          const cards = wordsData[user.email][selectedCollection];
-          const cardEntries = Object.entries(cards);
-          
-          totalCards = cardEntries.length;
-          
-          cardEntries.forEach(([term, definition]) => {
-            if (definition && typeof definition === 'string' && definition.substring(definition.length - 16) === REVIEW_KEY) {
-              // Card is in review state
-              learningCards++;
-              reviewedCards++;
-            } else {
-              // Card is mastered
-              masteredCards++;
-            }
-          });
-        } else if (statsData && statsData.stats && statsData.stats[selectedCollection] !== undefined) {
-          // Fallback: use stats endpoint if words endpoint doesn't have the data
-          totalCards = statsData.stats[selectedCollection] || 0;
-        }
-        
-        setStats({
-          totalCards,
-          reviewedCards,
-          masteredCards,
-          learningCards,
-        });
+        // The backend derives these from recorded review outcomes, so the page
+        // no longer has to infer progress from the shape of the definition text.
+        const res = await fetch(
+          `/api/progress?email=${encodeURIComponent(user.email)}&collection=${encodeURIComponent(selectedCollection)}`,
+          { mode: "cors" }
+        );
+        const data = await res.json();
+        setStats({ ...EMPTY_STATS, ...data });
       } catch (error) {
         console.error("Error fetching stats:", error);
-        setStats({
-          totalCards: 0,
-          reviewedCards: 0,
-          masteredCards: 0,
-          learningCards: 0,
-        });
+        setStats(EMPTY_STATS);
       } finally {
         setLoading(false);
       }
@@ -88,12 +55,9 @@ function Progress() {
     return null;
   }
 
-  const masteryPercentage = stats.totalCards > 0 
-    ? Math.round((stats.masteredCards / stats.totalCards) * 100) 
-    : 0;
-  const reviewProgress = stats.totalCards > 0
-    ? Math.round((stats.reviewedCards / stats.totalCards) * 100)
-    : 0;
+  const pct = (value) => (stats.total > 0 ? Math.round((value / stats.total) * 100) : 0);
+  const knownPercentage = pct(stats.known);
+  const studiedPercentage = pct(stats.studied);
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-primary/5 to-accent/5">
@@ -154,7 +118,7 @@ function Progress() {
                 </CardHeader>
                 <CardContent className="p-4 pt-0">
                   <div className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                    {stats.totalCards}
+                    {stats.total}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">Cards in your deck</p>
                 </CardContent>
@@ -162,46 +126,46 @@ function Progress() {
 
               <Card className="group hover:shadow-xl hover:scale-105 transition-all duration-300 border-2 hover:border-primary/50 bg-gradient-to-br from-card to-accent/5 animate-fade-in [animation-delay:100ms]">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4">
-                  <CardTitle className="text-sm font-medium">Reviewed</CardTitle>
+                  <CardTitle className="text-sm font-medium">Studied</CardTitle>
                   <div className="h-8 w-8 rounded-full bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors">
                     <Calendar className="h-4 w-4 text-accent" />
                   </div>
                 </CardHeader>
                 <CardContent className="p-4 pt-0">
                   <div className="text-2xl font-bold bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">
-                    {stats.reviewedCards}
+                    {stats.studied}
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">{reviewProgress}% of total</p>
+                  <p className="text-xs text-muted-foreground mt-1">{stats.unseen} not opened yet</p>
                 </CardContent>
               </Card>
 
               <Card className="group hover:shadow-xl hover:scale-105 transition-all duration-300 border-2 hover:border-primary/50 bg-gradient-to-br from-card to-primary/5 animate-fade-in [animation-delay:200ms]">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4">
-                  <CardTitle className="text-sm font-medium">Mastered</CardTitle>
+                  <CardTitle className="text-sm font-medium">Known</CardTitle>
                   <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
                     <Target className="h-4 w-4 text-primary" />
                   </div>
                 </CardHeader>
                 <CardContent className="p-4 pt-0">
                   <div className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                    {stats.masteredCards}
+                    {stats.known}
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">{masteryPercentage}% mastery</p>
+                  <p className="text-xs text-muted-foreground mt-1">{knownPercentage}% of deck</p>
                 </CardContent>
               </Card>
 
               <Card className="group hover:shadow-xl hover:scale-105 transition-all duration-300 border-2 hover:border-primary/50 bg-gradient-to-br from-card to-accent/5 animate-fade-in [animation-delay:300ms]">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4">
-                  <CardTitle className="text-sm font-medium">Learning</CardTitle>
+                  <CardTitle className="text-sm font-medium">Needs Review</CardTitle>
                   <div className="h-8 w-8 rounded-full bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors">
                     <TrendingUp className="h-4 w-4 text-accent" />
                   </div>
                 </CardHeader>
                 <CardContent className="p-4 pt-0">
                   <div className="text-2xl font-bold bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">
-                    {stats.learningCards}
+                    {stats.needs_review}
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">Cards in progress</p>
+                  <p className="text-xs text-muted-foreground mt-1">Flagged to revisit</p>
                 </CardContent>
               </Card>
             </div>
@@ -211,23 +175,27 @@ function Progress() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Target className="h-5 w-5 text-primary" />
-                    Mastery Progress
+                    Known
                   </CardTitle>
                   <CardDescription>
-                    {stats.masteredCards} out of {stats.totalCards} cards mastered
+                    {stats.known} of {stats.total} cards answered correctly and not flagged
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="relative">
                     <ProgressBar 
-                      value={masteryPercentage} 
-                      className="h-3 bg-muted [&>div]:bg-gradient-to-r [&>div]:from-primary [&>div]:to-accent transition-all duration-500" 
+                      value={knownPercentage}
+                      className="h-3 bg-muted [&>div]:bg-gradient-to-r [&>div]:from-primary [&>div]:to-accent transition-all duration-500"
                     />
                   </div>
                   <div className="flex justify-between items-center">
-                    <p className="text-sm font-medium text-muted-foreground">{masteryPercentage}% complete</p>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      {stats.attempts > 0
+                        ? `${stats.accuracy}% accuracy over ${stats.attempts} answers`
+                        : "No answers recorded yet"}
+                    </p>
                     <span className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                      {masteryPercentage}%
+                      {knownPercentage}%
                     </span>
                   </div>
                 </CardContent>
@@ -237,23 +205,25 @@ function Progress() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Calendar className="h-5 w-5 text-accent" />
-                    Review Progress
+                    Coverage
                   </CardTitle>
                   <CardDescription>
-                    {stats.reviewedCards} out of {stats.totalCards} cards reviewed
+                    {stats.studied} of {stats.total} cards studied at least once
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="relative">
-                    <ProgressBar 
-                      value={reviewProgress} 
-                      className="h-3 bg-muted [&>div]:bg-gradient-to-r [&>div]:from-accent [&>div]:to-primary transition-all duration-500" 
+                    <ProgressBar
+                      value={studiedPercentage}
+                      className="h-3 bg-muted [&>div]:bg-gradient-to-r [&>div]:from-accent [&>div]:to-primary transition-all duration-500"
                     />
                   </div>
                   <div className="flex justify-between items-center">
-                    <p className="text-sm font-medium text-muted-foreground">{reviewProgress}% reviewed</p>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      {stats.unseen > 0 ? `${stats.unseen} still to open` : "Whole deck seen"}
+                    </p>
                     <span className="text-2xl font-bold bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">
-                      {reviewProgress}%
+                      {studiedPercentage}%
                     </span>
                   </div>
                 </CardContent>

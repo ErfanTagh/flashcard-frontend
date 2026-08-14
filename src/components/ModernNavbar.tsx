@@ -1,9 +1,7 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Menu, User, LogOut } from "lucide-react";
+import { User, LogOut } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface NavbarProps {
@@ -16,7 +14,6 @@ interface NavbarProps {
 }
 
 const ModernNavbar = ({ user, onLogout }: NavbarProps) => {
-  const [isOpen, setIsOpen] = useState(false);
 
   // Hide navbar entirely when no authenticated user is provided
   if (!user) {
@@ -32,16 +29,16 @@ const ModernNavbar = ({ user, onLogout }: NavbarProps) => {
             <img 
               src="/recallcards-logo.svg" 
               alt="RecallCards Logo" 
-              className="h-8 w-8 flex-shrink-0"
-              width="32"
-              height="32"
+              className="h-11 w-11 flex-shrink-0"
+              width="44"
+              height="44"
             />
-            <span className="hidden font-bold sm:inline-block text-foreground">RecallCards</span>
+            <span className="hidden font-bold text-lg sm:inline-block text-foreground">RecallCards</span>
           </Link>
         </div>
 
-        {/* Desktop User Menu */}
-        <div className="hidden md:flex md:items-center md:space-x-4">
+        {/* User menu, shown at every width */}
+        <div className="flex items-center space-x-4">
           {user && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -74,57 +71,6 @@ const ModernNavbar = ({ user, onLogout }: NavbarProps) => {
           )}
         </div>
 
-        {/* Mobile Menu */}
-        <div className="md:hidden">
-          <Sheet open={isOpen} onOpenChange={setIsOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Menu className="h-5 w-5" />
-                <span className="sr-only">Toggle menu</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-[300px] sm:w-[400px]">
-              <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-              <div className="flex flex-col space-y-4 mt-6">
-                {user && (
-                  <div className="flex items-center space-x-3 pb-4 border-b">
-                    <Avatar className="h-12 w-12">
-                      <AvatarImage src={user.picture} alt={user.name} />
-                      <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex flex-col">
-                      <p className="font-medium">{user.name}</p>
-                    </div>
-                  </div>
-                )}
-                
-                {user && (
-                  <div className="flex flex-col space-y-2 pt-4 border-t">
-                    <Link 
-                      to="/profile" 
-                      className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      <User className="h-4 w-4" />
-                      Profile
-                    </Link>
-                    <Button 
-                      variant="ghost" 
-                      onClick={() => {
-                        onLogout?.();
-                        setIsOpen(false);
-                      }}
-                      className="justify-start px-3 py-2 h-auto font-medium"
-                    >
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Log out
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </SheetContent>
-          </Sheet>
-        </div>
       </div>
     </nav>
   );

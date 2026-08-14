@@ -43,27 +43,18 @@ function Quiz() {
     
     setLoading(true);
     try {
-      const res = await fetch(`/api/words?email=${encodeURIComponent(user.email)}`, { mode: "cors" });
+      const res = await fetch(
+        `/api/cards?email=${encodeURIComponent(user.email)}&collection=${encodeURIComponent(collectionName)}`,
+        { mode: "cors" }
+      );
       const data = await res.json();
-      
-      if (data && data[user.email] && data[user.email][collectionName]) {
-        const collectionCards = data[user.email][collectionName];
-        const cardEntries = Object.entries(collectionCards).map(([term, definition]) => ({
-          term,
-          definition: typeof definition === 'string' && definition.substring(definition.length - 16) === "FFFLASHBACKCARDS"
-            ? definition.slice(0, -16)
-            : definition
-        }));
-        
-        // Shuffle cards for quiz
-        const shuffled = [...cardEntries].sort(() => Math.random() - 0.5);
-        setCards(cardEntries);
-        setShuffledCards(shuffled);
-        setScore({ correct: 0, total: shuffled.length });
-      } else {
-        setCards([]);
-        setShuffledCards([]);
-      }
+      const cardEntries = Array.isArray(data.cards) ? data.cards : [];
+
+      // Shuffle cards for quiz
+      const shuffled = [...cardEntries].sort(() => Math.random() - 0.5);
+      setCards(cardEntries);
+      setShuffledCards(shuffled);
+      setScore({ correct: 0, total: shuffled.length });
     } catch (error) {
       console.error("Error fetching cards:", error);
       toast({
@@ -111,6 +102,18 @@ function Quiz() {
 
     setIsCorrect(correct);
     setShowResult(true);
+
+    // Quiz answers count towards progress the same as review answers do.
+    fetch("/api/review", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({
+        token: user.email,
+        collection: collectionName,
+        word: currentCard.term,
+        outcome: correct ? "correct" : "incorrect",
+      }),
+    }).catch((e) => console.error("Error recording quiz answer:", e));
 
     if (correct) {
       setScore(prev => ({ ...prev, correct: prev.correct + 1 }));
