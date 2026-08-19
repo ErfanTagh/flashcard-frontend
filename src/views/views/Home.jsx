@@ -11,29 +11,29 @@ const Home = () => {
       <div className="min-h-screen bg-background">
         {/* WelcomeSection */}
         <div className="bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 border-b">
-          <div className="container py-12 px-4">
+          <div className="container py-8 sm:py-12 px-4">
             <div className="text-center animate-fade-in">
-              <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-3">
+              <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold text-foreground mb-2 sm:mb-3">
                 Welcome{user?.given_name ? ` ${user.given_name}` : ''}! 👋
               </h1>
-              <p className="text-lg md:text-xl text-muted-foreground">
+              <p className="text-base sm:text-lg md:text-xl text-muted-foreground">
                 Ready to review your flashcards and learn something new?
               </p>
             </div>
           </div>
         </div>
 
-        <main className="container py-12 px-4">
-          <div className="grid gap-6 md:grid-cols-2">
+        <main className="container py-8 sm:py-12 px-4">
+          <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
             <Link 
               to="/collections" 
-              className="rounded-lg border bg-card text-card-foreground shadow-sm hover:shadow-xl hover:border-primary/50 transition-all duration-300 hover:-translate-y-1 group no-underline"
+              className="rounded-lg border bg-card text-card-foreground shadow-sm hover:shadow-xl hover:border-primary/50 transition-all duration-300 sm:hover:-translate-y-1 group no-underline"
             >
-              <div className="p-6">
-                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                  <BookOpen className="h-7 w-7 text-primary" />
+              <div className="p-5 sm:p-6">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                  <BookOpen className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
                 </div>
-                <h3 className="flex items-center gap-2 text-2xl font-semibold leading-none tracking-tight mb-2 text-foreground">
+                <h3 className="flex items-center gap-2 text-xl sm:text-2xl font-semibold leading-none tracking-tight mb-2 text-foreground">
                   Collections
                 </h3>
                 <p className="text-sm text-muted-foreground mb-4">Manage and organize your flashcard collections</p>
@@ -45,13 +45,13 @@ const Home = () => {
 
             <Link 
               to="/progress" 
-              className="rounded-lg border bg-card text-card-foreground shadow-sm hover:shadow-xl hover:border-primary/50 transition-all duration-300 hover:-translate-y-1 group no-underline"
+              className="rounded-lg border bg-card text-card-foreground shadow-sm hover:shadow-xl hover:border-primary/50 transition-all duration-300 sm:hover:-translate-y-1 group no-underline"
             >
-              <div className="p-6">
-                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                  <BarChart3 className="h-7 w-7 text-primary" />
+              <div className="p-5 sm:p-6">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                  <BarChart3 className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
                 </div>
-                <h3 className="flex items-center gap-2 text-2xl font-semibold leading-none tracking-tight mb-2 text-foreground">
+                <h3 className="flex items-center gap-2 text-xl sm:text-2xl font-semibold leading-none tracking-tight mb-2 text-foreground">
                   Your Progress
                 </h3>
                 <p className="text-sm text-muted-foreground mb-4">Track your learning progress and achievements</p>
@@ -69,49 +69,49 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5">
       {/* Navigation */}
-      <nav className="container py-6 px-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg">
-            <BookOpen className="h-6 w-6 text-primary-foreground" />
+      <nav className="container py-4 sm:py-6 px-4 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shrink-0">
+            <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-primary-foreground" />
           </div>
-          <span className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          <span className="text-lg sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent truncate">
             RecallCards
           </span>
         </div>
         <Button
           onClick={() => loginWithRedirect()}
-          className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all"
+          className="shrink-0 h-9 px-3 text-sm sm:h-10 sm:px-4 sm:text-base bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all"
         >
           Get Started
-          <ArrowRight className="ml-2 h-4 w-4" />
+          <ArrowRight className="ml-1.5 sm:ml-2 h-4 w-4" />
         </Button>
       </nav>
 
       {/* Hero Section */}
-      <main className="container px-4 py-12 md:py-20">
+      <main className="container px-4 py-8 sm:py-12 md:py-20">
         <div className="flex flex-col items-center w-full max-w-6xl mx-auto">
           {/* Main Hero Content */}
-          <div className="text-center mb-16 animate-fade-in">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-6">
+          <div className="text-center mb-10 sm:mb-16 animate-fade-in">
+            <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-primary/10 border border-primary/20 mb-5 sm:mb-6">
               <Star className="h-4 w-4 text-primary fill-primary" />
-              <span className="text-sm font-medium text-primary">Your personal flashcard study tool</span>
+              <span className="text-xs sm:text-sm font-medium text-primary">Your personal flashcard study tool</span>
             </div>
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+            <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold mb-4 sm:mb-6 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
               Master Anything with
               <br />
               <span className="bg-gradient-to-r from-accent via-primary to-accent bg-clip-text text-transparent">
                 Smart Flashcards
               </span>
             </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground mb-10 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-base sm:text-xl md:text-2xl text-muted-foreground mb-8 sm:mb-10 max-w-3xl mx-auto leading-relaxed">
               Create, study, and track your learning progress with our beautiful and intuitive flashcard system. 
               Transform how you learn, one card at a time.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-stretch sm:items-center">
               <Button
                 size="lg"
                 onClick={() => loginWithRedirect()}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground text-lg px-8 py-6 h-auto shadow-xl hover:shadow-2xl hover:scale-105 transition-all"
+                className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 h-auto shadow-xl hover:shadow-2xl sm:hover:scale-105 transition-all"
               >
                 Start Learning Free
                 <ArrowRight className="ml-2 h-5 w-5" />
@@ -125,7 +125,7 @@ const Home = () => {
                     featuresSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
                   }
                 }}
-                className="text-lg px-8 py-6 h-auto border-2 hover:bg-accent/10 hover:border-accent transition-all"
+                className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 h-auto border-2 hover:bg-accent/10 hover:border-accent transition-all"
               >
                 Learn More
               </Button>
@@ -133,13 +133,13 @@ const Home = () => {
           </div>
 
           {/* Features Grid */}
-          <div id="features-section" className="grid md:grid-cols-3 gap-6 md:gap-8 w-full mb-16">
+          <div id="features-section" className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8 w-full mb-10 sm:mb-16">
             <div className="rounded-xl border-2 bg-card/50 backdrop-blur-sm text-card-foreground shadow-lg hover:shadow-2xl hover:border-primary/50 transition-all duration-300 hover:-translate-y-2 group">
-              <div className="p-8">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <Sparkles className="h-8 w-8 text-primary" />
+              <div className="p-6 sm:p-8">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <Sparkles className="h-7 w-7 sm:h-8 sm:w-8 text-primary" />
                 </div>
-                <h3 className="text-2xl font-bold mb-3 text-foreground">Smart Cards</h3>
+                <h3 className="text-xl sm:text-2xl font-bold mb-3 text-foreground">Smart Cards</h3>
                 <p className="text-muted-foreground leading-relaxed">
                   Create beautiful flashcards with terms and definitions that help you learn faster and remember longer.
                 </p>
@@ -147,11 +147,11 @@ const Home = () => {
             </div>
 
             <div className="rounded-xl border-2 bg-card/50 backdrop-blur-sm text-card-foreground shadow-lg hover:shadow-2xl hover:border-primary/50 transition-all duration-300 hover:-translate-y-2 group">
-              <div className="p-8">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent/20 to-accent/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <Zap className="h-8 w-8 text-accent" />
+              <div className="p-6 sm:p-8">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-accent/20 to-accent/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <Zap className="h-7 w-7 sm:h-8 sm:w-8 text-accent" />
                 </div>
-                <h3 className="text-2xl font-bold mb-3 text-foreground">Quick Review</h3>
+                <h3 className="text-xl sm:text-2xl font-bold mb-3 text-foreground">Quick Review</h3>
                 <p className="text-muted-foreground leading-relaxed">
                   Interactive flip cards make studying engaging and help information stick better in your memory.
                 </p>
@@ -159,11 +159,11 @@ const Home = () => {
             </div>
 
             <div className="rounded-xl border-2 bg-card/50 backdrop-blur-sm text-card-foreground shadow-lg hover:shadow-2xl hover:border-primary/50 transition-all duration-300 hover:-translate-y-2 group">
-              <div className="p-8">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <Target className="h-8 w-8 text-primary" />
+              <div className="p-6 sm:p-8">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <Target className="h-7 w-7 sm:h-8 sm:w-8 text-primary" />
                 </div>
-                <h3 className="text-2xl font-bold mb-3 text-foreground">Track Progress</h3>
+                <h3 className="text-xl sm:text-2xl font-bold mb-3 text-foreground">Track Progress</h3>
                 <p className="text-muted-foreground leading-relaxed">
                   Monitor your learning journey and see how much you've improved over time with detailed analytics.
                 </p>
@@ -173,11 +173,11 @@ const Home = () => {
 
           {/* Benefits Section */}
           <div className="w-full max-w-4xl mx-auto">
-            <div className="rounded-2xl border-2 bg-gradient-to-br from-card to-card/50 backdrop-blur-sm p-8 md:p-12 shadow-xl">
-              <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            <div className="rounded-2xl border-2 bg-gradient-to-br from-card to-card/50 backdrop-blur-sm p-6 sm:p-8 md:p-12 shadow-xl">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-6 sm:mb-8 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                 Why Choose RecallCards?
               </h2>
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
                 {[
                   "Organize cards into custom collections",
                   "Beautiful, intuitive interface",

@@ -12,11 +12,13 @@ html,body {
   min-height:100vh; 
 }
 
-.container {
-  display:flex;
-  align-items: center;
-  justify-content: center;
-}
+/* `.container` is Tailwind's width wrapper, used by every page in the app.
+   It used to be given `display:flex; align-items:center; justify-content:center`
+   here, and `flex-direction: column` under 576px, which turned every page's
+   layout into a centred column on a phone -- navigation bars stacked, rows
+   collapsed, alignment ignored. Whatever legacy layout wanted that is gone:
+   the only components that used `.container` as a flex box, FlashCardItem and
+   FLipCard, are no longer imported anywhere. */
 
 .mainApp{
   min-height: 100vh;
@@ -92,7 +94,6 @@ footer {
   }
   
   .container {
-    flex-direction: column;
     padding: 1rem;
   }
   
