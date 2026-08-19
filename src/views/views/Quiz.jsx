@@ -83,7 +83,7 @@ function Quiz() {
     setScore({ correct: 0, total: shuffledCards.length });
   };
 
-  const checkAnswer = () => {
+  const checkAnswer = async () => {
     if (!userAnswer.trim()) {
       toast({
         title: "Answer Required",
@@ -94,11 +94,35 @@ function Quiz() {
     }
 
     const currentCard = shuffledCards[currentIndex];
-    // Compare on collapsed whitespace and case, but require the whole answer.
-    // The old substring check marked a single letter correct whenever the
-    // definition happened to contain it.
-    const normalise = (s) => s.trim().toLowerCase().replace(/\s+/g, " ");
-    const correct = normalise(userAnswer) === normalise(currentCard.definition);
+
+    // Grading lives on the server (/api/quiz/grade) so that every client marks
+    // the same answer the same way — the outcome goes into a card's review
+    // history, and two clients disagreeing would make one accuracy figure mean
+    // two different things. Requiring the whole definition verbatim, which is
+    // what this did before, is right for "Danke -> Thanks" and useless for a
+    // forty-word definition.
+    let correct;
+    try {
+      const res = await fetch("/api/quiz/grade", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          token: user.email,
+          collection: collectionName,
+          word: currentCard.term,
+          answer: userAnswer,
+        }),
+      });
+      const data = await res.json();
+      if (data.status !== 200) throw new Error(data.error || "grading failed");
+      correct = data.grade === "correct";
+    } catch (error) {
+      // Older server, or offline: fall back to the strict comparison rather
+      // than blocking the quiz.
+      console.error("Error grading answer:", error);
+      const normalise = (s) => s.trim().toLowerCase().replace(/\s+/g, " ");
+      correct = normalise(userAnswer) === normalise(currentCard.definition);
+    }
 
     setIsCorrect(correct);
     setShowResult(true);
