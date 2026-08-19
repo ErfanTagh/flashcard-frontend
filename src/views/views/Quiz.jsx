@@ -148,7 +148,9 @@ function Quiz() {
     } else {
       toast({
         title: "Incorrect",
-        description: `The correct answer is: ${currentCard.definition}`,
+        description: currentCard.definition
+          ? `The correct answer is: ${currentCard.definition}`
+          : "That card's answer is a picture.",
         variant: "destructive",
       });
     }

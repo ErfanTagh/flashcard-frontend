@@ -34,6 +34,10 @@ function AddFlashcard() {
   const { toast } = useToast();
   const { collections, selectedCollection, setSelectedCollection, createCollection, deleteCollection, loading } = useCollections();
   const [inputs, setInputs] = useState({ title: "", ans: "" });
+  // A picture shown with the definition. A card may have text, a picture, or
+  // both, so the definition field is only required when there is no picture.
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState("");
   const [showNewCollectionDialog, setShowNewCollectionDialog] = useState(false);
@@ -73,13 +77,38 @@ function AddFlashcard() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!inputs.title.trim() || !inputs.ans.trim()) {
-      toast({ title: "Missing Information", description: "Please fill in both fields.", variant: "destructive" });
+    if (!inputs.title.trim() || (!inputs.ans.trim() && !imageFile)) {
+      toast({
+        title: "Missing Information",
+        description: "A card needs a term, and either a definition or a picture.",
+        variant: "destructive",
+      });
       return;
     }
 
     setIsSubmitting(true);
     try {
+      // Upload first: without an id there is nothing to attach, and a failed
+      // upload must not quietly save a card without its picture.
+      let imageId = null;
+      if (imageFile) {
+        const form = new FormData();
+        form.append("file", imageFile);
+        form.append("token", user.email);
+        const upload = await fetch("/api/images", { method: "POST", body: form });
+        const uploaded = await upload.json();
+        if (uploaded.status !== 200) {
+          toast({
+            title: "Couldn't upload the picture",
+            description: uploaded.error || "Please try again.",
+            variant: "destructive",
+          });
+          setIsSubmitting(false);
+          return;
+        }
+        imageId = uploaded.image_id;
+      }
+
       const requestOptions = {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
@@ -87,6 +116,7 @@ function AddFlashcard() {
           token: user.email, 
           word: inputs.title, 
           ans: inputs.ans,
+          image: imageId,
           collection: selectedCollection || 'Default'
         }),
       };
@@ -95,6 +125,7 @@ function AddFlashcard() {
       if (data["status"] === 200) {
         toast({ title: "Card Added Successfully!", description: `"${inputs.title}" has been added to ${selectedCollection || 'Default'}.` });
         setInputs({ title: "", ans: "" });
+        clearImage();
       } else {
         toast({ title: "Error", description: "Failed to add the card.", variant: "destructive" });
       }
@@ -105,7 +136,37 @@ function AddFlashcard() {
     }
   };
 
-  const handleReset = () => setInputs({ title: "", ans: "" });
+  const clearImage = () => {
+    // Object URLs are held by the browser until revoked.
+    setImagePreview((current) => {
+      if (current) URL.revokeObjectURL(current);
+      return null;
+    });
+    setImageFile(null);
+  };
+
+  const handleImageChange = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Not an image", description: "Choose a picture file.", variant: "destructive" });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "Picture too large", description: "The limit is 5MB.", variant: "destructive" });
+      return;
+    }
+
+    clearImage();
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  const handleReset = () => {
+    setInputs({ title: "", ans: "" });
+    clearImage();
+  };
 
   const handleDeleteCollection = async () => {
     if (!collectionToDelete) return;
@@ -253,10 +314,46 @@ function AddFlashcard() {
                   </p>
                 </div>
 
+                <div className="space-y-3">
+                  <Label htmlFor="image" className="text-sm font-semibold flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-primary"></span>
+                    Picture (optional)
+                  </Label>
+                  <Input
+                    id="image"
+                    name="image"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="w-full cursor-pointer"
+                  />
+                  {imagePreview && (
+                    <div className="relative inline-block">
+                      <img
+                        src={imagePreview}
+                        alt="Card picture preview"
+                        className="max-h-48 rounded-lg border border-border"
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        onClick={clearImage}
+                        className="absolute top-2 right-2"
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  )}
+                  <p className="text-xs text-muted-foreground pl-1">
+                    Shown with the definition. Up to 5MB.
+                  </p>
+                </div>
+
                 <div className="flex gap-4 pt-6 border-t border-border/50">
                   <Button
                     type="submit"
-                    disabled={isSubmitting || !inputs.title.trim() || !inputs.ans.trim()}
+                    disabled={isSubmitting || !inputs.title.trim() || (!inputs.ans.trim() && !imageFile)}
                     className="flex-1 h-12 text-base font-medium"
                   >
                     {isSubmitting ? (
