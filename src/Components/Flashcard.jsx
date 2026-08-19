@@ -42,6 +42,12 @@ function Flashcard() {
   const isInReview = Boolean(card?.needs_review);
   const frontText = card ? card.term : "You Don't Have Anything to Memorize";
   const backText = card ? card.definition : "Please Add Cards!";
+  // Pictures are served by id and scoped to the owner, so the email travels
+  // with the request the same way it does everywhere else in this API.
+  const backImage =
+    card && card.image && user?.email
+      ? `/api/images/${encodeURIComponent(card.image)}?email=${encodeURIComponent(user.email)}`
+      : null;
 
   const handleFlip = () => {
     if (!editMode) {
@@ -376,7 +382,16 @@ function Flashcard() {
                     </div>
                   ) : (
                     <>
-                      <p className="text-xl md:text-2xl text-foreground leading-relaxed mb-4">{backText}</p>
+                      {backImage && (
+                        <img
+                          src={backImage}
+                          alt=""
+                          className="max-h-[45%] max-w-full object-contain rounded-lg mb-4"
+                        />
+                      )}
+                      {backText && (
+                        <p className="text-xl md:text-2xl text-foreground leading-relaxed mb-4">{backText}</p>
+                      )}
                       <p className="text-sm text-muted-foreground mb-4">Click to see term again</p>
                       <RotateCcw className="h-4 w-4 text-muted-foreground" />
                     </>
