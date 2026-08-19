@@ -8,7 +8,9 @@ import Profile from "./views/views/Profile.jsx";
 import Progress from "./views/views/Progress.jsx";
 import Collections from "./views/views/Collections.jsx";
 import Quiz from "./views/views/Quiz.jsx";
+import ImportShare from "./views/views/ImportShare.jsx";
 
+import { useEffect } from "react";
 import { Route, BrowserRouter, Routes, Navigate } from "react-router-dom";
 import {
   withAuthenticationRequired,
@@ -44,6 +46,26 @@ const ProtectedRoute = ({ component, ...args }) => {
 const AppContent = () => {
   const { user, logout } = useAuth();
 
+  // Tell the API who this email belongs to, once per sign-in.
+  //
+  // The backend only ever knew addresses, so anything that shows a person's
+  // name -- "Erfan shared a deck with you" -- had nothing to show. Auth0 holds
+  // the profile and hands it to the client only, and for a Google sign-in it
+  // fills in given_name itself, so there is nothing to ask the user for.
+  useEffect(() => {
+    if (!user?.email) return;
+    const name = user.given_name || user.name || user.nickname || "";
+    if (!name) return;
+
+    fetch("/api/profile", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ token: user.email, name }),
+    }).catch(() => {
+      // Cosmetic: without it a recipient sees "Someone" instead of a name.
+    });
+  }, [user?.email, user?.given_name, user?.name, user?.nickname]);
+
   // Normalize origin to handle both www and non-www versions
   const normalizeOrigin = (origin) => {
     if (origin.includes('www.')) {
@@ -67,6 +89,9 @@ const AppContent = () => {
       <ModernNavbar user={user} onLogout={handleLogout} />
       <Routes>
         <Route path="/" element={<Home />} />
+        {/* Readable without an account: a share link has to show what it holds
+            before asking anyone to sign up. */}
+        <Route path="/import/:shareId" element={<ImportShare />} />
         <Route path="/home" element={<Home />} />
         <Route
           path="profile"

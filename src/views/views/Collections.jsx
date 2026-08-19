@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FolderOpen, Trash2, Edit2, Star, StarOff, Plus, BookOpen, Check, Play, GraduationCap, ArrowLeft } from "lucide-react";
+import { FolderOpen, Trash2, Edit2, Star, StarOff, Plus, BookOpen, Check, Play, GraduationCap, ArrowLeft, Share2, Copy, ImageIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -49,6 +49,13 @@ function Collections() {
   const [shouldKeepDialogOpen, setShouldKeepDialogOpen] = useState(false);
   const [selectedCollectionForCard, setSelectedCollectionForCard] = useState(null);
   const [newCardInputs, setNewCardInputs] = useState({ term: "", definition: "" });
+  // The collection whose share link is on screen, and the link itself.
+  // Deck covers, keyed by deck name, as returned by /api/collections.
+  const [covers, setCovers] = useState({});
+  const [coverUploading, setCoverUploading] = useState(null);
+  const [shareFor, setShareFor] = useState(null);
+  const [shareLink, setShareLink] = useState("");
+  const [isSharing, setIsSharing] = useState(false);
   const [isAddingCard, setIsAddingCard] = useState(false);
 
   useEffect(() => {
@@ -249,9 +256,109 @@ function Collections() {
     return null;
   }
 
+  const loadCovers = async () => {
+    if (!user?.email) return;
+    try {
+      const res = await fetch(`/api/collections/${encodeURIComponent(user.email)}`);
+      const data = await res.json();
+      setCovers(data.covers || {});
+    } catch {
+      // A missing cover is cosmetic; the page works without it.
+    }
+  };
+
+  useEffect(() => { loadCovers(); }, [user?.email, collections.length]);
+
+  const handleCoverChange = async (collection, file) => {
+    if (!file || !user?.email) return;
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Not an image", description: "Choose a picture file.", variant: "destructive" });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "Picture too large", description: "The limit is 5MB.", variant: "destructive" });
+      return;
+    }
+
+    setCoverUploading(collection);
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      form.append("token", user.email);
+      const upload = await fetch("/api/images", { method: "POST", body: form });
+      const uploaded = await upload.json();
+      if (uploaded.status !== 200) throw new Error(uploaded.error || "Upload failed");
+
+      const res = await fetch(`/api/collections/${encodeURIComponent(collection)}/cover`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ token: user.email, image: uploaded.image_id }),
+      });
+      const data = await res.json();
+      if (data.status !== 200) throw new Error(data.error || "Couldn't set the cover");
+
+      setCovers((current) => ({ ...current, [collection]: uploaded.image_id }));
+      toast({ title: "Cover updated", description: `"${collection}" has a new picture.` });
+    } catch (error) {
+      toast({ title: "Couldn't set the cover", description: error.message, variant: "destructive" });
+    } finally {
+      setCoverUploading(null);
+    }
+  };
+
+  const handleShare = async (collection) => {
+    if (!user?.email) return;
+    setIsSharing(true);
+    setShareFor(collection);
+    setShareLink("");
+    try {
+      const res = await fetch(`/api/collections/${encodeURIComponent(collection)}/share`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        // The name comes from the account, recorded at sign-in; see /api/profile.
+        body: JSON.stringify({ token: user.email }),
+      });
+      const data = await res.json();
+      if (data.status !== 200) throw new Error(data.error || "Could not create a link");
+      setShareLink(`${window.location.origin}${data.path}`);
+    } catch (error) {
+      toast({ title: "Couldn't share", description: error.message, variant: "destructive" });
+      setShareFor(null);
+    } finally {
+      setIsSharing(false);
+    }
+  };
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(shareLink);
+      toast({ title: "Link copied", description: "Anyone with it can add a copy of this collection." });
+    } catch {
+      // Clipboard access needs a secure context; the field is selectable anyway.
+      toast({ title: "Copy it manually", description: "Select the link and copy.", variant: "destructive" });
+    }
+  };
+
+  const handleStopSharing = async () => {
+    if (!user?.email || !shareFor) return;
+    try {
+      await fetch(`/api/collections/${encodeURIComponent(shareFor)}/share`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ token: user.email }),
+      });
+      toast({ title: "Sharing stopped", description: "The old link no longer works. Copies already made are unaffected." });
+    } catch {
+      toast({ title: "Couldn't stop sharing", variant: "destructive" });
+    } finally {
+      setShareFor(null);
+      setShareLink("");
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-primary/5 to-accent/5">
-      <main className="w-full max-w-full px-6 py-8 flex flex-col">
+      <main className="w-full max-w-full px-4 sm:px-6 py-8 flex flex-col min-w-0">
         <Button
           variant="ghost"
           onClick={() => navigate("/")}
@@ -262,9 +369,9 @@ function Collections() {
         </Button>
 
         <div className="mb-12 animate-fade-in">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 min-w-0">
             <div>
-              <h1 className="text-5xl font-bold mb-3 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-2 sm:mb-3 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
                 Collections
               </h1>
               <p className="text-lg text-muted-foreground">Manage and organize your flashcard collections</p>
@@ -277,7 +384,7 @@ function Collections() {
         </div>
 
         {loading ? (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3 min-w-0">
             {[...Array(3)].map((_, i) => (
               <Card key={i} className="animate-pulse">
                 <CardHeader>
@@ -290,14 +397,41 @@ function Collections() {
             ))}
           </div>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3 min-w-0">
             {collections.map((collection) => (
               <Card key={collection} className="hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/50 bg-gradient-to-br from-card to-primary/5">
+                {/* Cover: the deck's picture, or the brand gradient until it has one */}
+                <label className="relative block h-28 w-full cursor-pointer overflow-hidden bg-gradient-to-br from-primary to-accent group/cover">
+                  {covers[collection] ? (
+                    <img
+                      src={`/api/images/${encodeURIComponent(covers[collection])}?email=${encodeURIComponent(user?.email || "")}`}
+                      alt=""
+                      className="absolute inset-0 h-full w-full object-cover"
+                    />
+                  ) : (
+                    <BookOpen className="absolute inset-0 m-auto h-8 w-8 text-white/90" />
+                  )}
+                  <span className="absolute inset-0 flex items-center justify-center gap-2 bg-black/45 text-white text-sm font-medium opacity-0 transition-opacity group-hover/cover:opacity-100">
+                    <ImageIcon className="h-4 w-4" />
+                    {coverUploading === collection ? "Uploading…" : "Change cover"}
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="sr-only"
+                    disabled={coverUploading === collection}
+                    onChange={(e) => {
+                      handleCoverChange(collection, e.target.files?.[0]);
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+
                 <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <FolderOpen className="h-5 w-5 text-primary" />
-                      <CardTitle className="text-xl">{collection}</CardTitle>
+                  <div className="flex items-center justify-between gap-2 min-w-0">
+                    <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                      <FolderOpen className="h-5 w-5 text-primary shrink-0" />
+                      <CardTitle className="text-xl break-words min-w-0">{collection}</CardTitle>
                       {collection === defaultCollection && (
                         <Badge className="bg-accent text-accent-foreground">
                           <Star className="h-3 w-3 mr-1" />
@@ -340,6 +474,15 @@ function Collections() {
                       Add Card
                     </Button>
                     <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleShare(collection)}
+                        className="flex-1"
+                      >
+                        <Share2 className="h-4 w-4 mr-2" />
+                        Share
+                      </Button>
                       {collection !== defaultCollection && (
                         <Button
                           variant="outline"
@@ -583,6 +726,46 @@ function Collections() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Share link */}
+      <Dialog open={shareFor !== null} onOpenChange={(open) => { if (!open) { setShareFor(null); setShareLink(""); } }}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Share &ldquo;{shareFor}&rdquo;</DialogTitle>
+            <DialogDescription>
+              Anyone with this link can add their own copy of this collection. They
+              get the cards, not your progress, and their copy is independent of
+              yours from then on.
+            </DialogDescription>
+          </DialogHeader>
+
+          {isSharing ? (
+            <p className="text-sm text-muted-foreground py-4">Creating a link…</p>
+          ) : (
+            <div className="flex gap-2">
+              <Input
+                readOnly
+                value={shareLink}
+                onFocus={(e) => e.target.select()}
+                className="font-mono text-xs"
+              />
+              <Button onClick={handleCopyLink} className="shrink-0">
+                <Copy className="h-4 w-4 mr-2" />
+                Copy
+              </Button>
+            </div>
+          )}
+
+          <DialogFooter className="sm:justify-between gap-2">
+            <Button variant="ghost" onClick={handleStopSharing} className="text-destructive">
+              Stop sharing
+            </Button>
+            <Button variant="outline" onClick={() => { setShareFor(null); setShareLink(""); }}>
+              Done
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
