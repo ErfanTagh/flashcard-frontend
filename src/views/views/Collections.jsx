@@ -411,7 +411,16 @@ function Collections() {
                   ) : (
                     <BookOpen className="absolute inset-0 m-auto h-8 w-8 text-white/90" />
                   )}
-                  <span className="absolute inset-0 flex items-center justify-center gap-2 bg-black/45 text-white text-sm font-medium opacity-0 transition-opacity group-hover/cover:opacity-100">
+                  {/* Always visible: on a touch screen there is no hover, so a
+                      hover-only hint means the cover looks like a decoration
+                      rather than something you can tap. */}
+                  <span className="absolute bottom-2 right-2 inline-flex items-center gap-1.5 rounded-full bg-black/55 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-sm sm:group-hover/cover:opacity-0 transition-opacity">
+                    <ImageIcon className="h-3.5 w-3.5" />
+                    {coverUploading === collection ? "Uploading…" : "Cover"}
+                  </span>
+
+                  {/* The fuller invitation, for pointers that can hover. */}
+                  <span className="absolute inset-0 hidden sm:flex items-center justify-center gap-2 bg-black/45 text-white text-sm font-medium opacity-0 transition-opacity group-hover/cover:opacity-100">
                     <ImageIcon className="h-4 w-4" />
                     {coverUploading === collection ? "Uploading…" : "Change cover"}
                   </span>
