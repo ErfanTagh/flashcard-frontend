@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Sparkles, Zap, Target, BookOpen, BarChart3, ArrowRight, CheckCircle2, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AppleIcon, AndroidIcon } from "@/Components/BrandIcons";
 
 const Home = () => {
   const { isAuthenticated, loginWithRedirect, user } = useAuth();
@@ -194,8 +195,71 @@ const Home = () => {
               </div>
             </div>
           </div>
+
+          {/* Apps in progress */}
+          <div className="w-full max-w-4xl mx-auto mt-10 sm:mt-16">
+            <div className="relative overflow-hidden rounded-2xl border-2 bg-gradient-to-br from-card to-card/50 backdrop-blur-sm p-6 sm:p-8 md:p-12 shadow-xl">
+              {/* Brand-coloured glow, purely decorative */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute -top-24 -right-20 h-56 w-56 rounded-full bg-gradient-to-br from-primary/25 to-accent/25 blur-3xl"
+              />
+
+              <div className="relative text-center mb-6 sm:mb-8">
+                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs font-semibold uppercase tracking-wide text-[hsl(var(--primary))] mb-4">
+                  <span className="inline-flex h-2 w-2 rounded-full bg-gradient-to-r from-primary to-accent" />
+                  In development
+                </span>
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                  Mobile apps are on the way
+                </h2>
+                <p className="text-sm sm:text-base text-muted-foreground max-w-xl mx-auto leading-relaxed">
+                  Native apps for iPhone and Android, built on the same account you
+                  already have. Your collections, review history and progress carry
+                  across untouched.
+                </p>
+              </div>
+
+              <div className="relative grid sm:grid-cols-2 gap-3 sm:gap-4">
+                <PlatformCard
+                  icon={<AppleIcon className="h-5 w-5 sm:h-6 sm:w-6" />}
+                  name="iOS"
+                  detail="iPhone &amp; iPad"
+                />
+                <PlatformCard
+                  icon={<AndroidIcon className="h-5 w-5 sm:h-6 sm:w-6" />}
+                  name="Android"
+                  detail="Phones &amp; tablets"
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </main>
+    </div>
+  );
+}
+
+/**
+ * One platform in the "coming soon" panel. Deliberately not a link or a store
+ * badge: there is nothing to download yet, and a button that does nothing is
+ * worse than no button.
+ */
+function PlatformCard({ icon, name, detail }) {
+  return (
+    <div className="group flex items-center gap-3 sm:gap-4 rounded-xl border bg-background/60 p-4 transition-all duration-300 hover:border-primary/40 hover:shadow-lg">
+      <div className="flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent text-white shadow-md transition-transform duration-300 sm:group-hover:scale-105">
+        {icon}
+      </div>
+
+      <div className="min-w-0">
+        <p className="text-base sm:text-lg font-semibold text-foreground leading-tight">{name}</p>
+        <p className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">{detail}</p>
+      </div>
+
+      <span className="ml-auto shrink-0 rounded-full bg-primary/10 px-2.5 py-1 text-[11px] sm:text-xs font-semibold text-[hsl(var(--primary))]">
+        Soon
+      </span>
     </div>
   );
 };
