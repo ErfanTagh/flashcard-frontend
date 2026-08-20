@@ -33,7 +33,9 @@ function ImportShare() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(`/api/shares/${encodeURIComponent(shareId)}`);
+        // Identify the viewer so the API can flag their own deck back to them.
+        const query = user?.email ? `?email=${encodeURIComponent(user.email)}` : "";
+        const res = await fetch(`/api/shares/${encodeURIComponent(shareId)}${query}`);
         const data = await res.json();
         if (cancelled) return;
         if (data.status !== 200) {
@@ -53,7 +55,7 @@ function ImportShare() {
       }
     })();
     return () => { cancelled = true; };
-  }, [shareId]);
+  }, [shareId, user?.email]);
 
   // "Log in to add it" states the intent already, so after the round trip
   // through Auth0 the import runs by itself -- no second button press. The
@@ -74,6 +76,10 @@ function ImportShare() {
     shareLog("on share page, signed in as", user.email, "- marker:", pending ?? "(none)");
     if (pending !== shareId) return;
     clearPendingShare();
+    if (share.is_owner) {
+      shareLog("own deck, not importing");
+      return;
+    }
     shareLog("auto-import starting for", shareId);
     handleImport();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -174,7 +180,16 @@ function ImportShare() {
           </div>
         </div>
 
-        {isAuthenticated ? (
+        {share.is_owner ? (
+          <div className="space-y-3">
+            <Button asChild variant="outline" className="w-full h-12 text-base">
+              <Link to="/collections">Go to my collections</Link>
+            </Button>
+            <p className="text-xs text-center text-muted-foreground">
+              This is your own deck — this is the link other people open.
+            </p>
+          </div>
+        ) : isAuthenticated ? (
           <div className="space-y-3">
             <Button onClick={handleImport} disabled={importing} className="w-full h-12 text-base">
               <Download className="h-5 w-5 mr-2" />
