@@ -47,9 +47,51 @@ const ProtectedRoute = ({ component, ...args }) => {
 };
 
 const AppContent = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, error, isLoading, isAuthenticated, loginWithRedirect } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Recover from a redirect that came back but did not sign the user in.
+  //
+  // Auth0 returns to /?code=...&state=..., and the SDK exchanges that for a
+  // session. When that exchange throws -- "Invalid state" is the usual one,
+  // caused by the login transaction being written under a different origin or
+  // cleared mid-flight -- the SDK swallows the redirect: no callback runs, no
+  // user appears, and the person is left looking at the signed-out homepage
+  // even though Auth0 believes they are logged in. A later reload then works,
+  // because the session is restored from cache instead. That asymmetry is
+  // exactly what was being reported.
+  //
+  // So: notice it, say why in the trail, and retry the exchange once. Auth0
+  // still holds the session, so the retry returns immediately and writes a
+  // fresh, valid transaction. Once per tab, so a genuinely broken login can
+  // never bounce forever.
+  useEffect(() => {
+    if (isLoading) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const cameFromAuth0 = params.has("code") && params.has("state");
+
+    if (isAuthenticated) {
+      sessionStorage.removeItem("auth_retry");
+      if (cameFromAuth0) shareLog("returned from auth0, signed in");
+      return;
+    }
+    if (!cameFromAuth0) return;
+
+    shareLog("returned from auth0 but NOT signed in; error =", error?.message || "(none)");
+
+    // Drop the spent code so a reload cannot replay it.
+    window.history.replaceState({}, document.title, window.location.pathname);
+
+    if (sessionStorage.getItem("auth_retry")) {
+      shareLog("already retried once, not looping");
+      return;
+    }
+    sessionStorage.setItem("auth_retry", "1");
+    shareLog("retrying the login exchange once");
+    loginWithRedirect?.();
+  }, [isLoading, isAuthenticated, error, loginWithRedirect]);
 
   // Where a signed-in user belongs, decided once per page load.
   //

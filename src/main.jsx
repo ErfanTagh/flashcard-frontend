@@ -70,6 +70,14 @@ ReactDOM.createRoot(rootElement).render(
       audience={audience}
       useRefreshTokens={true}
       cacheLocation="localstorage"
+      // The login transaction (the state value Auth0 hands back) defaults to
+      // sessionStorage, which is scoped per exact origin and dropped by some
+      // browsers across a cross-site round trip. Losing it makes the return
+      // leg fail with "Invalid state": Auth0 believes the user is signed in,
+      // the app does not, and they are left on the signed-out homepage. A
+      // cookie survives both -- including a login begun on www. and returned
+      // to the bare domain, which this app's normalized redirect URI causes.
+      useCookiesForTransactions={true}
       onRedirectCallback={onRedirectCallback}
     >
       <App className="mainApp" />
