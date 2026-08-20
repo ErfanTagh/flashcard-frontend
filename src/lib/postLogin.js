@@ -10,6 +10,8 @@
  * the app has come back up and knows the user. Same lesson as the share
  * marker: localStorage survives the round trip, in-memory state does not.
  */
+import { shareLog } from "./shareDebug";
+
 const KEY = "post_login_dest";
 const MAX_AGE_MS = 30 * 60 * 1000;
 
@@ -17,6 +19,7 @@ const MAX_TRIES = 3;
 
 export function setPostLoginDest(path) {
   localStorage.setItem(KEY, JSON.stringify({ path, ts: Date.now(), tries: 0 }));
+  shareLog("login starting, destination", path);
 }
 
 export function readPostLoginDest() {

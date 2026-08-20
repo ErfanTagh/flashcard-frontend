@@ -10,7 +10,7 @@ import Collections from "./views/views/Collections.jsx";
 import Quiz from "./views/views/Quiz.jsx";
 import ImportShare from "./views/views/ImportShare.jsx";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Route, BrowserRouter, Routes, Navigate, useNavigate, useLocation } from "react-router-dom";
 import {
   withAuthenticationRequired,
@@ -51,41 +51,45 @@ const AppContent = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Finish an interrupted share import. "Log in to add it" records the intent
-  // before the Auth0 round trip; when that round trip loses its return address
-  // (an email-verification detour does) the user lands here, signed in, on the
-  // homepage. This walks them back to the share page, which imports and clears
-  // the marker itself.
+  // Where a signed-in user belongs, decided once per page load.
+  //
+  // This deliberately does not depend on Auth0's redirect callback or on a
+  // marker surviving the round trip. Neither is reliable: the callback only
+  // runs when the SDK finds code and state in the URL, and a session restored
+  // silently from the cache never produces those at all -- which is most
+  // visits. The only thing that always happens is that the app, at some point,
+  // learns who the user is. That is the moment to act on.
+  //
+  // Guarded by a ref so it fires once per load: someone who later presses
+  // "Back to Home" is navigating deliberately and must be left alone.
+  const handledArrival = useRef(false);
   useEffect(() => {
-    if (!user?.email) return;
+    if (!user?.email || handledArrival.current) return;
+    handledArrival.current = true;
 
-    // A share import outranks everything: the user asked for that deck.
+    // A share import outranks everything: that user asked for a specific deck.
     const pending = readPendingShare();
     if (pending) {
       if (location.pathname.startsWith("/import/")) return;
-      shareLog("signed in as", user.email, "with share marker", pending, "on", location.pathname, "- walking to share page");
+      shareLog("signed in as", user.email, "with share marker", pending, "- walking to share page");
       navigate(`/import/${pending}`, { replace: true });
       return;
     }
 
-    // Otherwise honour where the login was heading. The marker is cleared on
-    // arrival rather than on departure: the destination is a protected page,
-    // and if the route guard bounces us back to the homepage the attempt has
-    // to be repeatable. countPostLoginAttempt caps that at three tries so a
-    // page that can never be reached cannot loop.
+    // An explicit destination, if the login recorded one and it survived.
     const dest = readPostLoginDest();
-    if (!dest) return;
-    if (dest === location.pathname) {
-      shareLog("arrived at", dest);
-      clearPostLoginDest();
+    clearPostLoginDest();
+
+    // Otherwise: a signed-in user sitting on the marketing homepage wants the
+    // app, not the pitch.
+    const onLanding = location.pathname === "/" || location.pathname === "/home";
+    const target = dest || (onLanding ? "/collections" : null);
+    if (!target || target === location.pathname) {
+      shareLog("signed in as", user.email, "on", location.pathname, "- staying");
       return;
     }
-    if (!countPostLoginAttempt()) {
-      shareLog("giving up on", dest, "after repeated attempts");
-      return;
-    }
-    shareLog("signed in as", user.email, "on", location.pathname, "- going to", dest);
-    navigate(dest, { replace: true });
+    shareLog("signed in as", user.email, "on", location.pathname, "- going to", target);
+    navigate(target, { replace: true });
   }, [user?.email, location.pathname, navigate]);
 
   // Tell the API who this email belongs to, once per sign-in.
