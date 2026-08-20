@@ -30,7 +30,7 @@ const FORMAT_EXAMPLE = `{
  * practice are code fences around the JSON, commentary before it, and
  * definitions that restate the term.
  */
-const AI_PROMPT = `Make a flashcard deck about TOPIC.
+const AI_PROMPT = `Make a flashcard deck about TOPIC (for example: Spanish verbs).
 
 Reply with JSON only — no code fences, no explanation — in exactly this shape:
 
@@ -137,8 +137,8 @@ function ImportDeckDialog({ open, onOpenChange, userEmail, onImported }) {
             Import a deck from JSON
           </DialogTitle>
           <DialogDescription>
-            Paste JSON or upload a file. Handy for building a deck with an AI —
-            copy the prompt below, give it your topic, and paste what it returns.
+            Paste JSON or upload a file. To build a deck with an AI, copy the
+            prompt below, swap in your subject, and paste back what it replies.
           </DialogDescription>
         </DialogHeader>
 
@@ -154,10 +154,18 @@ function ImportDeckDialog({ open, onOpenChange, userEmail, onImported }) {
                 Copy
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Replace <span className="font-mono">TOPIC</span> with what you want
-              to study, then paste the reply below.
+            <p className="text-xs text-muted-foreground mb-3">
+              Replace <span className="font-mono">TOPIC</span> with the subject you
+              want cards about — &ldquo;Spanish verbs&rdquo;, &ldquo;the French
+              Revolution&rdquo;, &ldquo;React hooks&rdquo;. The AI names the deck
+              itself; you can change that below.
             </p>
+
+            {/* Shown, not just copyable: a hidden prompt gives no way to tell
+                what TOPIC is, or to adjust the card count before sending it. */}
+            <pre className="max-h-44 overflow-y-auto rounded-md border bg-background/70 p-3 text-[11px] leading-relaxed whitespace-pre-wrap">
+              {AI_PROMPT}
+            </pre>
           </div>
 
           <div>
