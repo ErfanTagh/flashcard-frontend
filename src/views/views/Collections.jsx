@@ -416,9 +416,11 @@ function Collections() {
               <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
                 Collections
               </h1>
-              {/* On a phone this line costs a whole deck of vertical space and
-                  says nothing the page does not already show. */}
-              <p className="hidden sm:block text-lg text-muted-foreground mt-2">
+              {/* Hidden until there is genuinely room for it. On a phone it
+                  costs a whole deck of vertical space, and at tablet width it
+                  wraps to two lines beside the buttons -- in both cases paying
+                  vertical space for a sentence the page already demonstrates. */}
+              <p className="hidden lg:block text-lg text-muted-foreground mt-2">
                 Manage and organize your flashcard collections
               </p>
             </div>
