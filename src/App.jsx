@@ -11,7 +11,7 @@ import Quiz from "./views/views/Quiz.jsx";
 import ImportShare from "./views/views/ImportShare.jsx";
 
 import { useEffect } from "react";
-import { Route, BrowserRouter, Routes, Navigate } from "react-router-dom";
+import { Route, BrowserRouter, Routes, Navigate, useNavigate, useLocation } from "react-router-dom";
 import {
   withAuthenticationRequired,
 } from "@auth0/auth0-react";
@@ -20,6 +20,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { DevAuthProvider, withDevAuthenticationRequired } from "./utils/devAuth";
 import { useAuth } from "./hooks/useAuth";
 import { CollectionsProvider } from "./hooks/useCollections";
+import { readPendingShare } from "@/lib/pendingShare";
 
 // Check if we're in development mode and should bypass Auth0
 const isDevMode = import.meta.env.DEV && (import.meta.env.VITE_BYPASS_AUTH === 'true' || import.meta.env.MODE === 'development');
@@ -45,6 +46,21 @@ const ProtectedRoute = ({ component, ...args }) => {
 
 const AppContent = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Finish an interrupted share import. "Log in to add it" records the intent
+  // before the Auth0 round trip; when that round trip loses its return address
+  // (an email-verification detour does) the user lands here, signed in, on the
+  // homepage. This walks them back to the share page, which imports and clears
+  // the marker itself.
+  useEffect(() => {
+    if (!user?.email) return;
+    const pending = readPendingShare();
+    if (!pending) return;
+    if (location.pathname.startsWith("/import/")) return;
+    navigate(`/import/${pending}`, { replace: true });
+  }, [user?.email, location.pathname, navigate]);
 
   // Tell the API who this email belongs to, once per sign-in.
   //

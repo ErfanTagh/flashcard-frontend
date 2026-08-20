@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { BookOpen, Check, Download, ArrowRight, AlertCircle, Layers } from "lucide-react";
+import { setPendingShare, readPendingShare, clearPendingShare } from "@/lib/pendingShare";
 
 /**
  * The receiving end of a share link.
@@ -32,8 +33,14 @@ function ImportShare() {
         const res = await fetch(`/api/shares/${encodeURIComponent(shareId)}`);
         const data = await res.json();
         if (cancelled) return;
-        if (data.status !== 200) setError(data.error || "This link is no longer available");
-        else setShare(data);
+        if (data.status !== 200) {
+          setError(data.error || "This link is no longer available");
+          // A dead link must also kill the pending marker, or the app-level
+          // recovery would bounce the user back here forever.
+          if (readPendingShare() === shareId) clearPendingShare();
+        } else {
+          setShare(data);
+        }
       } catch {
         if (!cancelled) setError("Couldn't reach the server.");
       } finally {
@@ -49,8 +56,8 @@ function ImportShare() {
   // reload, and it is keyed to this share so it cannot import something else.
   useEffect(() => {
     if (!isAuthenticated || !user?.email || !share) return;
-    if (localStorage.getItem("pending_share_import") !== shareId) return;
-    localStorage.removeItem("pending_share_import");
+    if (readPendingShare() !== shareId) return;
+    clearPendingShare();
     handleImport();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, user?.email, share]);
@@ -156,7 +163,7 @@ function ImportShare() {
           <div className="space-y-3">
             <Button
               onClick={() => {
-                localStorage.setItem("pending_share_import", shareId);
+                setPendingShare(shareId);
                 loginWithRedirect({ appState: { returnTo: `/import/${shareId}` } });
               }}
               className="w-full h-12 text-base"
