@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useCollections } from "@/hooks/useCollections";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
@@ -20,6 +21,7 @@ function ImportShare() {
   const { shareId } = useParams();
   const { user, isAuthenticated, isLoading: authLoading, loginWithRedirect } = useAuth();
   const { toast } = useToast();
+  const { fetchCollections } = useCollections();
   const navigate = useNavigate();
 
   const [share, setShare] = useState(null);
@@ -93,6 +95,13 @@ function ImportShare() {
         title: "Added to your collections",
         description: `${data.imported} card${data.imported === 1 ? "" : "s"} copied into "${data.collection}".`,
       });
+
+      // The collection list is loaded once when the session starts, so a deck
+      // imported after that is not in it. Without this refresh the user is
+      // shown a success toast and then a page with no new deck on it -- which
+      // is exactly what it looked like from the outside: "the import doesn't
+      // work". It did; the list was simply stale.
+      await fetchCollections();
       navigate("/collections");
     } catch (e) {
       shareLog("import FAILED:", e.message);

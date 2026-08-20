@@ -112,6 +112,11 @@ const AppContent = () => {
     // A share import outranks everything: that user asked for a specific deck.
     const pending = readPendingShare();
     if (pending) {
+      // Drop any recorded destination as well. The login that carried this
+      // marker also recorded the share page as its destination, and leaving
+      // that behind sent the user back to the share page a second time later
+      // -- importing the same deck again as a duplicate.
+      clearPostLoginDest();
       if (location.pathname.startsWith("/import/")) return;
       shareLog("signed in as", user.email, "with share marker", pending, "- walking to share page");
       navigate(`/import/${pending}`, { replace: true });

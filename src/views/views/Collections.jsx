@@ -271,6 +271,15 @@ function Collections() {
 
   useEffect(() => { loadCovers(); }, [user?.email, collections.length]);
 
+  // Refetch whenever this page is opened. Anything that changed the decks
+  // elsewhere -- a share import, a JSON import, another tab -- happened after
+  // the context last loaded, and arriving here is exactly when the list has to
+  // be right.
+  useEffect(() => {
+    if (user?.email) fetchCollections();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleCoverChange = async (collection, file) => {
     if (!file || !user?.email) return;
     if (!file.type.startsWith("image/")) {
