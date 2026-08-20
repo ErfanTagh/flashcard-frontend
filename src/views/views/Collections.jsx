@@ -26,8 +26,9 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FolderOpen, Trash2, Edit2, Star, StarOff, Plus, BookOpen, Check, Play, GraduationCap, ArrowLeft, Share2, Copy, ImageIcon } from "lucide-react";
+import { FolderOpen, Trash2, Edit2, Star, StarOff, Plus, BookOpen, Check, Play, GraduationCap, ArrowLeft, Share2, Copy, ImageIcon, FileJson } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import ImportDeckDialog from "@/Components/ImportDeckDialog";
 import { Textarea } from "@/components/ui/textarea";
 
 function Collections() {
@@ -52,6 +53,7 @@ function Collections() {
   // The collection whose share link is on screen, and the link itself.
   // Deck covers, keyed by deck name, as returned by /api/collections.
   const [covers, setCovers] = useState({});
+  const [showImportDialog, setShowImportDialog] = useState(false);
   const [coverUploading, setCoverUploading] = useState(null);
   const [shareFor, setShareFor] = useState(null);
   const [shareLink, setShareLink] = useState("");
@@ -376,10 +378,16 @@ function Collections() {
               </h1>
               <p className="text-lg text-muted-foreground">Manage and organize your flashcard collections</p>
             </div>
-            <Button onClick={() => setShowCreateDialog(true)} className="gap-2">
-              <Plus className="h-4 w-4" />
-              New Collection
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" onClick={() => setShowImportDialog(true)} className="gap-2">
+                <FileJson className="h-4 w-4" />
+                Import JSON
+              </Button>
+              <Button onClick={() => setShowCreateDialog(true)} className="gap-2">
+                <Plus className="h-4 w-4" />
+                New Collection
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -735,6 +743,13 @@ function Collections() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <ImportDeckDialog
+        open={showImportDialog}
+        onOpenChange={setShowImportDialog}
+        userEmail={user?.email}
+        onImported={() => { fetchCollections(); loadCovers(); }}
+      />
 
       {/* Share link */}
       <Dialog open={shareFor !== null} onOpenChange={(open) => { if (!open) { setShareFor(null); setShareLink(""); } }}>
