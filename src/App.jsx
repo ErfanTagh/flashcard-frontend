@@ -9,6 +9,7 @@ import Progress from "./views/views/Progress.jsx";
 import Collections from "./views/views/Collections.jsx";
 import Quiz from "./views/views/Quiz.jsx";
 import ImportShare from "./views/views/ImportShare.jsx";
+import ManageCards from "./views/views/ManageCards.jsx";
 
 import { useEffect, useRef } from "react";
 import { Route, BrowserRouter, Routes, Navigate, useNavigate, useLocation } from "react-router-dom";
@@ -205,6 +206,10 @@ const AppContent = () => {
                 <Route
                   path="collections"
                   element={<ProtectedRoute component={Collections} />}
+                />
+                <Route
+                  path="collections/:collectionName/cards"
+                  element={<ProtectedRoute component={ManageCards} />}
                 />
                 <Route
                   path="quiz"

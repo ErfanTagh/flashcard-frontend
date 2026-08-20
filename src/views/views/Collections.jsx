@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FolderOpen, Trash2, Edit2, Star, StarOff, Plus, BookOpen, Check, Play, GraduationCap, ArrowLeft, Share2, Copy, ImageIcon, FileJson } from "lucide-react";
+import { FolderOpen, Trash2, Edit2, Star, StarOff, Plus, BookOpen, Check, Play, GraduationCap, ArrowLeft, Share2, Copy, ImageIcon, FileJson, ListChecks } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import ImportDeckDialog from "@/Components/ImportDeckDialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -493,11 +493,11 @@ function Collections() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleOpenAddCardDialog(collection)}
+                      onClick={() => navigate(`/collections/${encodeURIComponent(collection)}/cards`)}
                       className="w-full"
                     >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Card
+                      <ListChecks className="h-4 w-4 mr-2" />
+                      Manage Cards
                     </Button>
                     <div className="flex gap-2">
                       <Button
