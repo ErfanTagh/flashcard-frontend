@@ -4,6 +4,8 @@ import { Auth0Provider } from "@auth0/auth0-react";
 import './index.scss';
 import './index.css';
 import App from './App';
+import { shareLog } from './lib/shareDebug';
+import { setPostLoginDest } from './lib/postLogin';
 import reportWebVitals from './reportWebVitals';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -49,16 +51,25 @@ const normalizedOrigin = normalizeOrigin(window.location.origin);
 // the homepage -- someone who clicked "log in" on a share link lost the link.
 // appState.returnTo round-trips through Auth0, signup included.
 const onRedirectCallback = (appState) => {
-  const returnTo = appState?.returnTo;
-  shareLog("auth0 redirect returned, returnTo =", returnTo ?? "(none)");
+  // Everything in here runs inside the SDK's own try/catch around the code
+  // exchange. Anything that throws -- including, once, a logging call with a
+  // missing import -- is swallowed as a failed login: no session, no error on
+  // screen, just the signed-out homepage. Nothing this callback does is worth
+  // an authentication failure, so nothing in it is allowed to throw.
+  try {
+    const returnTo = appState?.returnTo;
+    shareLog("auth0 redirect returned, returnTo =", returnTo ?? "(none)");
 
-  // Record where to go, but do not navigate from here. A full page load at
-  // this moment races the token cache write, and landing on a protected page
-  // before the session is readable bounces the user straight back to login.
-  // App.jsx performs the navigation once it can see the signed-in user.
-  if (returnTo && returnTo.startsWith("/")) setPostLoginDest(returnTo);
+    // Record where to go, but do not navigate from here. A full page load at
+    // this moment races the token cache write, and landing on a protected
+    // page before the session is readable bounces the user back to login.
+    // App.jsx performs the navigation once it can see the signed-in user.
+    if (returnTo && returnTo.startsWith("/")) setPostLoginDest(returnTo);
 
-  window.history.replaceState({}, document.title, window.location.pathname);
+    window.history.replaceState({}, document.title, window.location.pathname);
+  } catch (e) {
+    console.warn("[share] redirect callback failed, ignoring:", e);
+  }
 };
 
 ReactDOM.createRoot(rootElement).render(
