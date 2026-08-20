@@ -21,7 +21,7 @@ import { DevAuthProvider, withDevAuthenticationRequired } from "./utils/devAuth"
 import { useAuth } from "./hooks/useAuth";
 import { CollectionsProvider } from "./hooks/useCollections";
 import { readPendingShare } from "@/lib/pendingShare";
-import { readPostLoginDest, clearPostLoginDest } from "@/lib/postLogin";
+import { readPostLoginDest, clearPostLoginDest, countPostLoginAttempt } from "@/lib/postLogin";
 import { shareLog } from "@/lib/shareDebug";
 
 // Check if we're in development mode and should bypass Auth0
@@ -68,13 +68,23 @@ const AppContent = () => {
       return;
     }
 
-    // Otherwise honour where the login was heading. Cleared first, so a stale
-    // marker can never pull the user away from a page they navigated to later.
+    // Otherwise honour where the login was heading. The marker is cleared on
+    // arrival rather than on departure: the destination is a protected page,
+    // and if the route guard bounces us back to the homepage the attempt has
+    // to be repeatable. countPostLoginAttempt caps that at three tries so a
+    // page that can never be reached cannot loop.
     const dest = readPostLoginDest();
     if (!dest) return;
-    clearPostLoginDest();
-    if (dest === location.pathname) return;
-    shareLog("signed in as", user.email, "- going to", dest);
+    if (dest === location.pathname) {
+      shareLog("arrived at", dest);
+      clearPostLoginDest();
+      return;
+    }
+    if (!countPostLoginAttempt()) {
+      shareLog("giving up on", dest, "after repeated attempts");
+      return;
+    }
+    shareLog("signed in as", user.email, "on", location.pathname, "- going to", dest);
     navigate(dest, { replace: true });
   }, [user?.email, location.pathname, navigate]);
 

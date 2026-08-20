@@ -13,8 +13,10 @@
 const KEY = "post_login_dest";
 const MAX_AGE_MS = 30 * 60 * 1000;
 
+const MAX_TRIES = 3;
+
 export function setPostLoginDest(path) {
-  localStorage.setItem(KEY, JSON.stringify({ path, ts: Date.now() }));
+  localStorage.setItem(KEY, JSON.stringify({ path, ts: Date.now(), tries: 0 }));
 }
 
 export function readPostLoginDest() {
@@ -30,6 +32,32 @@ export function readPostLoginDest() {
   } catch {
     localStorage.removeItem(KEY);
     return null;
+  }
+}
+
+/**
+ * Count an attempt to reach the destination, and say whether to keep trying.
+ *
+ * The destination is a protected page. If the session is not readable the
+ * instant we arrive, the route guard sends the user back out to Auth0 and they
+ * return to the homepage -- so the marker has to survive that bounce and try
+ * again. It must not try forever, hence the cap.
+ */
+export function countPostLoginAttempt() {
+  const raw = localStorage.getItem(KEY);
+  if (!raw) return false;
+  try {
+    const state = JSON.parse(raw);
+    const tries = (state.tries || 0) + 1;
+    if (tries > MAX_TRIES) {
+      localStorage.removeItem(KEY);
+      return false;
+    }
+    localStorage.setItem(KEY, JSON.stringify({ ...state, tries }));
+    return true;
+  } catch {
+    localStorage.removeItem(KEY);
+    return false;
   }
 }
 
