@@ -10,6 +10,7 @@ import Collections from "./views/views/Collections.jsx";
 import Quiz from "./views/views/Quiz.jsx";
 import ImportShare from "./views/views/ImportShare.jsx";
 import ManageCards from "./views/views/ManageCards.jsx";
+import SharedDeck from "./views/views/SharedDeck.jsx";
 
 import { useEffect, useRef } from "react";
 import { Route, BrowserRouter, Routes, Navigate, useNavigate, useLocation } from "react-router-dom";
@@ -186,6 +187,9 @@ const AppContent = () => {
         {/* Readable without an account: a share link has to show what it holds
             before asking anyone to sign up. */}
         <Route path="/import/:shareId" element={<ImportShare />} />
+        {/* Editing someone else's deck through a link. Public like the import
+            page: it explains itself and asks for a login only to contribute. */}
+        <Route path="/shared/:shareId" element={<SharedDeck />} />
         <Route path="/home" element={<Home />} />
         <Route
           path="profile"

@@ -5,7 +5,7 @@ import { useCollections } from "@/hooks/useCollections";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { BookOpen, Check, Download, ArrowRight, AlertCircle, Layers } from "lucide-react";
+import { BookOpen, Check, ArrowRight, AlertCircle, Layers, Users } from "lucide-react";
 import { setPendingShare, readPendingShare, clearPendingShare } from "@/lib/pendingShare";
 import { shareLog } from "@/lib/shareDebug";
 
@@ -80,38 +80,29 @@ function ImportShare() {
       shareLog("own deck, not importing");
       return;
     }
-    shareLog("auto-import starting for", shareId);
-    handleImport();
+    shareLog("auto-follow starting for", shareId);
+    handleFollow();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, user?.email, share]);
 
-  const handleImport = async () => {
+  const handleFollow = async () => {
     if (!user?.email) return;
     setImporting(true);
     try {
-      const res = await fetch(`/api/shares/${encodeURIComponent(shareId)}/import`, {
+      const data = await (await fetch(`/api/shares/${encodeURIComponent(shareId)}/follow`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({ token: user.email }),
-      });
-      const data = await res.json();
-      if (data.status !== 200) throw new Error(data.error || "Import failed");
-      shareLog("import succeeded:", data.collection, `(${data.imported} cards)`);
+      })).json();
+      if (data.status !== 200) throw new Error(data.error || "Couldn't add the deck");
       toast({
-        title: "Added to your collections",
-        description: `${data.imported} card${data.imported === 1 ? "" : "s"} copied into "${data.collection}".`,
+        title: data.already ? "Already in your collections" : "Added to your collections",
+        description: `"${data.collection}" stays up to date with the owner's copy.`,
       });
-
-      // The collection list is loaded once when the session starts, so a deck
-      // imported after that is not in it. Without this refresh the user is
-      // shown a success toast and then a page with no new deck on it -- which
-      // is exactly what it looked like from the outside: "the import doesn't
-      // work". It did; the list was simply stale.
       await fetchCollections();
       navigate("/collections");
     } catch (e) {
-      shareLog("import FAILED:", e.message);
-      toast({ title: "Couldn't import", description: e.message, variant: "destructive" });
+      toast({ title: "Couldn't add it", description: e.message, variant: "destructive" });
     } finally {
       setImporting(false);
     }
@@ -180,6 +171,21 @@ function ImportShare() {
           </div>
         </div>
 
+        {share.allow_edit && !share.is_owner && isAuthenticated && (
+          <div className="mb-4 rounded-lg border bg-card p-4">
+            <p className="text-sm font-medium mb-1">This deck is open for edits</p>
+            <p className="text-xs text-muted-foreground mb-3">
+              You can add cards and fix mistakes, and everyone with the link
+              sees them. Only the owner can delete cards.
+            </p>
+            <Button asChild variant="outline" className="w-full">
+              <Link to={`/shared/${encodeURIComponent(shareId)}`}>
+                Open the shared deck
+              </Link>
+            </Button>
+          </div>
+        )}
+
         {share.is_owner ? (
           <div className="space-y-3">
             <Button asChild variant="outline" className="w-full h-12 text-base">
@@ -191,13 +197,13 @@ function ImportShare() {
           </div>
         ) : isAuthenticated ? (
           <div className="space-y-3">
-            <Button onClick={handleImport} disabled={importing} className="w-full h-12 text-base">
-              <Download className="h-5 w-5 mr-2" />
-              {importing ? "Importing…" : "Import to my collections"}
+            <Button onClick={handleFollow} disabled={importing} className="w-full h-12 text-base">
+              <Users className="h-5 w-5 mr-2" />
+              {importing ? "Adding…" : "Add to my collections"}
             </Button>
             <p className="text-xs text-center text-muted-foreground">
-              You get your own copy with a clean slate. Studying it won&rsquo;t
-              affect the original.
+              The deck stays live: every change the group makes shows up for
+              you. Your own progress stays private.
             </p>
           </div>
         ) : (

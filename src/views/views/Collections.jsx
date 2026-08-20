@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FolderOpen, Trash2, Edit2, Star, StarOff, Plus, BookOpen, Check, Play, GraduationCap, ArrowLeft, Share2, Copy, ImageIcon, FileJson, ListChecks } from "lucide-react";
+import { FolderOpen, Trash2, Edit2, Star, StarOff, Plus, BookOpen, Check, Play, GraduationCap, ArrowLeft, Share2, Copy, ImageIcon, FileJson, ListChecks, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import ImportDeckDialog from "@/Components/ImportDeckDialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -53,11 +53,14 @@ function Collections() {
   // The collection whose share link is on screen, and the link itself.
   // Deck covers, keyed by deck name, as returned by /api/collections.
   const [covers, setCovers] = useState({});
+  // Decks followed through a share link rather than owned.
+  const [linked, setLinked] = useState([]);
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [coverUploading, setCoverUploading] = useState(null);
   const [shareFor, setShareFor] = useState(null);
   const [shareLink, setShareLink] = useState("");
   const [isSharing, setIsSharing] = useState(false);
+  const [shareAllowsEdit, setShareAllowsEdit] = useState(false);
   const [isAddingCard, setIsAddingCard] = useState(false);
 
   useEffect(() => {
@@ -264,6 +267,7 @@ function Collections() {
       const res = await fetch(`/api/collections/${encodeURIComponent(user.email)}`);
       const data = await res.json();
       setCovers(data.covers || {});
+      setLinked(data.linked || []);
     } catch {
       // A missing cover is cosmetic; the page works without it.
     }
@@ -332,11 +336,30 @@ function Collections() {
       const data = await res.json();
       if (data.status !== 200) throw new Error(data.error || "Could not create a link");
       setShareLink(`${window.location.origin}${data.path}`);
+      setShareAllowsEdit(Boolean(data.allow_edit));
     } catch (error) {
       toast({ title: "Couldn't share", description: error.message, variant: "destructive" });
       setShareFor(null);
     } finally {
       setIsSharing(false);
+    }
+  };
+
+  const setCollaboration = async (allowed) => {
+    if (!user?.email || !shareFor) return;
+    setShareAllowsEdit(allowed); // optimistic: the switch should not lag the tap
+    try {
+      const res = await fetch(`/api/collections/${encodeURIComponent(shareFor)}/share`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ token: user.email, allow_edit: allowed }),
+      });
+      const data = await res.json();
+      if (data.status !== 200) throw new Error(data.error || "Couldn't change the link");
+      setShareAllowsEdit(Boolean(data.allow_edit));
+    } catch (error) {
+      setShareAllowsEdit(!allowed);
+      toast({ title: "Couldn't change the link", description: error.message, variant: "destructive" });
     }
   };
 
@@ -788,6 +811,24 @@ function Collections() {
               </Button>
             </div>
           )}
+
+          <label className="flex items-start gap-3 rounded-lg border p-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={shareAllowsEdit}
+              onChange={(e) => setCollaboration(e.target.checked)}
+              className="mt-1 h-4 w-4 accent-[hsl(var(--primary))]"
+            />
+            <span className="text-sm">
+              <span className="font-medium">Let them edit this deck</span>
+              <span className="block text-xs text-muted-foreground mt-0.5">
+                Everyone with the link works on this one deck, so corrections
+                reach the whole group. They can add and change cards; only you
+                can delete cards or the deck. Off means each person gets their
+                own private copy instead.
+              </span>
+            </span>
+          </label>
 
           <DialogFooter className="sm:justify-between gap-2">
             <Button variant="ghost" onClick={handleStopSharing} className="text-destructive">
