@@ -21,6 +21,7 @@ import { DevAuthProvider, withDevAuthenticationRequired } from "./utils/devAuth"
 import { useAuth } from "./hooks/useAuth";
 import { CollectionsProvider } from "./hooks/useCollections";
 import { readPendingShare } from "@/lib/pendingShare";
+import { readPostLoginDest, clearPostLoginDest } from "@/lib/postLogin";
 import { shareLog } from "@/lib/shareDebug";
 
 // Check if we're in development mode and should bypass Auth0
@@ -57,11 +58,24 @@ const AppContent = () => {
   // the marker itself.
   useEffect(() => {
     if (!user?.email) return;
+
+    // A share import outranks everything: the user asked for that deck.
     const pending = readPendingShare();
-    if (!pending) return;
-    if (location.pathname.startsWith("/import/")) return;
-    shareLog("signed in as", user.email, "with marker for", pending, "on", location.pathname, "- walking to share page");
-    navigate(`/import/${pending}`, { replace: true });
+    if (pending) {
+      if (location.pathname.startsWith("/import/")) return;
+      shareLog("signed in as", user.email, "with share marker", pending, "on", location.pathname, "- walking to share page");
+      navigate(`/import/${pending}`, { replace: true });
+      return;
+    }
+
+    // Otherwise honour where the login was heading. Cleared first, so a stale
+    // marker can never pull the user away from a page they navigated to later.
+    const dest = readPostLoginDest();
+    if (!dest) return;
+    clearPostLoginDest();
+    if (dest === location.pathname) return;
+    shareLog("signed in as", user.email, "- going to", dest);
+    navigate(dest, { replace: true });
   }, [user?.email, location.pathname, navigate]);
 
   // Tell the API who this email belongs to, once per sign-in.

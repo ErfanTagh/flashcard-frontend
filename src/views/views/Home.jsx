@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Sparkles, Zap, Target, BookOpen, BarChart3, ArrowRight, CheckCircle2, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { setPostLoginDest } from "@/lib/postLogin";
 import { AppleIcon, AndroidIcon } from "@/Components/BrandIcons";
 
 const Home = () => {
@@ -80,7 +81,7 @@ const Home = () => {
           </span>
         </div>
         <Button
-          onClick={() => loginWithRedirect()}
+          onClick={() => { setPostLoginDest("/collections"); loginWithRedirect(); }}
           className="shrink-0 h-9 px-3 text-sm sm:h-10 sm:px-4 sm:text-base bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all"
         >
           Get Started
@@ -111,7 +112,7 @@ const Home = () => {
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-stretch sm:items-center">
               <Button
                 size="lg"
-                onClick={() => loginWithRedirect()}
+                onClick={() => { setPostLoginDest("/collections"); loginWithRedirect(); }}
                 className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 h-auto shadow-xl hover:shadow-2xl sm:hover:scale-105 transition-all"
               >
                 Start Learning Free
