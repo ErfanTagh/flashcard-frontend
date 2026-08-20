@@ -43,6 +43,18 @@ function ImportShare() {
     return () => { cancelled = true; };
   }, [shareId]);
 
+  // "Log in to add it" states the intent already, so after the round trip
+  // through Auth0 the import runs by itself -- no second button press. The
+  // intent is remembered in localStorage because it must survive a full page
+  // reload, and it is keyed to this share so it cannot import something else.
+  useEffect(() => {
+    if (!isAuthenticated || !user?.email || !share) return;
+    if (localStorage.getItem("pending_share_import") !== shareId) return;
+    localStorage.removeItem("pending_share_import");
+    handleImport();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, user?.email, share]);
+
   const handleImport = async () => {
     if (!user?.email) return;
     setImporting(true);
@@ -143,14 +155,18 @@ function ImportShare() {
         ) : (
           <div className="space-y-3">
             <Button
-              onClick={() => loginWithRedirect({ appState: { returnTo: `/import/${shareId}` } })}
+              onClick={() => {
+                localStorage.setItem("pending_share_import", shareId);
+                loginWithRedirect({ appState: { returnTo: `/import/${shareId}` } });
+              }}
               className="w-full h-12 text-base"
             >
               Log in to add it
               <ArrowRight className="h-5 w-5 ml-2" />
             </Button>
             <p className="text-xs text-center text-muted-foreground">
-              A free account keeps your copy and your progress.
+              After you log in or sign up, you come straight back here and the
+              deck is added for you.
             </p>
           </div>
         )}

@@ -44,6 +44,19 @@ if (!rootElement) {
 
 const normalizedOrigin = normalizeOrigin(window.location.origin);
 
+// Where to land after Auth0 sends the user back. Auth0 always returns to the
+// registered redirectUri (the origin), so without this every login ended on
+// the homepage -- someone who clicked "log in" on a share link lost the link.
+// appState.returnTo round-trips through Auth0, signup included.
+const onRedirectCallback = (appState) => {
+  const returnTo = appState?.returnTo;
+  if (returnTo && returnTo.startsWith("/") && returnTo !== window.location.pathname) {
+    window.location.replace(returnTo);
+    return;
+  }
+  window.history.replaceState({}, document.title, window.location.pathname);
+};
+
 ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
     <Auth0Provider
@@ -53,6 +66,7 @@ ReactDOM.createRoot(rootElement).render(
       audience={audience}
       useRefreshTokens={true}
       cacheLocation="localstorage"
+      onRedirectCallback={onRedirectCallback}
     >
       <App className="mainApp" />
     </Auth0Provider>
