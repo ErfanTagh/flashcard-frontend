@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { BookOpen, Check, Download, ArrowRight, AlertCircle, Layers } from "lucide-react";
 import { setPendingShare, readPendingShare, clearPendingShare } from "@/lib/pendingShare";
+import { shareLog } from "@/lib/shareDebug";
 
 /**
  * The receiving end of a share link.
@@ -34,11 +35,13 @@ function ImportShare() {
         const data = await res.json();
         if (cancelled) return;
         if (data.status !== 200) {
+          shareLog("share", shareId, "failed to load:", data.error || data.status);
           setError(data.error || "This link is no longer available");
           // A dead link must also kill the pending marker, or the app-level
           // recovery would bounce the user back here forever.
           if (readPendingShare() === shareId) clearPendingShare();
         } else {
+          shareLog("share", shareId, "loaded:", data.collection, `(${data.card_count} cards)`);
           setShare(data);
         }
       } catch {
@@ -54,10 +57,22 @@ function ImportShare() {
   // through Auth0 the import runs by itself -- no second button press. The
   // intent is remembered in localStorage because it must survive a full page
   // reload, and it is keyed to this share so it cannot import something else.
+  // One line per visit saying how the page found the user. If the trail shows
+  // "signed out" right after an Auth0 round trip, the login itself is what
+  // failed -- not the return address, not the import.
+  useEffect(() => {
+    if (authLoading) return;
+    shareLog("share page auth state:",
+             isAuthenticated ? `signed in as ${user?.email}` : "signed out");
+  }, [authLoading, isAuthenticated, user?.email]);
+
   useEffect(() => {
     if (!isAuthenticated || !user?.email || !share) return;
-    if (readPendingShare() !== shareId) return;
+    const pending = readPendingShare();
+    shareLog("on share page, signed in as", user.email, "- marker:", pending ?? "(none)");
+    if (pending !== shareId) return;
     clearPendingShare();
+    shareLog("auto-import starting for", shareId);
     handleImport();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, user?.email, share]);
@@ -73,12 +88,14 @@ function ImportShare() {
       });
       const data = await res.json();
       if (data.status !== 200) throw new Error(data.error || "Import failed");
+      shareLog("import succeeded:", data.collection, `(${data.imported} cards)`);
       toast({
         title: "Added to your collections",
         description: `${data.imported} card${data.imported === 1 ? "" : "s"} copied into "${data.collection}".`,
       });
       navigate("/collections");
     } catch (e) {
+      shareLog("import FAILED:", e.message);
       toast({ title: "Couldn't import", description: e.message, variant: "destructive" });
     } finally {
       setImporting(false);
@@ -163,6 +180,7 @@ function ImportShare() {
           <div className="space-y-3">
             <Button
               onClick={() => {
+                shareLog("login clicked on share page for", shareId);
                 setPendingShare(shareId);
                 loginWithRedirect({ appState: { returnTo: `/import/${shareId}` } });
               }}

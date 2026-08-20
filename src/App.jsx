@@ -21,6 +21,7 @@ import { DevAuthProvider, withDevAuthenticationRequired } from "./utils/devAuth"
 import { useAuth } from "./hooks/useAuth";
 import { CollectionsProvider } from "./hooks/useCollections";
 import { readPendingShare } from "@/lib/pendingShare";
+import { shareLog } from "@/lib/shareDebug";
 
 // Check if we're in development mode and should bypass Auth0
 const isDevMode = import.meta.env.DEV && (import.meta.env.VITE_BYPASS_AUTH === 'true' || import.meta.env.MODE === 'development');
@@ -59,6 +60,7 @@ const AppContent = () => {
     const pending = readPendingShare();
     if (!pending) return;
     if (location.pathname.startsWith("/import/")) return;
+    shareLog("signed in as", user.email, "with marker for", pending, "on", location.pathname, "- walking to share page");
     navigate(`/import/${pending}`, { replace: true });
   }, [user?.email, location.pathname, navigate]);
 

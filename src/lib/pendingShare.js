@@ -11,11 +11,14 @@
  * short enough that an abandoned click months ago cannot import a deck the
  * user no longer remembers.
  */
+import { shareLog } from "./shareDebug";
+
 const KEY = "pending_share_import";
 const MAX_AGE_MS = 30 * 60 * 1000;
 
 export function setPendingShare(shareId) {
   localStorage.setItem(KEY, JSON.stringify({ id: shareId, ts: Date.now() }));
+  shareLog("marker set for", shareId);
 }
 
 export function readPendingShare() {
@@ -24,6 +27,7 @@ export function readPendingShare() {
   try {
     const { id, ts } = JSON.parse(raw);
     if (!id || Date.now() - ts > MAX_AGE_MS) {
+      shareLog("marker expired or empty, dropped", raw);
       localStorage.removeItem(KEY);
       return null;
     }
@@ -36,5 +40,6 @@ export function readPendingShare() {
 }
 
 export function clearPendingShare() {
+  if (localStorage.getItem(KEY) !== null) shareLog("marker cleared");
   localStorage.removeItem(KEY);
 }

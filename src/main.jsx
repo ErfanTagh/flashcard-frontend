@@ -50,7 +50,9 @@ const normalizedOrigin = normalizeOrigin(window.location.origin);
 // appState.returnTo round-trips through Auth0, signup included.
 const onRedirectCallback = (appState) => {
   const returnTo = appState?.returnTo;
+  shareLog("auth0 redirect returned, returnTo =", returnTo ?? "(none)");
   if (returnTo && returnTo.startsWith("/") && returnTo !== window.location.pathname) {
+    shareLog("navigating to", returnTo);
     window.location.replace(returnTo);
     return;
   }
