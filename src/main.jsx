@@ -51,9 +51,13 @@ const normalizedOrigin = normalizeOrigin(window.location.origin);
 const onRedirectCallback = (appState) => {
   const returnTo = appState?.returnTo;
   shareLog("auth0 redirect returned, returnTo =", returnTo ?? "(none)");
-  if (returnTo && returnTo.startsWith("/") && returnTo !== window.location.pathname) {
-    shareLog("navigating to", returnTo);
-    window.location.replace(returnTo);
+  // A flow that knows where it came from (a share link) goes back there.
+  // A plain login goes to the collections page: landing signed-in on the
+  // marketing homepage helps nobody.
+  const dest = returnTo && returnTo.startsWith("/") ? returnTo : "/collections";
+  if (dest !== window.location.pathname) {
+    shareLog("navigating to", dest);
+    window.location.replace(dest);
     return;
   }
   window.history.replaceState({}, document.title, window.location.pathname);
