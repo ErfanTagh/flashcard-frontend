@@ -1,19 +1,49 @@
 import React, { createContext, useContext, useState } from 'react';
 
-// Mock user for development
-const mockUser = {
-  email: 'dev@local.com',
-  email_verified: true,
-  name: 'Dev User',
-  given_name: 'Dev',
-  family_name: 'User',
-  nickname: 'devuser',
-  picture: 'https://ui-avatars.com/api/?name=Dev+User&background=6366f1&color=fff',
-  sub: 'dev|local',
-  updated_at: new Date().toISOString(),
+const DEV_AUTH_KEY = 'dev_auth_authenticated';
+const DEV_USER_KEY = 'dev_auth_user';
+
+/**
+ * The signed-in identity while the Auth0 bypass is on.
+ *
+ * Sharing takes two people to test -- one owns a deck, another opens the link
+ * -- and a single hardcoded mock user cannot be both. The address is kept in
+ * localStorage so it can be switched, and only ever read here, in code that
+ * runs when the bypass is active.
+ *
+ * In any console:  __devUser('amir@local.test')  switches and reloads,
+ *                  __devUser()                   prints who you are now.
+ */
+const buildMockUser = (email) => {
+  const name = email.split('@')[0];
+  const label = name.charAt(0).toUpperCase() + name.slice(1);
+  return {
+    email,
+    email_verified: true,
+    name: `${label} (dev)`,
+    given_name: label,
+    family_name: 'Dev',
+    nickname: name,
+    picture: `https://ui-avatars.com/api/?name=${encodeURIComponent(label)}&background=6366f1&color=fff`,
+    sub: `dev|${name}`,
+    updated_at: new Date().toISOString(),
+  };
 };
 
-const DEV_AUTH_KEY = 'dev_auth_authenticated';
+const currentDevEmail = () =>
+  localStorage.getItem(DEV_USER_KEY) || 'dev@local.com';
+
+const mockUser = buildMockUser(currentDevEmail());
+
+if (typeof window !== 'undefined') {
+  window.__devUser = (email) => {
+    if (!email) return currentDevEmail();
+    localStorage.setItem(DEV_USER_KEY, email);
+    localStorage.setItem(DEV_AUTH_KEY, 'true');
+    location.href = '/collections';
+    return `switching to ${email}`;
+  };
+}
 
 // Mock Auth0 Context for development
 const DevAuthContext = createContext({

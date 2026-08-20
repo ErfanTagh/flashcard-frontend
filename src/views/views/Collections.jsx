@@ -26,8 +26,11 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FolderOpen, Trash2, Edit2, Star, StarOff, Plus, BookOpen, Check, Play, GraduationCap, ArrowLeft, Share2, Copy, ImageIcon, FileJson, ListChecks, Users } from "lucide-react";
+import { FolderOpen, Trash2, Edit2, Star, StarOff, Plus, BookOpen, Check, Play, GraduationCap, ArrowLeft, Share2, Copy, ImageIcon, FileJson, ListChecks, Users, MoreHorizontal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import ImportDeckDialog from "@/Components/ImportDeckDialog";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -55,6 +58,8 @@ function Collections() {
   const [covers, setCovers] = useState({});
   // Decks followed through a share link rather than owned.
   const [linked, setLinked] = useState([]);
+  const [progress, setProgress] = useState({});
+  const [owners, setOwners] = useState({});
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [coverUploading, setCoverUploading] = useState(null);
   const [shareFor, setShareFor] = useState(null);
@@ -80,6 +85,9 @@ function Collections() {
       if (data.stats) {
         setStats(data.stats);
       }
+      // Per-deck progress and, for followed decks, who owns them.
+      setProgress(data.progress || {});
+      setOwners(data.owners || {});
     } catch (error) {
       console.error('Error fetching collection stats:', error);
     } finally {
@@ -396,21 +404,25 @@ function Collections() {
         <Button
           variant="ghost"
           onClick={() => navigate("/")}
-          className="mb-6 self-start"
+          className="mb-2 sm:mb-4 self-start -ml-2"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Home
         </Button>
 
-        <div className="mb-12 animate-fade-in">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 min-w-0">
-            <div>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-2 sm:mb-3 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+        <div className="mb-5 sm:mb-8 animate-fade-in">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3 min-w-0">
+            <div className="min-w-0">
+              <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
                 Collections
               </h1>
-              <p className="text-lg text-muted-foreground">Manage and organize your flashcard collections</p>
+              {/* On a phone this line costs a whole deck of vertical space and
+                  says nothing the page does not already show. */}
+              <p className="hidden sm:block text-lg text-muted-foreground mt-2">
+                Manage and organize your flashcard collections
+              </p>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-row gap-2 shrink-0">
               <Button variant="outline" onClick={() => setShowImportDialog(true)} className="gap-2">
                 <FileJson className="h-4 w-4" />
                 Import JSON
@@ -438,10 +450,19 @@ function Collections() {
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3 min-w-0">
-            {collections.map((collection) => (
-              <Card key={collection} className="hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/50 bg-gradient-to-br from-card to-primary/5">
-                {/* Cover: the deck's picture, or the brand gradient until it has one */}
-                <label className="relative block h-28 w-full cursor-pointer overflow-hidden bg-gradient-to-br from-primary to-accent group/cover">
+            {collections.map((collection) => {
+              const isLinked = linked.includes(collection);
+              const info = progress[collection] || {};
+              const total = info.total ?? stats[collection] ?? 0;
+              const known = info.known ?? 0;
+              const toReview = info.needs_review ?? 0;
+              const percent = total ? Math.round((known / total) * 100) : 0;
+
+              return (
+              <Card key={collection} className="flex flex-col overflow-hidden transition-all hover:shadow-lg hover:border-primary/40">
+                {/* A thin cover: enough to identify the deck, not enough to
+                    dominate the card. Tapping it changes the picture. */}
+                <label className="relative block h-12 w-full shrink-0 cursor-pointer overflow-hidden bg-gradient-to-br from-primary to-accent group/cover">
                   {covers[collection] ? (
                     <img
                       src={`/api/images/${encodeURIComponent(covers[collection])}?email=${encodeURIComponent(user?.email || "")}`}
@@ -449,126 +470,103 @@ function Collections() {
                       className="absolute inset-0 h-full w-full object-cover"
                     />
                   ) : (
-                    <BookOpen className="absolute inset-0 m-auto h-8 w-8 text-white/90" />
+                    <BookOpen className="absolute inset-0 m-auto h-5 w-5 text-white/80" />
                   )}
-                  {/* Always visible: on a touch screen there is no hover, so a
-                      hover-only hint means the cover looks like a decoration
-                      rather than something you can tap. */}
-                  <span className="absolute bottom-2 right-2 inline-flex items-center gap-1.5 rounded-full bg-black/55 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-sm sm:group-hover/cover:opacity-0 transition-opacity">
-                    <ImageIcon className="h-3.5 w-3.5" />
+                  <span className="absolute bottom-1 right-1 inline-flex items-center gap-1 rounded-full bg-black/50 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm opacity-90 sm:opacity-0 sm:group-hover/cover:opacity-100 transition-opacity">
+                    <ImageIcon className="h-3 w-3" />
                     {coverUploading === collection ? "Uploading…" : "Cover"}
                   </span>
-
-                  {/* The fuller invitation, for pointers that can hover. */}
-                  <span className="absolute inset-0 hidden sm:flex items-center justify-center gap-2 bg-black/45 text-white text-sm font-medium opacity-0 transition-opacity group-hover/cover:opacity-100">
-                    <ImageIcon className="h-4 w-4" />
-                    {coverUploading === collection ? "Uploading…" : "Change cover"}
-                  </span>
                   <input
-                    type="file"
-                    accept="image/*"
-                    className="sr-only"
+                    type="file" accept="image/*" className="sr-only"
                     disabled={coverUploading === collection}
-                    onChange={(e) => {
-                      handleCoverChange(collection, e.target.files?.[0]);
-                      e.target.value = "";
-                    }}
+                    onChange={(e) => { handleCoverChange(collection, e.target.files?.[0]); e.target.value = ""; }}
                   />
                 </label>
 
-                <CardHeader>
-                  <div className="flex items-center justify-between gap-2 min-w-0">
-                    <div className="flex items-center gap-2 min-w-0 flex-wrap">
-                      <FolderOpen className="h-5 w-5 text-primary shrink-0" />
-                      <CardTitle className="text-xl break-words min-w-0">{collection}</CardTitle>
-                      {collection === defaultCollection && (
-                        <Badge className="bg-accent text-accent-foreground">
-                          <Star className="h-3 w-3 mr-1" />
-                          Default
-                        </Badge>
-                      )}
+                <div className="flex flex-1 flex-col gap-2.5 p-3.5 min-w-0">
+                  <div className="flex items-start justify-between gap-2 min-w-0">
+                    <div className="min-w-0">
+                      <p className="font-semibold leading-tight break-words">{collection}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {total} card{total === 1 ? "" : "s"}
+                        {collection === defaultCollection && " · Default"}
+                        {isLinked && ` · from ${owners[collection] || "someone"}`}
+                      </p>
                     </div>
-                  </div>
-                  <CardDescription>
-                    {stats[collection] !== undefined ? `${stats[collection]} card${stats[collection] !== 1 ? 's' : ''}` : '0 cards'}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-col gap-2">
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={() => handleReviewCollection(collection)}
-                      className="w-full"
-                    >
-                      <Play className="h-4 w-4 mr-2" />
-                      Review Cards
-                    </Button>
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={() => navigate(`/quiz?collection=${encodeURIComponent(collection)}`)}
-                      className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
-                    >
-                      <GraduationCap className="h-4 w-4 mr-2" />
-                      Quiz
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => navigate(`/collections/${encodeURIComponent(collection)}/cards`)}
-                      className="w-full"
-                    >
-                      <ListChecks className="h-4 w-4 mr-2" />
-                      Manage Cards
-                    </Button>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleShare(collection)}
-                        className="flex-1"
-                      >
-                        <Share2 className="h-4 w-4 mr-2" />
-                        Share
-                      </Button>
-                      {collection !== defaultCollection && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleSetDefault(collection)}
-                          className="flex-1"
-                        >
-                          <StarOff className="h-4 w-4 mr-2" />
-                          Set Default
+
+                    {/* Everything except studying lives here, so the card is a
+                        deck rather than a control panel. */}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm" className="shrink-0 h-8 w-8 p-0" aria-label={`Actions for ${collection}`}>
+                          <MoreHorizontal className="h-4 w-4" />
                         </Button>
-                      )}
-                      {collection !== 'Default' && (
-                        <>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setCollectionToRename(collection);
-                              setNewCollectionName(collection);
-                            }}
-                          >
-                            <Edit2 className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            size="sm"
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-48">
+                        <DropdownMenuItem onClick={() => { setSelectedCollection(collection); navigate(`/quiz?collection=${encodeURIComponent(collection)}`); }}>
+                          <GraduationCap className="h-4 w-4 mr-2" /> Quiz
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate(`/collections/${encodeURIComponent(collection)}/cards`)}>
+                          <ListChecks className="h-4 w-4 mr-2" /> Manage cards
+                        </DropdownMenuItem>
+                        {!isLinked && (
+                          <DropdownMenuItem onClick={() => handleShare(collection)}>
+                            <Share2 className="h-4 w-4 mr-2" /> Share
+                          </DropdownMenuItem>
+                        )}
+                        {collection !== defaultCollection && (
+                          <DropdownMenuItem onClick={() => handleSetDefault(collection)}>
+                            <Star className="h-4 w-4 mr-2" /> Set as default
+                          </DropdownMenuItem>
+                        )}
+                        {!isLinked && collection !== "Default" && (
+                          <DropdownMenuItem onClick={() => { setCollectionToRename(collection); setNewCollectionName(collection); }}>
+                            <Edit2 className="h-4 w-4 mr-2" /> Rename
+                          </DropdownMenuItem>
+                        )}
+                        {(isLinked || collection !== "Default") && (
+                          <DropdownMenuItem
                             onClick={() => setCollectionToDelete(collection)}
+                            className="text-destructive focus:text-destructive"
                           >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </>
-                      )}
-                    </div>
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            {isLinked ? "Stop following" : "Delete"}
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
-                </CardContent>
+
+                  {/* The decision signal: how much is solid, and what still
+                      needs work. "12 to review" is what picks the next deck. */}
+                  <div className="mt-auto space-y-1">
+                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-primary to-accent transition-all"
+                        style={{ width: `${percent}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {total === 0
+                        ? "No cards yet"
+                        : toReview > 0
+                          ? <><span className="font-medium text-[hsl(var(--accent))]">{toReview} to review</span> · {known} of {total} known</>
+                          : `${known} of ${total} known`}
+                    </p>
+                  </div>
+
+                  <Button
+                    onClick={() => { setSelectedCollection(collection); navigate(`/flashcards?collection=${encodeURIComponent(collection)}`); }}
+                    className="w-full"
+                    disabled={total === 0}
+                  >
+                    <Play className="h-4 w-4 mr-2" />
+                    {total === 0 ? "Empty deck" : "Study"}
+                  </Button>
+                </div>
               </Card>
-            ))}
+              );
+            })}
           </div>
         )}
 
