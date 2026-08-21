@@ -496,7 +496,7 @@ function Collections() {
                   />
                 </label>
 
-                <div className="min-w-0 flex-1">
+                <div className="min-w-0 flex-1 md:min-w-[8rem]">
                   <p className="truncate font-semibold leading-tight">{collection}</p>
                   <p className="mt-0.5 truncate text-xs text-muted-foreground">
                     {total} card{total === 1 ? "" : "s"}
@@ -504,6 +504,41 @@ function Collections() {
                     {isLinked ? ` · by ${owners[collection] || "someone"}` : " · by you"}
                   </p>
 
+                </div>
+
+                {/* A row this wide has the space, and hiding the three things
+                    people actually do behind a menu made them cost two clicks
+                    and a guess. They stay in the menu on narrow screens, where
+                    the space genuinely is not there. */}
+                <div className="hidden shrink-0 items-center gap-2 md:flex">
+                  <Button
+                    variant="outline"
+                    onClick={() => { setSelectedCollection(collection); navigate(`/quiz?collection=${encodeURIComponent(collection)}`); }}
+                    disabled={total === 0}
+                    className="text-violet-600 hover:text-violet-700 dark:text-violet-400"
+                  >
+                    <GraduationCap className="h-4 w-4 mr-2" />
+                    Quiz
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate(`/collections/${encodeURIComponent(collection)}/cards`)}
+                  >
+                    <ListChecks className="h-4 w-4 mr-2" />
+                    Cards
+                  </Button>
+                  {/* Only ever an action: a deck that already is the default
+                      says so in the line under its name. */}
+                  {collection !== defaultCollection && (
+                    <Button
+                      variant="ghost"
+                      onClick={() => handleSetDefault(collection)}
+                      className="hidden text-amber-600 hover:text-amber-700 hover:bg-amber-50 lg:inline-flex dark:text-amber-500 dark:hover:bg-amber-950"
+                    >
+                      <Star className="h-4 w-4 mr-2" />
+                      Set default
+                    </Button>
+                  )}
                 </div>
 
                 <Button
@@ -524,10 +559,10 @@ function Collections() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem onClick={() => { setSelectedCollection(collection); navigate(`/quiz?collection=${encodeURIComponent(collection)}`); }}>
+                  <DropdownMenuItem className="md:hidden" onClick={() => { setSelectedCollection(collection); navigate(`/quiz?collection=${encodeURIComponent(collection)}`); }}>
                     <GraduationCap className="h-4 w-4 mr-2" /> Quiz
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate(`/collections/${encodeURIComponent(collection)}/cards`)}>
+                  <DropdownMenuItem className="md:hidden" onClick={() => navigate(`/collections/${encodeURIComponent(collection)}/cards`)}>
                     <ListChecks className="h-4 w-4 mr-2" /> Manage cards
                   </DropdownMenuItem>
                   {!isLinked && (
@@ -536,7 +571,7 @@ function Collections() {
                     </DropdownMenuItem>
                   )}
                   {collection !== defaultCollection && (
-                    <DropdownMenuItem onClick={() => handleSetDefault(collection)}>
+                    <DropdownMenuItem className="lg:hidden" onClick={() => handleSetDefault(collection)}>
                       <Star className="h-4 w-4 mr-2" /> Set as default
                     </DropdownMenuItem>
                   )}
