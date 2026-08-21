@@ -438,20 +438,20 @@ function Collections() {
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3 min-w-0">
+          <div className="flex flex-col gap-3">
             {[...Array(3)].map((_, i) => (
-              <Card key={i} className="animate-pulse">
-                <CardHeader>
-                  <Skeleton className="h-4 w-32" />
-                </CardHeader>
-                <CardContent>
-                  <Skeleton className="h-8 w-24" />
-                </CardContent>
+              <Card key={i} className="flex items-center gap-4 p-3 sm:p-4 animate-pulse">
+                <Skeleton className="h-14 w-14 shrink-0 rounded-lg sm:h-16 sm:w-16" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-40" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
+                <Skeleton className="hidden h-9 w-24 shrink-0 rounded-md sm:block" />
               </Card>
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3 min-w-0">
+          <div className="flex flex-col gap-3">
             {collections.map((collection) => {
               const isLinked = linked.includes(collection);
               const info = progress[collection] || {};
@@ -461,10 +461,11 @@ function Collections() {
               const percent = total ? Math.round((known / total) * 100) : 0;
 
               return (
-              <Card key={collection} className="flex flex-col overflow-hidden transition-all hover:shadow-lg hover:border-primary/40">
-                {/* A thin cover: enough to identify the deck, not enough to
-                    dominate the card. Tapping it changes the picture. */}
-                <label className="relative block h-12 w-full shrink-0 cursor-pointer overflow-hidden bg-gradient-to-br from-primary to-accent group/cover">
+              <Card key={collection} className="flex flex-wrap items-center gap-3 overflow-hidden p-3 transition-all hover:shadow-md hover:border-primary/40 sm:flex-nowrap sm:gap-4 sm:p-4">
+                {/* A small square rather than a banner: in a row the deck's
+                    picture identifies it, it does not need to fill it.
+                    Tapping it changes the picture. */}
+                <label className="group/cover relative h-14 w-14 shrink-0 cursor-pointer overflow-hidden rounded-lg bg-gradient-to-br from-primary to-accent sm:h-16 sm:w-16">
                   {covers[collection] ? (
                     <img
                       src={`/api/images/${encodeURIComponent(covers[collection])}?email=${encodeURIComponent(user?.email || "")}`}
@@ -472,11 +473,12 @@ function Collections() {
                       className="absolute inset-0 h-full w-full object-cover"
                     />
                   ) : (
-                    <BookOpen className="absolute inset-0 m-auto h-5 w-5 text-white/80" />
+                    <BookOpen className="absolute inset-0 m-auto h-6 w-6 text-white/80" />
                   )}
-                  <span className="absolute bottom-1 right-1 inline-flex items-center gap-1 rounded-full bg-black/50 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm opacity-90 sm:opacity-0 sm:group-hover/cover:opacity-100 transition-opacity">
-                    <ImageIcon className="h-3 w-3" />
-                    {coverUploading === collection ? "Uploading…" : "Cover"}
+                  <span className="absolute inset-0 flex items-center justify-center bg-black/45 text-white opacity-0 transition-opacity group-hover/cover:opacity-100 focus-within:opacity-100">
+                    {coverUploading === collection
+                      ? <span className="text-[10px] font-medium">Uploading…</span>
+                      : <ImageIcon className="h-4 w-4" />}
                   </span>
                   <input
                     type="file" accept="image/*" className="sr-only"
@@ -485,63 +487,17 @@ function Collections() {
                   />
                 </label>
 
-                <div className="flex flex-1 flex-col gap-2.5 p-3.5 min-w-0">
-                  <div className="flex items-start justify-between gap-2 min-w-0">
-                    <div className="min-w-0">
-                      <p className="font-semibold leading-tight break-words">{collection}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {total} card{total === 1 ? "" : "s"}
-                        {collection === defaultCollection && " · Default"}
-                        {isLinked && ` · from ${owners[collection] || "someone"}`}
-                      </p>
-                    </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-semibold leading-tight">{collection}</p>
+                  <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                    {total} card{total === 1 ? "" : "s"}
+                    {collection === defaultCollection && " · Default"}
+                    {isLinked && ` · from ${owners[collection] || "someone"}`}
+                  </p>
 
-                    {/* Everything except studying lives here, so the card is a
-                        deck rather than a control panel. */}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="shrink-0 h-8 w-8 p-0" aria-label={`Actions for ${collection}`}>
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48">
-                        <DropdownMenuItem onClick={() => { setSelectedCollection(collection); navigate(`/quiz?collection=${encodeURIComponent(collection)}`); }}>
-                          <GraduationCap className="h-4 w-4 mr-2" /> Quiz
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate(`/collections/${encodeURIComponent(collection)}/cards`)}>
-                          <ListChecks className="h-4 w-4 mr-2" /> Manage cards
-                        </DropdownMenuItem>
-                        {!isLinked && (
-                          <DropdownMenuItem onClick={() => handleShare(collection)}>
-                            <Share2 className="h-4 w-4 mr-2" /> Share
-                          </DropdownMenuItem>
-                        )}
-                        {collection !== defaultCollection && (
-                          <DropdownMenuItem onClick={() => handleSetDefault(collection)}>
-                            <Star className="h-4 w-4 mr-2" /> Set as default
-                          </DropdownMenuItem>
-                        )}
-                        {!isLinked && collection !== "Default" && (
-                          <DropdownMenuItem onClick={() => { setCollectionToRename(collection); setNewCollectionName(collection); }}>
-                            <Edit2 className="h-4 w-4 mr-2" /> Rename
-                          </DropdownMenuItem>
-                        )}
-                        {(isLinked || collection !== "Default") && (
-                          <DropdownMenuItem
-                            onClick={() => setCollectionToDelete(collection)}
-                            className="text-destructive focus:text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            {isLinked ? "Stop following" : "Delete"}
-                          </DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-
-                  {/* The decision signal: how much is solid, and what still
-                      needs work. "12 to review" is what picks the next deck. */}
-                  <div className="mt-auto space-y-1">
+                  {/* Too narrow for a column of its own on a phone, so the
+                      progress sits under the name there instead. */}
+                  <div className="mt-2 space-y-1 sm:hidden">
                     <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
                       <div
                         className="h-full rounded-full bg-gradient-to-r from-primary to-accent transition-all"
@@ -556,16 +512,79 @@ function Collections() {
                           : `${known} of ${total} known`}
                     </p>
                   </div>
-
-                  <Button
-                    onClick={() => { setSelectedCollection(collection); navigate(`/flashcards?collection=${encodeURIComponent(collection)}`); }}
-                    className="w-full"
-                    disabled={total === 0}
-                  >
-                    <Play className="h-4 w-4 mr-2" />
-                    {total === 0 ? "Empty deck" : "Study"}
-                  </Button>
                 </div>
+
+                {/* The decision signal: how much is solid, and what still
+                    needs work. "12 to review" is what picks the next deck.
+                    Given a row to itself it lines up down the list, so the
+                    decks can be compared at a glance rather than read one
+                    by one. */}
+                <div className="hidden w-40 shrink-0 space-y-1 sm:block lg:w-56">
+                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-primary to-accent transition-all"
+                      style={{ width: `${percent}%` }}
+                    />
+                  </div>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {total === 0
+                      ? "No cards yet"
+                      : toReview > 0
+                        ? <><span className="font-medium text-[hsl(var(--accent))]">{toReview} to review</span> · {known} of {total} known</>
+                        : `${known} of ${total} known`}
+                  </p>
+                </div>
+
+                <Button
+                  onClick={() => { setSelectedCollection(collection); navigate(`/flashcards?collection=${encodeURIComponent(collection)}`); }}
+                  className="w-full shrink-0 max-sm:order-last sm:w-auto sm:min-w-[7rem]"
+                  disabled={total === 0}
+                >
+                  <Play className="h-4 w-4 mr-2" />
+                  {total === 0 ? "Empty deck" : "Study"}
+                </Button>
+
+                {/* Everything except studying lives here, so a row reads as a
+                    deck rather than a control panel. */}
+                <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="shrink-0 h-10 w-10 p-0" aria-label={`Actions for ${collection}`}>
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={() => { setSelectedCollection(collection); navigate(`/quiz?collection=${encodeURIComponent(collection)}`); }}>
+                    <GraduationCap className="h-4 w-4 mr-2" /> Quiz
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate(`/collections/${encodeURIComponent(collection)}/cards`)}>
+                    <ListChecks className="h-4 w-4 mr-2" /> Manage cards
+                  </DropdownMenuItem>
+                  {!isLinked && (
+                    <DropdownMenuItem onClick={() => handleShare(collection)}>
+                      <Share2 className="h-4 w-4 mr-2" /> Share
+                    </DropdownMenuItem>
+                  )}
+                  {collection !== defaultCollection && (
+                    <DropdownMenuItem onClick={() => handleSetDefault(collection)}>
+                      <Star className="h-4 w-4 mr-2" /> Set as default
+                    </DropdownMenuItem>
+                  )}
+                  {!isLinked && collection !== "Default" && (
+                    <DropdownMenuItem onClick={() => { setCollectionToRename(collection); setNewCollectionName(collection); }}>
+                      <Edit2 className="h-4 w-4 mr-2" /> Rename
+                    </DropdownMenuItem>
+                  )}
+                  {(isLinked || collection !== "Default") && (
+                    <DropdownMenuItem
+                      onClick={() => setCollectionToDelete(collection)}
+                      className="text-destructive focus:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      {isLinked ? "Stop following" : "Delete"}
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+                </DropdownMenu>
               </Card>
               );
             })}
