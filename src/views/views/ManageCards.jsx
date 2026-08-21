@@ -145,11 +145,15 @@ function ManageCards() {
         image = up.image_id;
       }
 
+      // The picture is the answer when there is one, so the text the box was
+      // holding onto is not what gets saved beside it.
+      const answer = image ? "" : definition;
+
       const isNew = !editing.term;
       const url = isNew ? "/api/sendwords" : "/api/editword";
       const payload = isNew
-        ? { token: user.email, word: term, ans: definition, image, collection: collectionName }
-        : { token: user.email, oldword: editing.term, word: term, ans: definition, image, collection: collectionName };
+        ? { token: user.email, word: term, ans: answer, image, collection: collectionName }
+        : { token: user.email, oldword: editing.term, word: term, ans: answer, image, collection: collectionName };
 
       const data = await (await fetch(url, {
         method: "POST",
@@ -372,12 +376,22 @@ function ManageCards() {
                 imply the picture is something else. */}
             <div className="space-y-2">
               <Label htmlFor="definition">Back — the answer</Label>
-              <Textarea
-                id="definition" value={form.definition}
-                onChange={(e) => setForm({ ...form, definition: e.target.value })}
-                placeholder="e.g. lasting for a very short time"
-                className="min-h-[110px]"
-              />
+
+              {/* An answer is either words or a picture. Showing the text box
+                  beside an attached picture invites someone to fill in both
+                  and then wonder which one the card is testing them on.
+
+                  The text is kept rather than cleared, so taking the picture
+                  off puts back what was typed instead of silently losing it;
+                  it is simply not what gets saved while a picture is there. */}
+              {!(imagePreview || (editing?.image && !dropImage)) && (
+                <Textarea
+                  id="definition" value={form.definition}
+                  onChange={(e) => setForm({ ...form, definition: e.target.value })}
+                  placeholder="e.g. lasting for a very short time"
+                  className="min-h-[110px]"
+                />
+              )}
 
               {(imagePreview || (editing?.image && !dropImage)) ? (
                 <div className="flex items-center gap-3 rounded-lg border bg-muted/20 p-2.5">
@@ -387,9 +401,11 @@ function ManageCards() {
                     className="h-16 w-16 shrink-0 rounded-md border bg-background object-cover"
                   />
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium">Shown with this answer</p>
+                    <p className="text-sm font-medium">The answer is this picture</p>
                     <p className="text-xs text-muted-foreground">
-                      The answer text is optional while a picture is attached.
+                      {form.definition.trim()
+                        ? "Remove it to go back to your text answer."
+                        : "Remove it to answer in words instead."}
                     </p>
                   </div>
                   <div className="flex shrink-0 items-center gap-1">

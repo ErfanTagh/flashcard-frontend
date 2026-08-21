@@ -19,6 +19,8 @@ function Quiz() {
   const collectionName = searchParams.get('collection') || selectedCollection || 'Default';
 
   const [cards, setCards] = useState([]);
+  // How many cards this deck holds that a typed quiz cannot ask about.
+  const [skipped, setSkipped] = useState(0);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userAnswer, setUserAnswer] = useState("");
   const [showResult, setShowResult] = useState(false);
@@ -48,7 +50,13 @@ function Quiz() {
         { mode: "cors" }
       );
       const data = await res.json();
-      const cardEntries = Array.isArray(data.cards) ? data.cards : [];
+      const all = Array.isArray(data.cards) ? data.cards : [];
+
+      // A quiz asks you to type the answer, so a card whose answer is a
+      // picture has nothing to type and would be marked wrong whatever you
+      // put. Those belong in review, not here.
+      const cardEntries = all.filter((c) => (c.definition || "").trim());
+      setSkipped(all.length - cardEntries.length);
 
       // Shuffle cards for quiz
       const shuffled = [...cardEntries].sort(() => Math.random() - 0.5);
@@ -231,6 +239,12 @@ function Quiz() {
                       <li>Answers are case-insensitive</li>
                       <li>Extra spacing is ignored, but the full answer is required</li>
                       <li>Total cards: {shuffledCards.length}</li>
+                      {skipped > 0 && (
+                        <li>
+                          {skipped} card{skipped === 1 ? "" : "s"} answered with a picture
+                          {skipped === 1 ? " is" : " are"} left out — there is nothing to type
+                        </li>
+                      )}
                     </ul>
                   </div>
                 </div>
