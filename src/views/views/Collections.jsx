@@ -501,7 +501,7 @@ function Collections() {
                   <p className="mt-0.5 truncate text-xs text-muted-foreground">
                     {total} card{total === 1 ? "" : "s"}
                     {collection === defaultCollection && " · Default"}
-                    {isLinked && ` · from ${owners[collection] || "someone"}`}
+                    {isLinked ? ` · by ${owners[collection] || "someone"}` : " · by you"}
                   </p>
 
                 </div>
