@@ -308,7 +308,7 @@ function ManageCards() {
 
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="font-semibold break-words">{card.term}</p>
+                    <p className="m-0 font-semibold break-words">{card.term}</p>
                     {card.needs_review && (
                       <Badge className="bg-accent text-accent-foreground">Review</Badge>
                     )}

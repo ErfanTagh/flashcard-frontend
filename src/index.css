@@ -122,3 +122,12 @@ All colors MUST be HSL.
     transform: rotateY(180deg);
   }
 }
+/* Bootstrap is imported after Tailwind (see main.jsx) and its spacing
+   utilities carry !important, so a Tailwind padding class on an <input>
+   silently loses. That leaves an input with a search icon inside it no room
+   for the icon, and the placeholder starts underneath it. Naming the element
+   as well as the class outranks Bootstrap's rule on specificity, which is
+   decided among !important declarations too. */
+input.pl-9 {
+  padding-left: 2.25rem !important;
+}
