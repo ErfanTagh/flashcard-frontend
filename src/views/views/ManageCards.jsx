@@ -366,6 +366,10 @@ function ManageCards() {
                 placeholder="e.g. ephemeral" maxLength={200}
               />
             </div>
+            {/* The picture is part of the answer, not decoration attached to
+                the card: a card can be answered in words, in a picture, or in
+                both, so the two live in one group rather than in sections that
+                imply the picture is something else. */}
             <div className="space-y-2">
               <Label htmlFor="definition">Back — the answer</Label>
               <Textarea
@@ -374,38 +378,55 @@ function ManageCards() {
                 placeholder="e.g. lasting for a very short time"
                 className="min-h-[110px]"
               />
-            </div>
 
-            <div className="space-y-2">
-              <Label>Picture (optional)</Label>
-              {(imagePreview || (editing?.image && !dropImage)) && (
-                <div className="relative inline-block">
+              {(imagePreview || (editing?.image && !dropImage)) ? (
+                <div className="flex items-center gap-3 rounded-lg border bg-muted/20 p-2.5">
                   <img
                     src={imagePreview || imageUrl(editing.image)}
-                    alt="" className="max-h-36 rounded border"
+                    alt=""
+                    className="h-16 w-16 shrink-0 rounded-md border bg-background object-cover"
                   />
-                  <Button
-                    type="button" size="sm" variant="destructive"
-                    className="absolute top-1 right-1"
-                    onClick={() => {
-                      if (imagePreview) URL.revokeObjectURL(imagePreview);
-                      setImageFile(null); setImagePreview(null); setDropImage(true);
-                    }}
-                  >
-                    Remove
-                  </Button>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium">Shown with this answer</p>
+                    <p className="text-xs text-muted-foreground">
+                      The answer text is optional while a picture is attached.
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-1">
+                    <Button type="button" variant="ghost" size="sm" asChild>
+                      <label className="cursor-pointer">
+                        Replace
+                        <input
+                          type="file" accept="image/*" className="sr-only"
+                          onChange={(e) => { pickImage(e.target.files?.[0]); e.target.value = ""; }}
+                        />
+                      </label>
+                    </Button>
+                    <Button
+                      type="button" size="sm" variant="ghost"
+                      aria-label="Remove the picture"
+                      className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      onClick={() => {
+                        if (imagePreview) URL.revokeObjectURL(imagePreview);
+                        setImageFile(null); setImagePreview(null); setDropImage(true);
+                      }}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
+              ) : (
+                <Button type="button" variant="ghost" size="sm" asChild>
+                  <label className="cursor-pointer text-muted-foreground">
+                    <ImageIcon className="h-4 w-4 mr-2" />
+                    Answer with a picture instead
+                    <input
+                      type="file" accept="image/*" className="sr-only"
+                      onChange={(e) => { pickImage(e.target.files?.[0]); e.target.value = ""; }}
+                    />
+                  </label>
+                </Button>
               )}
-              <Button type="button" variant="outline" size="sm" asChild>
-                <label className="cursor-pointer">
-                  <ImageIcon className="h-4 w-4 mr-2" />
-                  {imagePreview || (editing?.image && !dropImage) ? "Replace picture" : "Add a picture"}
-                  <input
-                    type="file" accept="image/*" className="sr-only"
-                    onChange={(e) => { pickImage(e.target.files?.[0]); e.target.value = ""; }}
-                  />
-                </label>
-              </Button>
             </div>
           </div>
 
