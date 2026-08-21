@@ -461,7 +461,7 @@ function Collections() {
               const percent = total ? Math.round((known / total) * 100) : 0;
 
               return (
-              <Card key={collection} className="flex flex-wrap items-center gap-3 overflow-hidden p-3 transition-all hover:shadow-md hover:border-primary/40 sm:flex-nowrap sm:gap-4 sm:p-4">
+              <Card key={collection} className="relative flex flex-wrap items-center gap-3 overflow-hidden p-3 pb-4 transition-all hover:shadow-md hover:border-primary/40 sm:flex-nowrap sm:gap-4 sm:p-4 sm:pb-5">
                 {/* A small square rather than a banner: in a row the deck's
                     picture identifies it, it does not need to fill it.
                     Tapping it changes the picture. */}
@@ -496,37 +496,8 @@ function Collections() {
                   </p>
 
                   {/* Too narrow for a column of its own on a phone, so the
-                      progress sits under the name there instead. */}
-                  <div className="mt-2 space-y-1 sm:hidden">
-                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                      <div
-                        className="h-full rounded-full bg-gradient-to-r from-primary to-accent transition-all"
-                        style={{ width: `${percent}%` }}
-                      />
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {total === 0
-                        ? "No cards yet"
-                        : toReview > 0
-                          ? <><span className="font-medium text-[hsl(var(--accent))]">{toReview} to review</span> · {known} of {total} known</>
-                          : `${known} of ${total} known`}
-                    </p>
-                  </div>
-                </div>
-
-                {/* The decision signal: how much is solid, and what still
-                    needs work. "12 to review" is what picks the next deck.
-                    Given a row to itself it lines up down the list, so the
-                    decks can be compared at a glance rather than read one
-                    by one. */}
-                <div className="hidden w-40 shrink-0 space-y-1 sm:block lg:w-56">
-                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-primary to-accent transition-all"
-                      style={{ width: `${percent}%` }}
-                    />
-                  </div>
-                  <p className="truncate text-xs text-muted-foreground">
+                      count sits under the name there instead. */}
+                  <p className="mt-1.5 text-xs text-muted-foreground sm:hidden">
                     {total === 0
                       ? "No cards yet"
                       : toReview > 0
@@ -534,6 +505,16 @@ function Collections() {
                         : `${known} of ${total} known`}
                   </p>
                 </div>
+
+                {/* The decision signal: how much is solid, and what still
+                    needs work. "12 to review" is what picks the next deck. */}
+                <p className="hidden w-40 shrink-0 truncate text-right text-xs text-muted-foreground sm:block lg:w-56">
+                  {total === 0
+                    ? "No cards yet"
+                    : toReview > 0
+                      ? <><span className="font-medium text-[hsl(var(--accent))]">{toReview} to review</span> · {known} of {total} known</>
+                      : `${known} of ${total} known`}
+                </p>
 
                 <Button
                   onClick={() => { setSelectedCollection(collection); navigate(`/flashcards?collection=${encodeURIComponent(collection)}`); }}
@@ -585,6 +566,17 @@ function Collections() {
                   )}
                 </DropdownMenuContent>
                 </DropdownMenu>
+
+                {/* Laid along the bottom edge of the row rather than boxed
+                    inside it: the full width of the deck reads as the deck,
+                    and how much of it is filled reads without being measured
+                    against anything. */}
+                <div className="absolute inset-x-0 bottom-0 h-1 bg-muted">
+                  <div
+                    className="h-full bg-gradient-to-r from-primary to-accent transition-all"
+                    style={{ width: `${percent}%` }}
+                  />
+                </div>
               </Card>
               );
             })}
