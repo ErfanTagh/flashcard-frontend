@@ -419,7 +419,7 @@ function Flashcard() {
                 {!editMode && attribution && (
                   <p
                     title={attribution}
-                    className="absolute bottom-2 inset-x-4 truncate text-right text-[10px] leading-none text-muted-foreground/50"
+                    className="absolute bottom-0 inset-x-4 truncate text-right text-[9px] leading-none text-muted-foreground/70"
                   >
                     {attribution}
                   </p>
