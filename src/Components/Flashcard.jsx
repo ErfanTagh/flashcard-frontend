@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useCollections } from "@/hooks/useCollections";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,11 +16,15 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RotateCcw, Check, X, MoreHorizontal, Edit, Trash2, FolderOpen, ChevronLeft, ChevronRight, ArrowLeft } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { attributionLine } from "@/lib/attribution";
 import { Input } from "@/components/ui/input";
 
 function Flashcard() {
   const [error, setError] = useState(null);
   const [cards, setCards] = useState([]);
+  // Whether this deck has more than one author. A deck one person built is
+  // the common case, and there attribution would be noise on every card.
+  const [multiAuthor, setMultiAuthor] = useState(false);
   const [isFlipped, setIsFlipped] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editInputs, setEditInputs] = useState({ term: "", definition: "" });
@@ -29,6 +33,7 @@ function Flashcard() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { collections, selectedCollection, setSelectedCollection, loading: collectionsLoading } = useCollections();
+  const [searchParams] = useSearchParams();
 
   // Must match the duration-500 on the flip container below.
   const FLIP_MS = 500;
@@ -40,6 +45,10 @@ function Flashcard() {
   const totalCards = cards.length;
   const card = cards[currentIndex] || null;
   const isInReview = Boolean(card?.needs_review);
+  // Only ever shown on the definition side: the term side is a recall test,
+  // and nothing that is not the question belongs on it.
+  const attribution = attributionLine(card, multiAuthor);
+
   const frontText = card ? card.term : "You Don't Have Anything to Memorize";
   const backText = card ? card.definition : "Please Add Cards!";
   // Pictures are served by id and scoped to the owner, so the email travels
@@ -69,6 +78,7 @@ function Flashcard() {
       const list = Array.isArray(data.cards) ? data.cards : [];
 
       setCards(list);
+      setMultiAuthor(Boolean(data.multi_author));
       setCurrentIndex(list.length ? Math.min(keepIndex, list.length - 1) : 0);
       setIsFlipped(false);
       setEditMode(false);
@@ -82,6 +92,14 @@ function Flashcard() {
       });
     }
   };
+
+  const requestedCollection = searchParams.get("collection");
+  useEffect(() => {
+    if (!requestedCollection || collectionsLoading) return;
+    if (collections.includes(requestedCollection) && requestedCollection !== selectedCollection) {
+      setSelectedCollection(requestedCollection);
+    }
+  }, [requestedCollection, collectionsLoading, collections, selectedCollection, setSelectedCollection]);
 
   useEffect(() => {
     setEditInputs({ term: card?.term || "", definition: card?.definition || "" });
@@ -397,6 +415,12 @@ function Flashcard() {
                     </>
                   )}
                 </CardContent>
+
+                {!editMode && attribution && (
+                  <p className="absolute inset-x-0 bottom-3 px-8 text-center text-xs text-muted-foreground line-clamp-2">
+                    {attribution}
+                  </p>
+                )}
               </Card>
             </div>
           </div>
