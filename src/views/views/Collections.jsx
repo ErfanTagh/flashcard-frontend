@@ -458,7 +458,16 @@ function Collections() {
               const total = info.total ?? stats[collection] ?? 0;
               const known = info.known ?? 0;
               const toReview = info.needs_review ?? 0;
-              const percent = total ? Math.round((known / total) * 100) : 0;
+              // The two are disjoint by definition -- a card counts as known
+              // only when it is not flagged -- so the shares never overshoot
+              // the bar, and what is left of it is what has not been touched.
+              // Deliberately unrounded: rounding each share independently can
+              // add up to more than the whole.
+              const knownShare = total ? (known / total) * 100 : 0;
+              const reviewShare = total ? (toReview / total) * 100 : 0;
+              const progressLabel = total === 0
+                ? "No cards yet"
+                : `${known} of ${total} known` + (toReview > 0 ? `, ${toReview} to review` : "");
 
               return (
               <Card key={collection} className="relative flex flex-wrap items-center gap-3 overflow-hidden p-3 pb-4 transition-all hover:shadow-md hover:border-primary/40 sm:flex-nowrap sm:gap-4 sm:p-4 sm:pb-5">
@@ -495,26 +504,7 @@ function Collections() {
                     {isLinked && ` · from ${owners[collection] || "someone"}`}
                   </p>
 
-                  {/* Too narrow for a column of its own on a phone, so the
-                      count sits under the name there instead. */}
-                  <p className="mt-1.5 text-xs text-muted-foreground sm:hidden">
-                    {total === 0
-                      ? "No cards yet"
-                      : toReview > 0
-                        ? <><span className="font-medium text-[hsl(var(--accent))]">{toReview} to review</span> · {known} of {total} known</>
-                        : `${known} of ${total} known`}
-                  </p>
                 </div>
-
-                {/* The decision signal: how much is solid, and what still
-                    needs work. "12 to review" is what picks the next deck. */}
-                <p className="hidden w-40 shrink-0 truncate text-right text-xs text-muted-foreground sm:block lg:w-56">
-                  {total === 0
-                    ? "No cards yet"
-                    : toReview > 0
-                      ? <><span className="font-medium text-[hsl(var(--accent))]">{toReview} to review</span> · {known} of {total} known</>
-                      : `${known} of ${total} known`}
-                </p>
 
                 <Button
                   onClick={() => { setSelectedCollection(collection); navigate(`/flashcards?collection=${encodeURIComponent(collection)}`); }}
@@ -569,13 +559,19 @@ function Collections() {
 
                 {/* Laid along the bottom edge of the row rather than boxed
                     inside it: the full width of the deck reads as the deck,
-                    and how much of it is filled reads without being measured
-                    against anything. */}
-                <div className="absolute inset-x-0 bottom-0 h-1 bg-muted">
-                  <div
-                    className="h-full bg-gradient-to-r from-primary to-accent transition-all"
-                    style={{ width: `${percent}%` }}
-                  />
+                    and the three shares of it -- known, flagged, untouched --
+                    read without any of them having to be spelled out.
+
+                    It is the only place that says so, so it says it to a
+                    screen reader too. */}
+                <div
+                  className="absolute inset-x-0 bottom-0 flex h-1 bg-muted"
+                  role="img"
+                  aria-label={progressLabel}
+                  title={progressLabel}
+                >
+                  <div className="h-full bg-primary transition-all" style={{ width: `${knownShare}%` }} />
+                  <div className="h-full bg-red-500 transition-all" style={{ width: `${reviewShare}%` }} />
                 </div>
               </Card>
               );
