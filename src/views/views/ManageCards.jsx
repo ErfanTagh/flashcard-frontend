@@ -302,14 +302,6 @@ function ManageCards() {
                 key={card.term}
                 className="group flex items-start gap-3 rounded-lg border bg-card p-3 sm:p-4 transition-colors hover:border-primary/40"
               >
-                {card.image && (
-                  <img
-                    src={imageUrl(card.image)}
-                    alt=""
-                    className="h-12 w-12 rounded object-cover shrink-0"
-                  />
-                )}
-
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="m-0 font-semibold break-words">{card.term}</p>
@@ -318,9 +310,25 @@ function ManageCards() {
                     )}
                     {card.seen === 0 && <Badge variant="outline">New</Badge>}
                   </div>
-                  <p className="text-sm text-muted-foreground break-words mt-0.5">
-                    {card.definition || <span className="italic">Picture only</span>}
-                  </p>
+
+                  {/* The picture goes where the answer goes. Beside the term it
+                      read as an icon belonging to the card; underneath it, in
+                      the place the definition would occupy, it reads as what it
+                      is -- the answer. Contained rather than cropped, because a
+                      cropped answer can lose the thing being asked about. */}
+                  {card.image ? (
+                    <div className="mt-1.5 inline-flex items-center justify-center rounded-md border bg-muted/40 p-1.5">
+                      <img
+                        src={imageUrl(card.image)}
+                        alt={`Answer to ${card.term}`}
+                        className="h-20 w-auto max-w-[14rem] rounded object-contain"
+                      />
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground break-words mt-0.5">
+                      {card.definition}
+                    </p>
+                  )}
                   {card.seen > 0 && (
                     <p className="text-xs text-muted-foreground/80 mt-1">
                       Seen {card.seen}× · {Math.round((card.correct / Math.max(card.correct + card.incorrect, 1)) * 100)}% correct
