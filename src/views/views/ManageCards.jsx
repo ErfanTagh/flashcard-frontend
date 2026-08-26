@@ -15,6 +15,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/components/ui/use-toast";
+import { prepareImageForUpload, uploadImage } from "@/lib/image";
 import {
   ArrowLeft, Plus, Search, Pencil, Trash2, Flag, FlagOff, ImageIcon, X, Play,
 } from "lucide-react";
@@ -103,20 +104,20 @@ function ManageCards() {
     setImagePreview(null);
   };
 
-  const pickImage = (file) => {
+  const pickImage = async (file) => {
     if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      toast({ title: "Not an image", variant: "destructive" });
-      return;
+    try {
+      // Shrink here rather than at save time, so the preview is the picture
+      // that will actually be stored, and so a picture that cannot be used
+      // says so while it is being chosen instead of after Save.
+      const prepared = await prepareImageForUpload(file);
+      if (imagePreview) URL.revokeObjectURL(imagePreview);
+      setImageFile(prepared);
+      setImagePreview(URL.createObjectURL(prepared));
+      setDropImage(false);
+    } catch (e) {
+      toast({ title: "Couldn't use that picture", description: e.message, variant: "destructive" });
     }
-    if (file.size > 5 * 1024 * 1024) {
-      toast({ title: "Picture too large", description: "The limit is 5MB.", variant: "destructive" });
-      return;
-    }
-    if (imagePreview) URL.revokeObjectURL(imagePreview);
-    setImageFile(file);
-    setImagePreview(URL.createObjectURL(file));
-    setDropImage(false);
   };
 
   const save = async () => {
@@ -137,12 +138,7 @@ function ManageCards() {
       // Upload first: a failed upload must not save a card without its picture.
       let image = dropImage ? "" : editing.image || "";
       if (imageFile) {
-        const body = new FormData();
-        body.append("file", imageFile);
-        body.append("token", user.email);
-        const up = await (await fetch("/api/images", { method: "POST", body })).json();
-        if (up.status !== 200) throw new Error(up.error || "Couldn't upload the picture");
-        image = up.image_id;
+        image = await uploadImage(imageFile, user.email);
       }
 
       // The picture is the answer when there is one, so the text the box was

@@ -19,6 +19,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/components/ui/use-toast";
+import { prepareImageForUpload, uploadImage } from "@/lib/image";
 import {
   Dialog,
   DialogContent,
@@ -92,21 +93,17 @@ function AddFlashcard() {
       // upload must not quietly save a card without its picture.
       let imageId = null;
       if (imageFile) {
-        const form = new FormData();
-        form.append("file", imageFile);
-        form.append("token", user.email);
-        const upload = await fetch("/api/images", { method: "POST", body: form });
-        const uploaded = await upload.json();
-        if (uploaded.status !== 200) {
+        try {
+          imageId = await uploadImage(imageFile, user.email);
+        } catch (e) {
           toast({
             title: "Couldn't upload the picture",
-            description: uploaded.error || "Please try again.",
+            description: e.message,
             variant: "destructive",
           });
           setIsSubmitting(false);
           return;
         }
-        imageId = uploaded.image_id;
       }
 
       const requestOptions = {
@@ -145,22 +142,18 @@ function AddFlashcard() {
     setImageFile(null);
   };
 
-  const handleImageChange = (event) => {
+  const handleImageChange = async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith("image/")) {
-      toast({ title: "Not an image", description: "Choose a picture file.", variant: "destructive" });
-      return;
+    try {
+      const prepared = await prepareImageForUpload(file);
+      clearImage();
+      setImageFile(prepared);
+      setImagePreview(URL.createObjectURL(prepared));
+    } catch (e) {
+      toast({ title: "Couldn't use that picture", description: e.message, variant: "destructive" });
     }
-    if (file.size > 5 * 1024 * 1024) {
-      toast({ title: "Picture too large", description: "The limit is 5MB.", variant: "destructive" });
-      return;
-    }
-
-    clearImage();
-    setImageFile(file);
-    setImagePreview(URL.createObjectURL(file));
   };
 
   const handleReset = () => {

@@ -25,6 +25,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
+import { prepareImageForUpload, uploadImage } from "@/lib/image";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FolderOpen, Trash2, Edit2, Star, StarOff, Plus, BookOpen, Check, Play, GraduationCap, ArrowLeft, Share2, Copy, ImageIcon, FileJson, ListChecks, Users, MoreHorizontal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -294,33 +295,21 @@ function Collections() {
 
   const handleCoverChange = async (collection, file) => {
     if (!file || !user?.email) return;
-    if (!file.type.startsWith("image/")) {
-      toast({ title: "Not an image", description: "Choose a picture file.", variant: "destructive" });
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      toast({ title: "Picture too large", description: "The limit is 5MB.", variant: "destructive" });
-      return;
-    }
 
     setCoverUploading(collection);
     try {
-      const form = new FormData();
-      form.append("file", file);
-      form.append("token", user.email);
-      const upload = await fetch("/api/images", { method: "POST", body: form });
-      const uploaded = await upload.json();
-      if (uploaded.status !== 200) throw new Error(uploaded.error || "Upload failed");
+      const prepared = await prepareImageForUpload(file);
+      const imageId = await uploadImage(prepared, user.email);
 
       const res = await fetch(`/api/collections/${encodeURIComponent(collection)}/cover`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ token: user.email, image: uploaded.image_id }),
+        body: JSON.stringify({ token: user.email, image: imageId }),
       });
       const data = await res.json();
       if (data.status !== 200) throw new Error(data.error || "Couldn't set the cover");
 
-      setCovers((current) => ({ ...current, [collection]: uploaded.image_id }));
+      setCovers((current) => ({ ...current, [collection]: imageId }));
       toast({ title: "Cover updated", description: `"${collection}" has a new picture.` });
     } catch (error) {
       toast({ title: "Couldn't set the cover", description: error.message, variant: "destructive" });
