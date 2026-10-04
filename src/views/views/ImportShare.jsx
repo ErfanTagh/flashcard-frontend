@@ -5,7 +5,7 @@ import { useCollections } from "@/hooks/useCollections";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { BookOpen, Check, ArrowRight, AlertCircle, Layers, Users } from "lucide-react";
+import { BookOpen, Check, ArrowRight, AlertCircle, Layers, Users, Play } from "lucide-react";
 import { setPendingShare, readPendingShare, clearPendingShare } from "@/lib/pendingShare";
 import { shareLog } from "@/lib/shareDebug";
 
@@ -168,6 +168,16 @@ function ImportShare() {
               <Layers className="h-4 w-4" />
               {share.card_count} card{share.card_count === 1 ? "" : "s"}
             </p>
+
+            {/* Said here, beside the deck, rather than only in the buttons
+                below: someone who already has this deck should learn it from
+                the thing they are looking at, not from pressing a button. */}
+            {share.following_as && (
+              <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                <Check className="h-3.5 w-3.5" />
+                You already have these cards
+              </p>
+            )}
           </div>
         </div>
 
@@ -193,6 +203,25 @@ function ImportShare() {
             </Button>
             <p className="text-xs text-center text-muted-foreground">
               This is your own deck — this is the link other people open.
+            </p>
+          </div>
+        ) : share.following_as ? (
+          <div className="space-y-3">
+            <Button asChild className="w-full h-12 text-base">
+              <Link to={`/flashcards?collection=${encodeURIComponent(share.following_as)}`}>
+                <Play className="h-5 w-5 mr-2" />
+                Study it
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="w-full">
+              <Link to="/collections">Go to my collections</Link>
+            </Button>
+            <p className="text-xs text-center text-muted-foreground">
+              {share.following_as === share.collection
+                ? "This deck is already in your collections."
+                : <>You have it in your collections as{" "}
+                    <span className="font-medium text-foreground">{share.following_as}</span>.</>}
+              {" "}It stays live, so every change the group makes shows up for you.
             </p>
           </div>
         ) : isAuthenticated ? (
