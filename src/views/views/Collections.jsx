@@ -429,7 +429,10 @@ function Collections() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-primary/5 to-accent/5">
-      <main className="w-full max-w-full px-4 sm:px-6 py-8 flex flex-col min-w-0">
+      {/* Centred and capped, like every other page. Left full-bleed, a deck
+          row stretches the whole width of a large monitor and puts the deck's
+          name and its buttons at opposite ends of the screen. */}
+      <main className="container py-8 px-4 flex flex-col min-w-0">
         <Button
           variant="ghost"
           onClick={() => navigate("/")}
@@ -439,7 +442,7 @@ function Collections() {
           Back to Home
         </Button>
 
-        <div className="mb-5 sm:mb-8 animate-fade-in">
+        <div className="mb-8 sm:mb-10 animate-fade-in">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3 min-w-0">
             <div className="min-w-0">
               <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
@@ -453,7 +456,9 @@ function Collections() {
                 Manage and organize your flashcard collections
               </p>
             </div>
-            <div className="flex flex-row gap-2 shrink-0">
+            {/* Three buttons do not fit across a phone, and refusing to wrap
+                made them sit on top of each other. */}
+            <div className="flex flex-wrap gap-2 sm:flex-nowrap sm:shrink-0">
               <Button variant="outline" asChild className="gap-2">
                 <Link to="/explore">
                   <Compass className="h-4 w-4" />
