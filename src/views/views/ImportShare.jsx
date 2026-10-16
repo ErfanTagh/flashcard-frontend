@@ -70,19 +70,6 @@ function ImportShare() {
              isAuthenticated ? `signed in as ${user?.email}` : "signed out");
   }, [authLoading, isAuthenticated, user?.email]);
 
-  // Seeing a link is enough to be offered the deck. Remembering it here means
-  // someone who is not ready to add it right now can find it in their deck
-  // list later, instead of having to dig out the message the link came in.
-  useEffect(() => {
-    if (!isAuthenticated || !user?.email || !share) return;
-    if (share.is_owner || share.following_as) return;
-    fetch(`/api/shares/${encodeURIComponent(shareId)}/seen`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify({ token: user.email }),
-    }).catch(() => { /* an offer not recorded is not worth interrupting anyone for */ });
-  }, [isAuthenticated, user?.email, share, shareId]);
-
   useEffect(() => {
     if (!isAuthenticated || !user?.email || !share) return;
     const pending = readPendingShare();
