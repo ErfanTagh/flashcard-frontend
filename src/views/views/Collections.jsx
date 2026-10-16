@@ -59,6 +59,9 @@ function Collections() {
   const [covers, setCovers] = useState({});
   // Decks followed through a share link rather than owned.
   const [linked, setLinked] = useState([]);
+  // Decks shared with this account through a link, not added yet.
+  const [offers, setOffers] = useState([]);
+  const [offerBusy, setOfferBusy] = useState(null);
   const [progress, setProgress] = useState({});
   const [owners, setOwners] = useState({});
   const [showImportDialog, setShowImportDialog] = useState(false);
@@ -277,8 +280,53 @@ function Collections() {
       const data = await res.json();
       setCovers(data.covers || {});
       setLinked(data.linked || []);
+      setOffers(data.offers || []);
     } catch {
       // A missing cover is cosmetic; the page works without it.
+    }
+  };
+
+  // Accept a deck that was shared and never added. The row disappears by
+  // itself: once it is followed the server stops offering it.
+  const handleAcceptOffer = async (offer) => {
+    if (!user?.email) return;
+    setOfferBusy(offer.share_id);
+    try {
+      const data = await (await fetch(`/api/shares/${encodeURIComponent(offer.share_id)}/follow`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ token: user.email }),
+      })).json();
+      if (data.status !== 200) throw new Error(data.error || "Couldn't add the deck");
+      toast({
+        title: `"${data.collection}" added`,
+        description: "It stays up to date with the owner's copy.",
+      });
+      await fetchCollections();
+      await loadCovers();
+    } catch (e) {
+      toast({ title: "Couldn't add it", description: e.message, variant: "destructive" });
+    } finally {
+      setOfferBusy(null);
+    }
+  };
+
+  const handleDismissOffer = async (offer) => {
+    if (!user?.email) return;
+    setOfferBusy(offer.share_id);
+    try {
+      await fetch(`/api/shares/${encodeURIComponent(offer.share_id)}/dismiss`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ token: user.email }),
+      });
+      setOffers((current) => current.filter((o) => o.share_id !== offer.share_id));
+      toast({
+        title: "Hidden",
+        description: "The link still works if you change your mind.",
+      });
+    } finally {
+      setOfferBusy(null);
     }
   };
 
@@ -441,6 +489,56 @@ function Collections() {
           </div>
         ) : (
           <div className="flex flex-col gap-3">
+            {/* Decks shared with this account and not added yet. They sit above
+                the real ones, tinted and dashed, because they are an invitation
+                rather than something owned -- and the difference has to be
+                visible at a glance, not read. */}
+            {offers.map((offer) => (
+              <Card
+                key={offer.share_id}
+                className="relative flex flex-wrap items-center gap-3 overflow-hidden border-2 border-dashed border-primary/40 bg-primary/5 p-3 sm:flex-nowrap sm:gap-4 sm:p-4"
+              >
+                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-gradient-to-br from-primary to-accent sm:h-16 sm:w-16">
+                  {offer.cover ? (
+                    <img
+                      src={`/api/images/${encodeURIComponent(offer.cover)}?share=${encodeURIComponent(offer.share_id)}`}
+                      alt=""
+                      className="absolute inset-0 h-full w-full object-cover"
+                    />
+                  ) : (
+                    <BookOpen className="absolute inset-0 m-auto h-6 w-6 text-white/80" />
+                  )}
+                </div>
+
+                <div className="min-w-0 flex-1 md:min-w-[8rem]">
+                  <p className="truncate font-semibold leading-tight">{offer.collection}</p>
+                  <p className="mt-0.5 truncate text-xs text-primary">
+                    Shared with you by {offer.owner_name || "someone"} ·{" "}
+                    {offer.card_count} card{offer.card_count === 1 ? "" : "s"}
+                  </p>
+                </div>
+
+                <div className="flex shrink-0 items-center gap-2 max-sm:w-full">
+                  <Button
+                    variant="ghost"
+                    onClick={() => handleDismissOffer(offer)}
+                    disabled={offerBusy === offer.share_id}
+                    className="text-muted-foreground"
+                  >
+                    Hide
+                  </Button>
+                  <Button
+                    onClick={() => handleAcceptOffer(offer)}
+                    disabled={offerBusy === offer.share_id}
+                    className="max-sm:flex-1 sm:min-w-[7rem]"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    {offerBusy === offer.share_id ? "Adding…" : "Add"}
+                  </Button>
+                </div>
+              </Card>
+            ))}
+
             {collections.map((collection) => {
               const isLinked = linked.includes(collection);
               const info = progress[collection] || {};
