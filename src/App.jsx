@@ -10,6 +10,7 @@ import Collections from "./views/views/Collections.jsx";
 import Quiz from "./views/views/Quiz.jsx";
 import ImportShare from "./views/views/ImportShare.jsx";
 import ManageCards from "./views/views/ManageCards.jsx";
+import Explore from "./views/views/Explore.jsx";
 import SharedDeck from "./views/views/SharedDeck.jsx";
 
 import { useEffect, useRef } from "react";
@@ -215,6 +216,9 @@ const AppContent = () => {
                   path="collections/:collectionName/cards"
                   element={<ProtectedRoute component={ManageCards} />}
                 />
+                {/* Readable signed out, like a share link: the point of a
+                    public library is that you can see it before joining. */}
+                <Route path="explore" element={<Explore />} />
                 <Route
                   path="quiz"
                   element={<ProtectedRoute component={Quiz} />}

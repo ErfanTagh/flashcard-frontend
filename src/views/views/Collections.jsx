@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useCollections } from "@/hooks/useCollections";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,7 +27,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { prepareImageForUpload, uploadImage } from "@/lib/image";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FolderOpen, Trash2, Edit2, Star, StarOff, Plus, BookOpen, Check, Play, GraduationCap, ArrowLeft, Share2, Copy, ImageIcon, FileJson, ListChecks, Users, MoreHorizontal } from "lucide-react";
+import { FolderOpen, Trash2, Edit2, Star, StarOff, Plus, BookOpen, Check, Play, GraduationCap, ArrowLeft, Share2, Copy, ImageIcon, FileJson, ListChecks, Users, MoreHorizontal, Globe, Compass } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
@@ -59,6 +59,9 @@ function Collections() {
   const [covers, setCovers] = useState({});
   // Decks followed through a share link rather than owned.
   const [linked, setLinked] = useState([]);
+  // Decks of this account's own that are listed in the public library.
+  const [published, setPublished] = useState([]);
+  const [publishing, setPublishing] = useState(null);
   const [progress, setProgress] = useState({});
   const [owners, setOwners] = useState({});
   const [showImportDialog, setShowImportDialog] = useState(false);
@@ -270,6 +273,42 @@ function Collections() {
     return null;
   }
 
+  // List a deck in the public library, or take it back out.
+  const handlePublish = async (collection, wanted) => {
+    if (!user?.email) return;
+    setPublishing(collection);
+    try {
+      const data = await (await fetch(`/api/collections/${encodeURIComponent(collection)}/publish`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ token: user.email, public: wanted }),
+      })).json();
+      if (data.status !== 200) throw new Error(data.error || "Couldn't change that");
+
+      setPublished((current) => wanted
+        ? [...current, collection]
+        : current.filter((c) => c !== collection));
+
+      toast(wanted
+        ? {
+            title: `"${collection}" is in Explore`,
+            // Publishing does not change who may edit, so a deck already
+            // shared for editing is now editable by everyone who finds it.
+            description: data.allow_edit
+              ? "Anyone can find and add it. Note it is still open for edits."
+              : "Anyone can now find and add it.",
+          }
+        : {
+            title: `"${collection}" removed from Explore`,
+            description: "People who already added it keep it.",
+          });
+    } catch (e) {
+      toast({ title: "Couldn't change that", description: e.message, variant: "destructive" });
+    } finally {
+      setPublishing(null);
+    }
+  };
+
   const loadCovers = async () => {
     if (!user?.email) return;
     try {
@@ -277,6 +316,7 @@ function Collections() {
       const data = await res.json();
       setCovers(data.covers || {});
       setLinked(data.linked || []);
+      setPublished(data.published || []);
     } catch {
       // A missing cover is cosmetic; the page works without it.
     }
@@ -414,6 +454,12 @@ function Collections() {
               </p>
             </div>
             <div className="flex flex-row gap-2 shrink-0">
+              <Button variant="outline" asChild className="gap-2">
+                <Link to="/explore">
+                  <Compass className="h-4 w-4" />
+                  Explore
+                </Link>
+              </Button>
               <Button variant="outline" onClick={() => setShowImportDialog(true)} className="gap-2">
                 <FileJson className="h-4 w-4" />
                 Import JSON
@@ -557,6 +603,15 @@ function Collections() {
                   {!isLinked && (
                     <DropdownMenuItem onClick={() => handleShare(collection)}>
                       <Share2 className="h-4 w-4 mr-2" /> Share
+                    </DropdownMenuItem>
+                  )}
+                  {!isLinked && (
+                    <DropdownMenuItem
+                      disabled={publishing === collection}
+                      onClick={() => handlePublish(collection, !published.includes(collection))}
+                    >
+                      <Globe className="h-4 w-4 mr-2" />
+                      {published.includes(collection) ? "Remove from Explore" : "Publish to Explore"}
                     </DropdownMenuItem>
                   )}
                   {collection !== defaultCollection && (
