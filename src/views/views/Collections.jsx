@@ -428,26 +428,25 @@ function Collections() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-primary/5 to-accent/5">
-      {/* Centred and capped, like every other page. Left full-bleed, a deck
-          row stretches the whole width of a large monitor and puts the deck's
-          name and its buttons at opposite ends of the screen. */}
-      <main className="container py-8 px-4 flex flex-col min-w-0">
-        <Button
-          variant="ghost"
-          onClick={() => navigate("/")}
-          className="mb-2 sm:mb-4 self-start -ml-2"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Home
-        </Button>
-
-        {/* The header sits in a panel of its own, tinted from the same two
-            brand colours the title is painted in, so the page opens with one
-            block that belongs together rather than text floating above a list.
-            Explore is not here: it lives in the navbar, and a link in two
-            places teaches that neither is where it belongs. */}
-        <div className="mb-8 sm:mb-10 animate-fade-in rounded-2xl bg-gradient-to-br from-primary/20 via-accent/10 to-transparent p-5 sm:p-6">
+    // The wash belongs to the page, not to the panels sitting on it. Tinting
+    // each block separately made them look like cut-outs pasted onto a plain
+    // sheet; one gradient across the whole page is the thing they sit in.
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-primary/10 via-accent/10 to-primary/5">
+      {/* Capped, but only just: wide margins waste a large monitor on a list
+          of rows that have room to use. */}
+      <main className="w-full max-w-screen-2xl mx-auto py-6 sm:py-8 px-3 sm:px-5 flex flex-col min-w-0">
+        {/* The header block, with the way out of it. Back to Home lived above
+            the box, which read as floating on nothing now the page carries
+            the colour. */}
+        <div className="mb-6 sm:mb-8 animate-fade-in rounded-2xl bg-card/60 p-4 sm:p-5">
+          <Button
+            variant="ghost"
+            onClick={() => navigate("/")}
+            className="mb-3 self-start -ml-2 h-8 text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Home
+          </Button>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 min-w-0">
             <div className="min-w-0">
               <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
@@ -491,11 +490,10 @@ function Collections() {
             ))}
           </div>
         ) : (
-          // One tinted field holding the decks, carrying the same violet-to-
-          // pink wash as the header above it. No border: the gap between the
-          // two panels is what separates them, and a line round each would
-          // say they are different kinds of thing when they are not.
-          <div className="flex flex-col gap-3 rounded-2xl bg-gradient-to-br from-primary/10 via-accent/10 to-primary/5 p-3 sm:p-4">
+          // The decks sit in a field of the same pale card wash as the header,
+          // so the two blocks match and the page's own gradient shows between
+          // them. The gap is the only separation.
+          <div className="flex flex-col gap-3 rounded-2xl bg-card/60 p-3 sm:p-4">
             {collections.map((collection) => {
               const isLinked = linked.includes(collection);
               const info = progress[collection] || {};
