@@ -434,7 +434,10 @@ function Collections() {
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-primary/10 via-accent/10 to-primary/5">
       {/* Capped, but only just: wide margins waste a large monitor on a list
           of rows that have room to use. */}
-      <main className="w-full max-w-screen-2xl mx-auto py-6 sm:py-8 px-3 sm:px-5 flex flex-col min-w-0">
+      {/* flex-1 so main claims the height left under the navbar; without it
+          its height is just its content, and the deck field below has nothing
+          spare to stretch into. */}
+      <main className="w-full max-w-screen-2xl mx-auto py-6 sm:py-8 px-3 sm:px-5 flex flex-1 flex-col min-w-0">
         {/* The header block, with the way out of it. Back to Home lived above
             the box, which read as floating on nothing now the page carries
             the colour. */}
@@ -493,7 +496,11 @@ function Collections() {
           // The decks sit in a field of the same pale card wash as the header,
           // so the two blocks match and the page's own gradient shows between
           // them. The gap is the only separation.
-          <div className="flex flex-col gap-3 rounded-2xl bg-card/60 p-3 sm:p-4">
+          //
+          // flex-1 so the field runs to the bottom of the window rather than
+          // stopping under the last deck: a short list left a stripe of panel
+          // floating in the middle of the page with nothing holding it up.
+          <div className="flex flex-1 flex-col gap-3 rounded-2xl bg-card/60 p-3 sm:p-4">
             {collections.map((collection) => {
               const isLinked = linked.includes(collection);
               const info = progress[collection] || {};
@@ -512,11 +519,10 @@ function Collections() {
                 : `${known} of ${total} known` + (toReview > 0 ? `, ${toReview} to review` : "");
 
               return (
-              // A row lifts off the tinted field by being lighter than it and
-              // by its shadow, not by a line round it. The gradient runs the
-              // same way as the field's, so a row reads as part of the block
-              // rather than a tile dropped onto it.
-              <Card key={collection} className="relative flex flex-wrap items-center gap-3 overflow-hidden border-0 bg-gradient-to-r from-card via-card to-primary/10 p-3 pb-4 shadow-sm transition-all hover:shadow-md hover:to-primary/20 sm:flex-nowrap sm:gap-4 sm:p-4 sm:pb-5">
+              // Plain white, lifted off the field by its shadow alone. The
+              // colour on this page belongs to the page; a row tinted as well
+              // only muddied it.
+              <Card key={collection} className="relative flex flex-wrap items-center gap-3 overflow-hidden border-0 bg-card p-3 pb-4 shadow-sm transition-all hover:shadow-md sm:flex-nowrap sm:gap-4 sm:p-4 sm:pb-5">
                 {/* A small square rather than a banner: in a row the deck's
                     picture identifies it, it does not need to fill it.
                     Tapping it changes the picture. */}
