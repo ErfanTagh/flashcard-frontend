@@ -441,11 +441,17 @@ function Collections() {
         {/* The header block, with the way out of it. Back to Home lived above
             the box, which read as floating on nothing now the page carries
             the colour. */}
-        <div className="mb-6 sm:mb-8 animate-fade-in rounded-2xl bg-card/60 p-4 sm:p-5">
+        {/* Deeper than the deck field below it, in the same two brand colours
+            the page is washed in. The heading block is the one thing on the
+            page that should carry weight; the field under it is a container
+            for other things and stays pale. */}
+        <div className="mb-6 sm:mb-8 animate-fade-in rounded-2xl bg-gradient-to-br from-primary/25 via-accent/20 to-primary/10 p-4 sm:p-5">
+          {/* A pale pill rather than bare text: on the deeper header it needs
+              a surface of its own to read as something you can press. */}
           <Button
             variant="ghost"
             onClick={() => navigate("/")}
-            className="mb-3 self-start -ml-2 h-8 text-muted-foreground hover:text-foreground"
+            className="mb-3 self-start h-8 rounded-full bg-card/80 px-3 text-muted-foreground shadow-sm hover:bg-card hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Home
