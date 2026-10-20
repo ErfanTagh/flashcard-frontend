@@ -491,7 +491,10 @@ function Collections() {
             ))}
           </div>
         ) : (
-          <div className="flex flex-col gap-3">
+          // The decks sit in a panel of their own, so the page reads as two
+          // blocks -- what this page is, and what is in it -- instead of a
+          // header followed by cards loose on the background.
+          <div className="flex flex-col gap-3 rounded-2xl border bg-muted/40 p-3 sm:p-4">
             {collections.map((collection) => {
               const isLinked = linked.includes(collection);
               const info = progress[collection] || {};
@@ -510,7 +513,11 @@ function Collections() {
                 : `${known} of ${total} known` + (toReview > 0 ? `, ${toReview} to review` : "");
 
               return (
-              <Card key={collection} className="relative flex flex-wrap items-center gap-3 overflow-hidden p-3 pb-4 transition-all hover:shadow-md hover:border-primary/40 sm:flex-nowrap sm:gap-4 sm:p-4 sm:pb-5">
+              // Tinted rather than white: against the panel behind them a
+              // white row read as a gap in the page instead of a thing on it.
+              // The tint is the brand primary, the same colour the header and
+              // the progress bar already use.
+              <Card key={collection} className="relative flex flex-wrap items-center gap-3 overflow-hidden bg-primary/5 p-3 pb-4 transition-all hover:bg-primary/10 hover:shadow-md hover:border-primary/40 sm:flex-nowrap sm:gap-4 sm:p-4 sm:pb-5">
                 {/* A small square rather than a banner: in a row the deck's
                     picture identifies it, it does not need to fill it.
                     Tapping it changes the picture. */}
