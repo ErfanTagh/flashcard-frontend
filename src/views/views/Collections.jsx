@@ -27,7 +27,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { prepareImageForUpload, uploadImage } from "@/lib/image";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FolderOpen, Trash2, Edit2, Star, StarOff, Plus, BookOpen, Check, Play, GraduationCap, ArrowLeft, Share2, Copy, ImageIcon, FileJson, ListChecks, Users, MoreHorizontal, Globe, Compass } from "lucide-react";
+import { FolderOpen, Trash2, Edit2, Star, StarOff, Plus, BookOpen, Check, Play, GraduationCap, ArrowLeft, Share2, Copy, ImageIcon, FileJson, ListChecks, Users, MoreHorizontal, Globe } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
@@ -442,8 +442,13 @@ function Collections() {
           Back to Home
         </Button>
 
-        <div className="mb-8 sm:mb-10 animate-fade-in">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3 min-w-0">
+        {/* The header sits in a panel of its own, tinted from the same two
+            brand colours the title is painted in, so the page opens with one
+            block that belongs together rather than text floating above a list.
+            Explore is not here: it lives in the navbar, and a link in two
+            places teaches that neither is where it belongs. */}
+        <div className="mb-8 sm:mb-10 animate-fade-in rounded-2xl border bg-gradient-to-br from-primary/10 via-accent/5 to-transparent p-5 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 min-w-0">
             <div className="min-w-0">
               <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
                 Collections
@@ -456,20 +461,15 @@ function Collections() {
                 Manage and organize your flashcard collections
               </p>
             </div>
-            {/* Three buttons do not fit across a phone, and refusing to wrap
-                made them sit on top of each other. */}
-            <div className="flex flex-wrap gap-2 sm:flex-nowrap sm:shrink-0">
-              <Button variant="outline" asChild className="gap-2">
-                <Link to="/explore">
-                  <Compass className="h-4 w-4" />
-                  Explore
-                </Link>
-              </Button>
-              <Button variant="outline" onClick={() => setShowImportDialog(true)} className="gap-2">
+            {/* Full width on a phone: sized to their labels they stacked at
+                two different widths against a lot of empty panel, which reads
+                as an accident rather than a pair. */}
+            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:shrink-0">
+              <Button variant="outline" onClick={() => setShowImportDialog(true)} className="gap-2 w-full sm:w-auto">
                 <FileJson className="h-4 w-4" />
                 Import JSON
               </Button>
-              <Button onClick={() => setShowCreateDialog(true)} className="gap-2">
+              <Button onClick={() => setShowCreateDialog(true)} className="gap-2 w-full sm:w-auto">
                 <Plus className="h-4 w-4" />
                 New Collection
               </Button>
