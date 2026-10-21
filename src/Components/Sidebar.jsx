@@ -98,7 +98,7 @@ const Sidebar = ({ user, onLogout }) => {
         {!collapsed && (
           <Link
             to="/"
-            className="flex min-w-0 flex-1 items-center gap-2 no-underline transition-opacity hover:opacity-80"
+            className="flex min-w-0 flex-1 items-center gap-2 no-underline"
           >
             <img
               src="/recallcards-logo.svg"
