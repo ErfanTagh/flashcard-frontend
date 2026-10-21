@@ -80,10 +80,27 @@ const Sidebar = ({ user, onLogout }) => {
         collapsed ? "w-16" : "w-60",
       ].join(" ")}
     >
-      {/* Brand and the control that closes the column. Closed, the toggle
-          takes the row on its own -- the logo would only repeat what the
-          first menu icon already says. */}
-      <div className={["flex h-16 shrink-0 items-center gap-2", collapsed ? "justify-center px-2" : "px-3"].join(" ")}>
+      {/* Brand and the control that closes the column. Closed, the rail is
+          too narrow to hold both side by side, so they stack -- the mark
+          stays visible either way, and only its name goes. */}
+      <div
+        className={[
+          "flex shrink-0 items-center gap-2",
+          collapsed ? "flex-col px-2 py-3" : "h-16 px-3",
+        ].join(" ")}
+      >
+        {collapsed && (
+          <Link to="/" className="no-underline" title="RecallCards">
+            <img
+              src="/recallcards-logo.svg"
+              alt="RecallCards"
+              className="h-9 w-9"
+              width="36"
+              height="36"
+            />
+          </Link>
+        )}
+
         <Button
           variant="ghost"
           size="sm"
@@ -95,6 +112,7 @@ const Sidebar = ({ user, onLogout }) => {
         >
           <MenuIcon className="h-5 w-5" />
         </Button>
+
         {!collapsed && (
           <Link
             to="/"
