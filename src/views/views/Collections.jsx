@@ -428,10 +428,11 @@ function Collections() {
   };
 
   return (
-    // The wash belongs to the page, not to the panels sitting on it. Tinting
-    // each block separately made them look like cut-outs pasted onto a plain
-    // sheet; one gradient across the whole page is the thing they sit in.
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-primary/10 via-accent/10 to-primary/5">
+    // A flat neutral ground. Colour on this page is reserved for the things
+    // that mean something -- the primary action, the progress bars, the review
+    // warning -- and spending it on decoration leaves none of it saying
+    // anything.
+    <div className="min-h-screen flex flex-col bg-muted/40">
       {/* Capped, but only just: wide margins waste a large monitor on a list
           of rows that have room to use. */}
       {/* flex-1 so main claims the height left under the navbar; without it
@@ -441,24 +442,19 @@ function Collections() {
         {/* The header block, with the way out of it. Back to Home lived above
             the box, which read as floating on nothing now the page carries
             the colour. */}
-        {/* Deeper than the deck field below it, in the same two brand colours
-            the page is washed in. The heading block is the one thing on the
-            page that should carry weight; the field under it is a container
-            for other things and stays pale. */}
-        <div className="mb-6 sm:mb-8 animate-fade-in rounded-2xl bg-gradient-to-br from-primary/25 via-accent/20 to-primary/10 p-4 sm:p-5">
-          {/* A pale pill rather than bare text: on the deeper header it needs
-              a surface of its own to read as something you can press. */}
+        {/* A plain white card on the neutral ground, lifted by a shadow. */}
+        <div className="mb-6 sm:mb-8 animate-fade-in rounded-2xl bg-card shadow-sm p-4 sm:p-5">
           <Button
             variant="ghost"
             onClick={() => navigate("/")}
-            className="mb-3 self-start h-8 rounded-full bg-card/80 px-3 text-muted-foreground shadow-sm hover:bg-card hover:text-foreground"
+            className="mb-3 self-start h-8 rounded-full bg-muted px-3 text-muted-foreground hover:bg-muted/70 hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Home
           </Button>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 min-w-0">
             <div className="min-w-0">
-              <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+              <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground">
                 Collections
               </h1>
               {/* Hidden until there is genuinely room for it. On a phone it
@@ -499,14 +495,11 @@ function Collections() {
             ))}
           </div>
         ) : (
-          // The decks sit in a field of the same pale card wash as the header,
-          // so the two blocks match and the page's own gradient shows between
-          // them. The gap is the only separation.
-          //
-          // flex-1 so the field runs to the bottom of the window rather than
-          // stopping under the last deck: a short list left a stripe of panel
-          // floating in the middle of the page with nothing holding it up.
-          <div className="flex flex-1 flex-col gap-3 rounded-2xl bg-card/60 p-3 sm:p-4">
+          // The decks sit in a white field matching the header, with the rows
+          // a shade of grey against it. flex-1 so the field runs to the bottom
+          // of the window rather than stopping under the last deck: a short
+          // list left a stripe floating mid-page with nothing holding it up.
+          <div className="flex flex-1 flex-col gap-2 rounded-2xl bg-card shadow-sm p-3 sm:p-4">
             {collections.map((collection) => {
               const isLinked = linked.includes(collection);
               const info = progress[collection] || {};
@@ -525,14 +518,14 @@ function Collections() {
                 : `${known} of ${total} known` + (toReview > 0 ? `, ${toReview} to review` : "");
 
               return (
-              // Plain white, lifted off the field by its shadow alone. The
-              // colour on this page belongs to the page; a row tinted as well
-              // only muddied it.
-              <Card key={collection} className="relative flex flex-wrap items-center gap-3 overflow-hidden border-0 bg-card p-3 pb-4 shadow-sm transition-all hover:shadow-md sm:flex-nowrap sm:gap-4 sm:p-4 sm:pb-5">
+              // A flat grey row on the white field, going lighter under the
+              // cursor. No shadow: inside a card, a shadow on each row makes
+              // a list look like a pile.
+              <Card key={collection} className="relative flex flex-wrap items-center gap-3 overflow-hidden border-0 bg-muted/50 p-3 pb-4 shadow-none transition-colors hover:bg-muted sm:flex-nowrap sm:gap-4 sm:p-4 sm:pb-5">
                 {/* A small square rather than a banner: in a row the deck's
                     picture identifies it, it does not need to fill it.
                     Tapping it changes the picture. */}
-                <label className="group/cover relative h-14 w-14 shrink-0 cursor-pointer overflow-hidden rounded-lg bg-gradient-to-br from-primary to-accent sm:h-16 sm:w-16">
+                <label className="group/cover relative h-14 w-14 shrink-0 cursor-pointer overflow-hidden rounded-lg bg-primary/10 sm:h-16 sm:w-16">
                   {covers[collection] ? (
                     <img
                       src={`/api/images/${encodeURIComponent(covers[collection])}?email=${encodeURIComponent(user?.email || "")}`}
@@ -540,7 +533,7 @@ function Collections() {
                       className="absolute inset-0 h-full w-full object-cover"
                     />
                   ) : (
-                    <BookOpen className="absolute inset-0 m-auto h-6 w-6 text-white/80" />
+                    <BookOpen className="absolute inset-0 m-auto h-6 w-6 text-primary" />
                   )}
                   <span className="absolute inset-0 flex items-center justify-center bg-black/45 text-white opacity-0 transition-opacity group-hover/cover:opacity-100 focus-within:opacity-100">
                     {coverUploading === collection
