@@ -27,7 +27,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { prepareImageForUpload, uploadImage } from "@/lib/image";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FolderOpen, Trash2, Edit2, Star, StarOff, Plus, BookOpen, Check, Play, GraduationCap, ArrowLeft, Share2, Copy, ImageIcon, FileJson, ListChecks, Users, MoreHorizontal, Globe } from "lucide-react";
+import { FolderOpen, Trash2, Edit2, Star, StarOff, Plus, BookOpen, Check, Play, GraduationCap, Share2, Copy, ImageIcon, FileJson, ListChecks, Users, MoreHorizontal, Globe } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
@@ -443,19 +443,11 @@ function Collections() {
           its height is just its content, and the deck field below has nothing
           spare to stretch into. */}
       <main className="container py-6 sm:py-8 flex flex-1 flex-col min-w-0">
-        {/* The header block, with the way out of it. Back to Home lived above
-            the box, which read as floating on nothing now the page carries
-            the colour. */}
-        {/* A plain white card on the neutral ground, lifted by a shadow. */}
+        {/* A plain white card on the neutral ground, lifted by a shadow.
+            No Back to Home: the sidebar has carried Home on every page since
+            it replaced the top bar, and a second way to the same place only
+            makes the reader wonder whether they differ. */}
         <div className="mb-6 sm:mb-8 animate-fade-in rounded-2xl bg-card shadow-sm p-4 sm:p-5">
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/")}
-            className="mb-3 self-start h-8 rounded-full bg-muted px-3 text-muted-foreground hover:bg-muted/70 hover:text-foreground"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Home
-          </Button>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 min-w-0">
             <div className="min-w-0">
               <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
