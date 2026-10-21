@@ -3,7 +3,7 @@ import "./assets/responsive.css";
 import AddFlashcard from "./Components/AddFlashcard.jsx";
 import Flashcard from "./Components/Flashcard.jsx";
 import Home from "./views/views/Home.jsx";
-import ModernNavbar from "./components/ModernNavbar.tsx";
+import Sidebar from "./components/Sidebar.jsx";
 import Profile from "./views/views/Profile.jsx";
 import Progress from "./views/views/Progress.jsx";
 import Collections from "./views/views/Collections.jsx";
@@ -181,8 +181,12 @@ const AppContent = () => {
   };
 
   return (
-    <>
-      <ModernNavbar user={user} onLogout={handleLogout} />
+    // Navigation down the side, the page beside it. min-w-0 on the content
+    // column so a wide table or row inside a page cannot push the sidebar off
+    // the screen -- a flex child's default minimum is its content.
+    <div className="flex min-h-screen">
+      <Sidebar user={user} onLogout={handleLogout} />
+      <div className="flex min-w-0 flex-1 flex-col">
       <Routes>
         <Route path="/" element={<Home />} />
         {/* Readable without an account: a share link has to show what it holds
@@ -225,7 +229,8 @@ const AppContent = () => {
                 />
               </Routes>
       <Footer />
-    </>
+      </div>
+    </div>
   );
 };
 
