@@ -49,7 +49,7 @@ const ModernNavbar = ({ user, onLogout }: NavbarProps) => {
             width="40"
             height="40"
           />
-          <span className="hidden font-bold text-lg text-foreground lg:inline-block">
+          <span className="hidden font-bold text-2xl tracking-tight text-foreground lg:inline-block">
             RecallCards
           </span>
         </Link>

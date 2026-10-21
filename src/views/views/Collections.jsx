@@ -435,10 +435,14 @@ function Collections() {
     <div className="min-h-screen flex flex-col bg-muted/40">
       {/* Capped, but only just: wide margins waste a large monitor on a list
           of rows that have room to use. */}
-      {/* flex-1 so main claims the height left under the navbar; without it
+      {/* The same container the navbar uses, with its padding left alone, so
+          the page's left edge lines up exactly under the RecallCards mark
+          instead of sitting a few pixels outside it.
+
+          flex-1 so main claims the height left under the navbar; without it
           its height is just its content, and the deck field below has nothing
           spare to stretch into. */}
-      <main className="w-full max-w-screen-2xl mx-auto py-6 sm:py-8 px-3 sm:px-5 flex flex-1 flex-col min-w-0">
+      <main className="container py-6 sm:py-8 flex flex-1 flex-col min-w-0">
         {/* The header block, with the way out of it. Back to Home lived above
             the box, which read as floating on nothing now the page carries
             the colour. */}
@@ -454,7 +458,7 @@ function Collections() {
           </Button>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 min-w-0">
             <div className="min-w-0">
-              <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
                 Collections
               </h1>
               {/* Hidden until there is genuinely room for it. On a phone it
