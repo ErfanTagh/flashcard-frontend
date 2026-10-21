@@ -3,7 +3,10 @@ import "./assets/responsive.css";
 import AddFlashcard from "./Components/AddFlashcard.jsx";
 import Flashcard from "./Components/Flashcard.jsx";
 import Home from "./views/views/Home.jsx";
-import Sidebar from "./components/Sidebar.jsx";
+// Capital C, matching the directory on disk. Spelled lowercase, macOS resolves
+// it anyway but Vite caches it as a second, separate module -- so edits landed
+// on one copy while the browser kept loading the other.
+import Sidebar from "./Components/Sidebar.jsx";
 import Profile from "./views/views/Profile.jsx";
 import Progress from "./views/views/Progress.jsx";
 import Collections from "./views/views/Collections.jsx";

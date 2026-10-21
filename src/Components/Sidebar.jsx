@@ -84,6 +84,17 @@ const Sidebar = ({ user, onLogout }) => {
           takes the row on its own -- the logo would only repeat what the
           first menu icon already says. */}
       <div className={["flex h-16 shrink-0 items-center gap-2", collapsed ? "justify-center px-2" : "px-3"].join(" ")}>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setCollapsed((open) => !open)}
+          className="h-9 w-9 shrink-0 p-0 text-muted-foreground hover:text-foreground"
+          aria-label={collapsed ? "Open the menu" : "Close the menu"}
+          aria-expanded={!collapsed}
+          title={collapsed ? "Open the menu" : "Close the menu"}
+        >
+          <MenuIcon className="h-5 w-5" />
+        </Button>
         {!collapsed && (
           <Link
             to="/"
@@ -101,17 +112,6 @@ const Sidebar = ({ user, onLogout }) => {
             </span>
           </Link>
         )}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setCollapsed((open) => !open)}
-          className="h-9 w-9 shrink-0 p-0 text-muted-foreground hover:text-foreground"
-          aria-label={collapsed ? "Open the menu" : "Close the menu"}
-          aria-expanded={!collapsed}
-          title={collapsed ? "Open the menu" : "Close the menu"}
-        >
-          <MenuIcon className="h-5 w-5" />
-        </Button>
       </div>
 
       <nav className={["flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto pb-3", collapsed ? "px-2" : "px-3"].join(" ")}>
