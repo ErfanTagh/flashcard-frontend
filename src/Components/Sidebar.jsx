@@ -6,14 +6,12 @@ import { User, LogOut, Home, Layers, Compass, BarChart3, Play, GraduationCap } f
 import { Link, NavLink } from "react-router-dom";
 
 /**
- * The app's navigation, down the left, open or closed.
+ * Medium-style left rail:
  *
- * Grouped rather than listed: the first group is where things are, the second
- * is what you do with them. A heading over the second says which is which, so
- * it reads as two short menus instead of one long one.
- *
- * Open and closed are driven by state rather than by breakpoints, because the
- * reader gets the final say: the width only decides what it opens as.
+ * - One brand (hamburger + logo + name) stays fixed top-left always.
+ * - Open: full column with links and account.
+ * - Closed: the rail width goes to zero -- no icons. Brand stays so you can
+ *   open it again. Slide + fade, not a hard cut.
  */
 
 const PLACES = [
@@ -29,6 +27,8 @@ const ACTIONS = [
 ];
 
 const STORAGE_KEY = "sidebar-collapsed";
+const RAIL_WIDTH = "w-60";
+const MOTION = "duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]";
 
 const MenuIcon = (props) => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true" {...props}>
@@ -39,9 +39,106 @@ const MenuIcon = (props) => (
   </svg>
 );
 
+/** Always fixed top-left -- never remounts when the rail opens or closes. */
+const SidebarBrand = ({ collapsed, onToggle }) => (
+  <div className="fixed left-0 top-0 z-30 flex h-[4.5rem] w-max items-center gap-1.5 bg-background px-3 pr-4">
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={onToggle}
+      className="h-11 w-11 shrink-0 p-0 text-muted-foreground hover:text-foreground"
+      aria-label={collapsed ? "Open the menu" : "Close the menu"}
+      aria-expanded={!collapsed}
+      title={collapsed ? "Open the menu" : "Close the menu"}
+    >
+      <MenuIcon className="h-6 w-6" />
+    </Button>
+
+    <Link to="/" className="flex shrink-0 items-center gap-1.5 no-underline">
+      <img
+        src="/recallcards-logo.svg"
+        alt="RecallCards"
+        className="h-10 w-10 shrink-0"
+        width="40"
+        height="40"
+      />
+      <span className="whitespace-nowrap text-xl font-bold tracking-tight text-foreground">
+        RecallCards
+      </span>
+    </Link>
+  </div>
+);
+
+const SidebarNav = () => {
+  const item = ({ isActive }) =>
+    [
+      "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium no-underline transition-colors",
+      isActive
+        ? "bg-primary/10 text-primary"
+        : "text-muted-foreground hover:bg-muted hover:text-foreground",
+    ].join(" ");
+
+  return (
+    <nav className="flex flex-1 flex-col gap-1 overflow-hidden px-3 pb-3">
+      {PLACES.map(({ to, label, icon: Icon, end }) => (
+        <NavLink key={to} to={to} end={end} className={item} title={label}>
+          <Icon className="h-5 w-5 shrink-0" />
+          <span className="truncate">{label}</span>
+        </NavLink>
+      ))}
+
+      <hr className="my-3 border-t" />
+
+      <p className="px-3 pb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
+        Start studying
+      </p>
+      {ACTIONS.map(({ to, label, icon: Icon }) => (
+        <NavLink key={to} to={to} className={item} title={label}>
+          <Icon className="h-5 w-5 shrink-0" />
+          <span className="truncate">{label}</span>
+        </NavLink>
+      ))}
+    </nav>
+  );
+};
+
+const SidebarAccount = ({ user, onLogout }) => (
+  <div className="shrink-0 border-t p-3">
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          className="h-auto w-full justify-start gap-3 px-2 py-2"
+          aria-label="Your account"
+        >
+          <Avatar className="h-8 w-8 shrink-0">
+            <AvatarImage src={user.picture} alt={user.name} />
+            <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>
+          </Avatar>
+          <span className="truncate text-sm font-medium">{user.name}</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56" align="end" side="top" forceMount>
+        <div className="px-2 py-1.5">
+          <p className="truncate font-medium">{user.name}</p>
+        </div>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link to="/profile" className="w-full cursor-pointer">
+            <User className="mr-2 h-4 w-4" />
+            Profile
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={onLogout} className="cursor-pointer">
+          <LogOut className="mr-2 h-4 w-4" />
+          Log out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  </div>
+);
+
 const Sidebar = ({ user, onLogout }) => {
-  // Remembered, because a reader who closed it did not mean "until the next
-  // page". A narrow window only decides what it opens as the first time.
   const [collapsed, setCollapsed] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -64,135 +161,36 @@ const Sidebar = ({ user, onLogout }) => {
     return null;
   }
 
-  const item = ({ isActive }) =>
-    [
-      "flex items-center gap-3 rounded-lg py-2.5 text-sm font-medium no-underline transition-colors",
-      collapsed ? "justify-center px-0" : "px-3",
-      isActive
-        ? "bg-primary/10 text-primary"
-        : "text-muted-foreground hover:bg-muted hover:text-foreground",
-    ].join(" ");
-
   return (
-    <aside
-      className={[
-        "sticky top-0 flex h-screen shrink-0 flex-col border-r bg-card transition-[width] duration-200",
-        collapsed ? "w-16" : "w-60",
-      ].join(" ")}
-    >
-      {/* Brand and the control that closes the column. Closed, the rail is
-          too narrow to hold both side by side, so they stack -- the mark
-          stays visible either way, and only its name goes. */}
-      <div
+    <>
+      <SidebarBrand
+        collapsed={collapsed}
+        onToggle={() => setCollapsed((wasCollapsed) => !wasCollapsed)}
+      />
+
+      <aside
         className={[
-          "flex shrink-0 items-center gap-2",
-          collapsed ? "flex-col px-2 py-3" : "h-16 px-3",
+          "sticky top-0 h-screen shrink-0 overflow-hidden bg-muted/40",
+          `transition-[width] ${MOTION}`,
+          collapsed ? "w-0 border-0" : `${RAIL_WIDTH} border-r`,
         ].join(" ")}
+        aria-hidden={collapsed || undefined}
       >
-        {collapsed && (
-          <Link to="/" className="no-underline" title="RecallCards">
-            <img
-              src="/recallcards-logo.svg"
-              alt="RecallCards"
-              className="h-9 w-9"
-              width="36"
-              height="36"
-            />
-          </Link>
-        )}
-
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setCollapsed((open) => !open)}
-          className="h-9 w-9 shrink-0 p-0 text-muted-foreground hover:text-foreground"
-          aria-label={collapsed ? "Open the menu" : "Close the menu"}
-          aria-expanded={!collapsed}
-          title={collapsed ? "Open the menu" : "Close the menu"}
+        {/* Fixed open width so closing clips instead of reflowing labels. */}
+        <div
+          className={[
+            `flex h-full ${RAIL_WIDTH} flex-col`,
+            `transition-[opacity,transform] ${MOTION}`,
+            collapsed ? "pointer-events-none -translate-x-2 opacity-0" : "translate-x-0 opacity-100",
+          ].join(" ")}
         >
-          <MenuIcon className="h-5 w-5" />
-        </Button>
-
-        {!collapsed && (
-          <Link
-            to="/"
-            className="flex min-w-0 flex-1 items-center gap-2 no-underline"
-          >
-            <img
-              src="/recallcards-logo.svg"
-              alt="RecallCards"
-              className="h-9 w-9 shrink-0"
-              width="36"
-              height="36"
-            />
-            <span className="truncate text-lg font-bold tracking-tight text-foreground">
-              RecallCards
-            </span>
-          </Link>
-        )}
-      </div>
-
-      <nav className={["flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto pb-3", collapsed ? "px-2" : "px-3"].join(" ")}>
-        {PLACES.map(({ to, label, icon: Icon, end }) => (
-          <NavLink key={to} to={to} end={end} className={item} title={label}>
-            <Icon className="h-5 w-5 shrink-0" />
-            {!collapsed && <span className="truncate">{label}</span>}
-          </NavLink>
-        ))}
-
-        <hr className="my-3 border-t" />
-
-        {!collapsed && (
-          <p className="px-3 pb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
-            Start studying
-          </p>
-        )}
-        {ACTIONS.map(({ to, label, icon: Icon }) => (
-          <NavLink key={to} to={to} className={item} title={label}>
-            <Icon className="h-5 w-5 shrink-0" />
-            {!collapsed && <span className="truncate">{label}</span>}
-          </NavLink>
-        ))}
-      </nav>
-
-      {/* The account sits at the foot of the column, out of the way of the
-          navigation but reachable from every page. */}
-      <div className={["shrink-0 border-t", collapsed ? "p-2" : "p-3"].join(" ")}>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              className={["h-auto w-full gap-3 py-2", collapsed ? "justify-center px-0" : "justify-start px-2"].join(" ")}
-              aria-label="Your account"
-            >
-              <Avatar className="h-8 w-8 shrink-0">
-                <AvatarImage src={user.picture} alt={user.name} />
-                <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>
-              </Avatar>
-              {!collapsed && (
-                <span className="truncate text-sm font-medium">{user.name}</span>
-              )}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56" align="end" side="top" forceMount>
-            <div className="px-2 py-1.5">
-              <p className="truncate font-medium">{user.name}</p>
-            </div>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link to="/profile" className="w-full cursor-pointer">
-                <User className="mr-2 h-4 w-4" />
-                Profile
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={onLogout} className="cursor-pointer">
-              <LogOut className="mr-2 h-4 w-4" />
-              Log out
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-    </aside>
+          {/* Clears the fixed brand above. */}
+          <div className="h-[4.5rem] shrink-0" aria-hidden="true" />
+          <SidebarNav />
+          <SidebarAccount user={user} onLogout={onLogout} />
+        </div>
+      </aside>
+    </>
   );
 };
 

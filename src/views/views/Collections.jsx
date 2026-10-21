@@ -428,11 +428,8 @@ function Collections() {
   };
 
   return (
-    // A flat neutral ground. Colour on this page is reserved for the things
-    // that mean something -- the primary action, the progress bars, the review
-    // warning -- and spending it on decoration leaves none of it saying
-    // anything.
-    <div className="min-h-screen flex flex-col bg-muted/40">
+    // White page, white panels. The muted ground moved to the sidebar.
+    <div className="min-h-screen flex flex-col bg-white">
       {/* Capped, but only just: wide margins waste a large monitor on a list
           of rows that have room to use. */}
       {/* The same container the navbar uses, with its padding left alone, so
@@ -442,12 +439,11 @@ function Collections() {
           flex-1 so main claims the height left under the navbar; without it
           its height is just its content, and the deck field below has nothing
           spare to stretch into. */}
-      <main className="container py-6 sm:py-8 flex flex-1 flex-col min-w-0">
-        {/* A plain white card on the neutral ground, lifted by a shadow.
-            No Back to Home: the sidebar has carried Home on every page since
-            it replaced the top bar, and a second way to the same place only
-            makes the reader wonder whether they differ. */}
-        <div className="mb-6 sm:mb-8 animate-fade-in rounded-2xl bg-card shadow-sm p-4 sm:p-5">
+      <main className="container flex min-w-0 flex-1 flex-col pb-6 pt-10 sm:pb-8 sm:pt-14">
+        {/* Header panel. No Back to Home: the sidebar carries Home on every
+            page, and a second way to the same place only makes the reader
+            wonder whether they differ. */}
+        <div className="mb-6 animate-fade-in rounded-2xl bg-white p-5 sm:mb-8 sm:p-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 min-w-0">
             <div className="min-w-0">
               <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
@@ -480,7 +476,7 @@ function Collections() {
         {loading ? (
           <div className="flex flex-col gap-3">
             {[...Array(3)].map((_, i) => (
-              <Card key={i} className="flex items-center gap-4 p-3 sm:p-4 animate-pulse">
+              <Card key={i} className="flex items-center gap-4 border-0 bg-white p-3 shadow-none sm:p-4 animate-pulse">
                 <Skeleton className="h-14 w-14 shrink-0 rounded-lg sm:h-16 sm:w-16" />
                 <div className="flex-1 space-y-2">
                   <Skeleton className="h-4 w-40" />
@@ -491,11 +487,9 @@ function Collections() {
             ))}
           </div>
         ) : (
-          // The decks sit in a white field matching the header, with the rows
-          // a shade of grey against it. flex-1 so the field runs to the bottom
-          // of the window rather than stopping under the last deck: a short
-          // list left a stripe floating mid-page with nothing holding it up.
-          <div className="flex flex-1 flex-col gap-2 rounded-2xl bg-card shadow-sm p-3 sm:p-4">
+          // White field matching the header. flex-1 so it runs to the bottom
+          // of the window rather than stopping under the last deck.
+          <div className="flex flex-1 flex-col gap-3 rounded-2xl bg-white p-5 sm:gap-3 sm:p-6">
             {collections.map((collection) => {
               const isLinked = linked.includes(collection);
               const info = progress[collection] || {};
@@ -514,14 +508,15 @@ function Collections() {
                 : `${known} of ${total} known` + (toReview > 0 ? `, ${toReview} to review` : "");
 
               return (
-              // A flat grey row on the white field, going lighter under the
-              // cursor. No shadow: inside a card, a shadow on each row makes
-              // a list look like a pile.
-              <Card key={collection} className="relative flex flex-wrap items-center gap-3 overflow-hidden border-0 bg-muted/50 p-3 pb-4 shadow-none transition-colors hover:bg-muted sm:flex-nowrap sm:gap-4 sm:p-4 sm:pb-5">
+              // Small hop on hover; progress line appears only while hovered.
+              <div
+                key={collection}
+                className="group/deck relative flex flex-wrap items-center gap-3 overflow-hidden rounded-lg bg-white p-3 pb-4 transition-transform duration-200 hover:-translate-y-1 sm:flex-nowrap sm:gap-4 sm:p-4 sm:pb-5"
+              >
                 {/* A small square rather than a banner: in a row the deck's
                     picture identifies it, it does not need to fill it.
                     Tapping it changes the picture. */}
-                <label className="group/cover relative h-14 w-14 shrink-0 cursor-pointer overflow-hidden rounded-lg bg-primary/10 sm:h-16 sm:w-16">
+                <label className="group/cover relative h-14 w-14 shrink-0 cursor-pointer overflow-hidden rounded-lg bg-transparent sm:h-16 sm:w-16">
                   {covers[collection] ? (
                     <img
                       src={`/api/images/${encodeURIComponent(covers[collection])}?email=${encodeURIComponent(user?.email || "")}`}
@@ -648,30 +643,27 @@ function Collections() {
                 </DropdownMenuContent>
                 </DropdownMenu>
 
-                {/* Laid along the bottom edge of the row rather than boxed
-                    inside it: the full width of the deck reads as the deck,
-                    and the three shares of it -- known, flagged, untouched --
-                    read without any of them having to be spelled out.
-
-                    It is the only place that says so, so it says it to a
-                    screen reader too. */}
+                {/* Progress line along the bottom — only while the row is hovered.
+                    hidden (not opacity) so an empty muted track cannot look like
+                    "nothing happened" on a white card. */}
                 <div
-                  className="absolute inset-x-0 bottom-0 flex h-1 bg-muted"
+                  className="absolute inset-x-0 bottom-0 hidden h-0.5 group-hover/deck:flex"
                   role="img"
                   aria-label={progressLabel}
                   title={progressLabel}
                 >
                   <div className="h-full bg-primary transition-all" style={{ width: `${knownShare}%` }} />
                   <div className="h-full bg-red-500 transition-all" style={{ width: `${reviewShare}%` }} />
+                  <div className="h-full flex-1 bg-gray-200" />
                 </div>
-              </Card>
+              </div>
               );
             })}
           </div>
         )}
 
         {collections.length === 0 && !loading && (
-          <Card className="mt-8">
+          <Card className="mt-8 border-0 bg-white shadow-none">
             <CardContent className="py-12 text-center">
               <BookOpen className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
               <h3 className="text-xl font-semibold mb-2">No Collections Yet</h3>
