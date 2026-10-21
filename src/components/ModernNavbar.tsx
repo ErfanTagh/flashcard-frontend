@@ -49,7 +49,11 @@ const ModernNavbar = ({ user, onLogout }: NavbarProps) => {
             width="40"
             height="40"
           />
-          <span className="hidden font-bold text-2xl tracking-tight text-foreground lg:inline-block">
+          {/* Shown by default and hidden only on a phone, rather than hidden
+              by default and revealed at a breakpoint. If the breakpoint rule
+              ever fails to reach the browser, this way the name is merely
+              cramped instead of invisible. */}
+          <span className="max-sm:hidden font-bold text-2xl tracking-tight text-foreground">
             RecallCards
           </span>
         </Link>
@@ -66,7 +70,7 @@ const ModernNavbar = ({ user, onLogout }: NavbarProps) => {
                 [
                   // 44px square on a phone, where the label is gone and the
                   // icon alone has to be big enough to hit with a thumb.
-                  "inline-flex h-11 w-11 items-center justify-center gap-2 rounded-md text-sm font-medium no-underline transition-colors sm:h-10 sm:w-auto sm:justify-start sm:px-3",
+                  "inline-flex h-10 items-center justify-center gap-2 rounded-md px-3 text-sm font-medium no-underline transition-colors max-sm:h-11 max-sm:w-11 max-sm:px-0",
                   isActive
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",
@@ -74,7 +78,7 @@ const ModernNavbar = ({ user, onLogout }: NavbarProps) => {
               }
             >
               <Icon className="h-4 w-4 shrink-0" />
-              <span className="hidden sm:inline">{label}</span>
+              <span className="max-sm:hidden">{label}</span>
             </NavLink>
           ))}
         </div>
