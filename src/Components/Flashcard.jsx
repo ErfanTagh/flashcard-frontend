@@ -18,6 +18,8 @@ import { RotateCcw, Check, X, MoreHorizontal, Edit, Trash2, FolderOpen, ChevronL
 import { useToast } from "@/components/ui/use-toast";
 import { attributionLine } from "@/lib/attribution";
 import { Input } from "@/components/ui/input";
+import { apiFetch } from "@/lib/api";
+import { ownedImagePath, useAuthedImage } from "@/Components/AuthedImage";
 
 function Flashcard() {
   const [error, setError] = useState(null);
@@ -51,12 +53,9 @@ function Flashcard() {
 
   const frontText = card ? card.term : "You Don't Have Anything to Memorize";
   const backText = card ? card.definition : "Please Add Cards!";
-  // Pictures are served by id and scoped to the owner, so the email travels
-  // with the request the same way it does everywhere else in this API.
-  const backImage =
-    card && card.image && user?.email
-      ? `/api/images/${encodeURIComponent(card.image)}?email=${encodeURIComponent(user.email)}`
-      : null;
+  // Pictures are served by id to whoever the token says is asking, so the
+  // bytes are fetched rather than pointed at: see AuthedImage.
+  const backImage = useAuthedImage(card?.image ? ownedImagePath(card.image) : null);
 
   const handleFlip = () => {
     if (!editMode) {
@@ -70,7 +69,7 @@ function Flashcard() {
     if (!user?.email) return;
 
     try {
-      const res = await fetch(
+      const res = await apiFetch(
         `/api/cards?email=${encodeURIComponent(user.email)}&collection=${encodeURIComponent(collection)}`,
         { mode: "cors" }
       );
@@ -148,7 +147,7 @@ function Flashcard() {
     if (!card) return false;
 
     try {
-      const response = await fetch("/api/review", {
+      const response = await apiFetch("/api/review", {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({
@@ -212,7 +211,7 @@ function Flashcard() {
     };
 
     try {
-      const response = await fetch("/api/editword", requestOptions);
+      const response = await apiFetch("/api/editword", requestOptions);
       const data = await response.json();
       if (data.status === 200) {
         toast({
@@ -250,7 +249,7 @@ function Flashcard() {
     };
 
     try {
-      const response = await fetch("/api/delword/" + encodeURIComponent(card.term), requestOptions);
+      const response = await apiFetch("/api/delword/" + encodeURIComponent(card.term), requestOptions);
       const data = await response.json();
       if (data.status === 200) {
         toast({

@@ -8,6 +8,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { BookOpen, Check, ArrowRight, AlertCircle, Layers, Users, Play } from "lucide-react";
 import { setPendingShare, readPendingShare, clearPendingShare } from "@/lib/pendingShare";
 import { shareLog } from "@/lib/shareDebug";
+import { apiFetch } from "@/lib/api";
 
 /**
  * The receiving end of a share link.
@@ -35,7 +36,7 @@ function ImportShare() {
       try {
         // Identify the viewer so the API can flag their own deck back to them.
         const query = user?.email ? `?email=${encodeURIComponent(user.email)}` : "";
-        const res = await fetch(`/api/shares/${encodeURIComponent(shareId)}${query}`);
+        const res = await apiFetch(`/api/shares/${encodeURIComponent(shareId)}${query}`);
         const data = await res.json();
         if (cancelled) return;
         if (data.status !== 200) {
@@ -89,7 +90,7 @@ function ImportShare() {
     if (!user?.email) return;
     setImporting(true);
     try {
-      const data = await (await fetch(`/api/shares/${encodeURIComponent(shareId)}/follow`, {
+      const data = await (await apiFetch(`/api/shares/${encodeURIComponent(shareId)}/follow`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({ token: user.email }),

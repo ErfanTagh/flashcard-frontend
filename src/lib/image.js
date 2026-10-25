@@ -13,6 +13,9 @@
  * re-encodes only when there is no alternative.
  */
 
+import { apiFetch } from "@/lib/api";
+
+
 /** What we aim to send. Comfortably under a 1MB proxy limit, and far more
  *  detail than a card ever displays. */
 const TARGET_BYTES = 900 * 1024;
@@ -109,12 +112,11 @@ export async function prepareImageForUpload(file) {
  * parsing it as such turned a plain "too large" into an unreadable syntax
  * error in front of the user.
  */
-export async function uploadImage(file, token) {
+export async function uploadImage(file) {
   const body = new FormData();
   body.append("file", file);
-  body.append("token", token);
 
-  const res = await fetch("/api/images", { method: "POST", body });
+  const res = await apiFetch("/api/images", { method: "POST", body });
 
   if (res.status === 413) {
     throw new Error("The server refused the picture for being too large.");

@@ -34,6 +34,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import ImportDeckDialog from "@/Components/ImportDeckDialog";
 import { Textarea } from "@/components/ui/textarea";
+import { apiFetch } from "@/lib/api";
+import AuthedImage from "@/Components/AuthedImage";
 
 function Collections() {
   const { user, isLoading } = useAuth();
@@ -83,7 +85,7 @@ function Collections() {
     
     setLoading(true);
     try {
-      const response = await fetch(`/api/collections/${user.email}/stats`, { mode: "cors" });
+      const response = await apiFetch(`/api/collections/${user.email}/stats`, { mode: "cors" });
       const data = await response.json();
       
       if (data.stats) {
@@ -134,7 +136,7 @@ function Collections() {
 
     setIsRenamingCollection(true);
     try {
-      const response = await fetch(`/api/collections/${encodeURIComponent(collectionToRename)}/rename`, {
+      const response = await apiFetch(`/api/collections/${encodeURIComponent(collectionToRename)}/rename`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({
@@ -184,7 +186,7 @@ function Collections() {
 
     setIsCreatingCollection(true);
     try {
-      const response = await fetch('/api/collections', {
+      const response = await apiFetch('/api/collections', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({
@@ -225,7 +227,7 @@ function Collections() {
 
     setIsAddingCard(true);
     try {
-      const response = await fetch('/api/sendwords', {
+      const response = await apiFetch('/api/sendwords', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({
@@ -278,7 +280,7 @@ function Collections() {
     if (!user?.email) return;
     setPublishing(collection);
     try {
-      const data = await (await fetch(`/api/collections/${encodeURIComponent(collection)}/publish`, {
+      const data = await (await apiFetch(`/api/collections/${encodeURIComponent(collection)}/publish`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({ token: user.email, public: wanted }),
@@ -312,7 +314,7 @@ function Collections() {
   const loadCovers = async () => {
     if (!user?.email) return;
     try {
-      const res = await fetch(`/api/collections/${encodeURIComponent(user.email)}`);
+      const res = await apiFetch(`/api/collections/${encodeURIComponent(user.email)}`);
       const data = await res.json();
       setCovers(data.covers || {});
       setLinked(data.linked || []);
@@ -339,9 +341,9 @@ function Collections() {
     setCoverUploading(collection);
     try {
       const prepared = await prepareImageForUpload(file);
-      const imageId = await uploadImage(prepared, user.email);
+      const imageId = await uploadImage(prepared);
 
-      const res = await fetch(`/api/collections/${encodeURIComponent(collection)}/cover`, {
+      const res = await apiFetch(`/api/collections/${encodeURIComponent(collection)}/cover`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({ token: user.email, image: imageId }),
@@ -364,7 +366,7 @@ function Collections() {
     setShareFor(collection);
     setShareLink("");
     try {
-      const res = await fetch(`/api/collections/${encodeURIComponent(collection)}/share`, {
+      const res = await apiFetch(`/api/collections/${encodeURIComponent(collection)}/share`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         // The name comes from the account, recorded at sign-in; see /api/profile.
@@ -386,7 +388,7 @@ function Collections() {
     if (!user?.email || !shareFor) return;
     setShareAllowsEdit(allowed); // optimistic: the switch should not lag the tap
     try {
-      const res = await fetch(`/api/collections/${encodeURIComponent(shareFor)}/share`, {
+      const res = await apiFetch(`/api/collections/${encodeURIComponent(shareFor)}/share`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({ token: user.email, allow_edit: allowed }),
@@ -413,7 +415,7 @@ function Collections() {
   const handleStopSharing = async () => {
     if (!user?.email || !shareFor) return;
     try {
-      await fetch(`/api/collections/${encodeURIComponent(shareFor)}/share`, {
+      await apiFetch(`/api/collections/${encodeURIComponent(shareFor)}/share`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({ token: user.email }),
@@ -518,9 +520,8 @@ function Collections() {
                     Tapping it changes the picture. */}
                 <label className="group/cover relative h-14 w-14 shrink-0 cursor-pointer overflow-hidden rounded-lg bg-transparent sm:h-16 sm:w-16">
                   {covers[collection] ? (
-                    <img
-                      src={`/api/images/${encodeURIComponent(covers[collection])}?email=${encodeURIComponent(user?.email || "")}`}
-                      alt=""
+                    <AuthedImage
+                      imageId={covers[collection]}
                       className="absolute inset-0 h-full w-full object-cover"
                     />
                   ) : (

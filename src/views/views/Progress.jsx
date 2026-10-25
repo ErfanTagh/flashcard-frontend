@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { BookOpen, Target, TrendingUp, Calendar, FolderOpen } from "lucide-react";
+import { apiFetch } from "@/lib/api";
 
 const EMPTY_STATS = {
   total: 0,
@@ -32,7 +33,7 @@ function Progress() {
       try {
         // The backend derives these from recorded review outcomes, so the page
         // no longer has to infer progress from the shape of the definition text.
-        const res = await fetch(
+        const res = await apiFetch(
           `/api/progress?email=${encodeURIComponent(user.email)}&collection=${encodeURIComponent(selectedCollection)}`,
           { mode: "cors" }
         );

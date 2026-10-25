@@ -19,6 +19,8 @@ import { prepareImageForUpload, uploadImage } from "@/lib/image";
 import {
   ArrowLeft, Plus, Search, Pencil, Trash2, Flag, FlagOff, ImageIcon, X, Play,
 } from "lucide-react";
+import { apiFetch } from "@/lib/api";
+import AuthedImage, { ownedImagePath, useAuthedImage } from "@/Components/AuthedImage";
 
 const FILTERS = [
   { id: "all", label: "All" },
@@ -55,7 +57,7 @@ function ManageCards() {
   const load = async () => {
     if (!user?.email) return;
     try {
-      const res = await fetch(
+      const res = await apiFetch(
         `/api/cards?email=${encodeURIComponent(user.email)}&collection=${encodeURIComponent(collectionName)}`
       );
       const data = await res.json();
@@ -138,7 +140,7 @@ function ManageCards() {
       // Upload first: a failed upload must not save a card without its picture.
       let image = dropImage ? "" : editing.image || "";
       if (imageFile) {
-        image = await uploadImage(imageFile, user.email);
+        image = await uploadImage(imageFile);
       }
 
       // The picture is the answer when there is one, so the text the box was
@@ -151,7 +153,7 @@ function ManageCards() {
         ? { token: user.email, word: term, ans: answer, image, collection: collectionName }
         : { token: user.email, oldword: editing.term, word: term, ans: answer, image, collection: collectionName };
 
-      const data = await (await fetch(url, {
+      const data = await (await apiFetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify(payload),
@@ -172,7 +174,7 @@ function ManageCards() {
     const card = deleting;
     setDeleting(null);
     try {
-      const data = await (await fetch(`/api/delword/${encodeURIComponent(card.term)}`, {
+      const data = await (await apiFetch(`/api/delword/${encodeURIComponent(card.term)}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({ token: user.email, collection: collectionName }),
@@ -187,7 +189,7 @@ function ManageCards() {
 
   const toggleFlag = async (card) => {
     try {
-      await fetch("/api/editword", {
+      await apiFetch("/api/editword", {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({
@@ -202,8 +204,11 @@ function ManageCards() {
     }
   };
 
-  const imageUrl = (id) =>
-    `/api/images/${encodeURIComponent(id)}?email=${encodeURIComponent(user?.email || "")}`;
+  // A picture already on the card, fetched with the token. A file just chosen
+  // in the dialog is a local preview and takes precedence over it.
+  const storedEditImage = useAuthedImage(
+    editing?.image && !dropImage ? ownedImagePath(editing.image) : null
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5">
@@ -314,8 +319,8 @@ function ManageCards() {
                       cropped answer can lose the thing being asked about. */}
                   {card.image ? (
                     <div className="mt-1.5 inline-flex items-center justify-center rounded-md border bg-muted/40 p-1.5">
-                      <img
-                        src={imageUrl(card.image)}
+                      <AuthedImage
+                        imageId={card.image}
                         alt={`Answer to ${card.term}`}
                         className="h-20 w-auto max-w-[14rem] rounded object-contain"
                       />
@@ -400,7 +405,7 @@ function ManageCards() {
               {(imagePreview || (editing?.image && !dropImage)) ? (
                 <div className="flex items-center gap-3 rounded-lg border bg-muted/20 p-2.5">
                   <img
-                    src={imagePreview || imageUrl(editing.image)}
+                    src={imagePreview || storedEditImage}
                     alt=""
                     className="h-16 w-16 shrink-0 rounded-md border bg-background object-cover"
                   />

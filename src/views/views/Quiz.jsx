@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { ArrowLeft, Check, X, RotateCcw, Trophy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { apiFetch } from "@/lib/api";
 
 function Quiz() {
   const { user, isLoading } = useAuth();
@@ -45,7 +46,7 @@ function Quiz() {
     
     setLoading(true);
     try {
-      const res = await fetch(
+      const res = await apiFetch(
         `/api/cards?email=${encodeURIComponent(user.email)}&collection=${encodeURIComponent(collectionName)}`,
         { mode: "cors" }
       );
@@ -111,7 +112,7 @@ function Quiz() {
     // forty-word definition.
     let correct;
     try {
-      const res = await fetch("/api/quiz/grade", {
+      const res = await apiFetch("/api/quiz/grade", {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({
@@ -136,7 +137,7 @@ function Quiz() {
     setShowResult(true);
 
     // Quiz answers count towards progress the same as review answers do.
-    fetch("/api/review", {
+    apiFetch("/api/review", {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
       body: JSON.stringify({

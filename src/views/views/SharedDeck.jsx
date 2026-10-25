@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { ArrowLeft, Plus, Search, Pencil, Users, X, Info } from "lucide-react";
+import { apiFetch } from "@/lib/api";
 
 /**
  * A deck someone else owns, opened through a link that allows editing.
@@ -39,7 +40,7 @@ function SharedDeck() {
   const load = async () => {
     try {
       const query = user?.email ? `?email=${encodeURIComponent(user.email)}` : "";
-      const data = await (await fetch(`/api/shares/${encodeURIComponent(shareId)}${query}`)).json();
+      const data = await (await apiFetch(`/api/shares/${encodeURIComponent(shareId)}${query}`)).json();
       if (data.status !== 200) setError(data.error || "This link is no longer available");
       else setShare(data);
     } catch {
@@ -80,7 +81,7 @@ function SharedDeck() {
         ? { token: user.email, word: term, ans: definition }
         : { token: user.email, oldword: editing.term, word: term, ans: definition };
 
-      const data = await (await fetch(url, {
+      const data = await (await apiFetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify(payload),

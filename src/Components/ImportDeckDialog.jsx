@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { Copy, Upload, Sparkles, FileJson, AlertCircle } from "lucide-react";
+import { apiFetch } from "@/lib/api";
 
 /** The shape the API accepts, shown to the user verbatim. */
 const FORMAT_EXAMPLE = `{
@@ -95,7 +96,7 @@ function ImportDeckDialog({ open, onOpenChange, userEmail, onImported }) {
 
     setImporting(true);
     try {
-      const res = await fetch("/api/collections/import", {
+      const res = await apiFetch("/api/collections/import", {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({ token: userEmail, deck: parsed, name: name.trim() }),

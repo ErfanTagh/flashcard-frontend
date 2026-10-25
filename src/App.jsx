@@ -25,10 +25,12 @@ import Footer from "./Components/Footer/Footer.jsx";
 import { Toaster } from "@/components/ui/toaster";
 import { DevAuthProvider, withDevAuthenticationRequired } from "./utils/devAuth";
 import { useAuth } from "./hooks/useAuth";
+import { useApiAuth } from "./hooks/useApiAuth";
 import { CollectionsProvider } from "./hooks/useCollections";
 import { readPendingShare } from "@/lib/pendingShare";
 import { readPostLoginDest, clearPostLoginDest, countPostLoginAttempt } from "@/lib/postLogin";
 import { shareLog } from "@/lib/shareDebug";
+import { apiPost } from "@/lib/api";
 
 // Check if we're in development mode and should bypass Auth0
 const isDevMode = import.meta.env.DEV && (import.meta.env.VITE_BYPASS_AUTH === 'true' || import.meta.env.MODE === 'development');
@@ -56,6 +58,9 @@ const AppContent = () => {
   const { user, logout, error, isLoading, isAuthenticated, loginWithRedirect } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Give src/lib/api.js a way to get an access token, once, here at the top.
+  useApiAuth(user);
 
   // Recover from a redirect that came back but did not sign the user in.
   //
@@ -156,11 +161,7 @@ const AppContent = () => {
     const name = user.given_name || user.name || user.nickname || "";
     if (!name) return;
 
-    fetch("/api/profile", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify({ token: user.email, name }),
-    }).catch(() => {
+    apiPost("/api/profile", { name }).catch(() => {
       // Cosmetic: without it a recipient sees "Someone" instead of a name.
     });
   }, [user?.email, user?.given_name, user?.name, user?.nickname]);

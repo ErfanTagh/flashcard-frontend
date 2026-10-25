@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { ArrowLeft, BookOpen, Plus, Check, Search, Library, Play } from "lucide-react";
+import { apiFetch } from "@/lib/api";
 
 /**
  * Decks anybody has published, for anybody to add.
@@ -32,7 +33,7 @@ function Explore() {
       const url = user?.email
         ? `/api/public/decks?email=${encodeURIComponent(user.email)}`
         : "/api/public/decks";
-      const data = await (await fetch(url)).json();
+      const data = await (await apiFetch(url)).json();
       setDecks(Array.isArray(data.decks) ? data.decks : []);
     } catch {
       toast({ title: "Couldn't load the library", variant: "destructive" });
@@ -50,7 +51,7 @@ function Explore() {
     }
     setBusy(deck.share_id);
     try {
-      const data = await (await fetch(`/api/shares/${encodeURIComponent(deck.share_id)}/follow`, {
+      const data = await (await apiFetch(`/api/shares/${encodeURIComponent(deck.share_id)}/follow`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({ token: user.email }),

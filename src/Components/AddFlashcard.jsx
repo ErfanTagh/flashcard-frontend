@@ -29,6 +29,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { apiFetch } from "@/lib/api";
 
 function AddFlashcard() {
   const { user } = useAuth();
@@ -94,7 +95,7 @@ function AddFlashcard() {
       let imageId = null;
       if (imageFile) {
         try {
-          imageId = await uploadImage(imageFile, user.email);
+          imageId = await uploadImage(imageFile);
         } catch (e) {
           toast({
             title: "Couldn't upload the picture",
@@ -117,7 +118,7 @@ function AddFlashcard() {
           collection: selectedCollection || 'Default'
         }),
       };
-      const response = await fetch("/api/sendwords", requestOptions);
+      const response = await apiFetch("/api/sendwords", requestOptions);
       const data = await response.json();
       if (data["status"] === 200) {
         toast({ title: "Card Added Successfully!", description: `"${inputs.title}" has been added to ${selectedCollection || 'Default'}.` });

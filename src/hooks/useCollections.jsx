@@ -1,5 +1,6 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import { useAuth } from './useAuth';
+import { apiFetch } from "@/lib/api";
 
 const CollectionsContext = createContext();
 
@@ -26,7 +27,7 @@ export const CollectionsProvider = ({ children }) => {
     if (!user?.email) return;
 
     try {
-      const response = await fetch(`/api/collections/${user.email}`, { mode: "cors" });
+      const response = await apiFetch(`/api/collections/${user.email}`, { mode: "cors" });
       const data = await response.json();
       
       if (data.collections && Array.isArray(data.collections)) {
@@ -53,7 +54,7 @@ export const CollectionsProvider = ({ children }) => {
     if (!user?.email) return { success: false, error: 'Not authenticated' };
 
     try {
-      const response = await fetch('/api/collections', {
+      const response = await apiFetch('/api/collections', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({
@@ -85,7 +86,7 @@ export const CollectionsProvider = ({ children }) => {
     }
 
     try {
-      const response = await fetch(`/api/collections/${encodeURIComponent(collectionName)}`, {
+      const response = await apiFetch(`/api/collections/${encodeURIComponent(collectionName)}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({ token: user.email })
@@ -112,7 +113,7 @@ export const CollectionsProvider = ({ children }) => {
     if (!user?.email) return { success: false, error: 'Not authenticated' };
 
     try {
-      const response = await fetch('/api/collections/default', {
+      const response = await apiFetch('/api/collections/default', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({
