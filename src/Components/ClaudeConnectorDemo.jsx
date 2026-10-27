@@ -5,23 +5,32 @@ import { CLAUDE_MARK } from "@/Components/claudeMark";
 /**
  * Homepage demo of the RecallCards Claude connector: the user hands Claude a
  * document, types a prompt, the connector's tools run, and a deck fills with
- * cards beside the chat. Loops while on screen; shows the finished state
- * without motion when the viewer prefers reduced motion.
+ * cards beside the chat -- styled like the real deck page on recallcards.net.
+ * Loops while on screen; shows the finished state without motion when the
+ * viewer prefers reduced motion.
  */
 
 const DOC = "Essential Spanish Phrases.pdf";
 const DECK = "Essential Spanish Phrases";
-const PROMPT = "Turn the key phrases in this into a RecallCards deck so I can review them later.";
+const CARD_COUNT = 30;
+const PROMPT = "Make 30 cards from these useful Spanish phrases for me.";
 const REPLY =
-  "Done! I pulled 6 key phrases from your document into a new “Essential Spanish Phrases” deck. Open RecallCards whenever you want to start reviewing.";
+  "Done! I created an “Essential Spanish Phrases” deck with 30 cards. Open RecallCards whenever you want to start reviewing.";
 
+// Shown in the deck; the deck header says 30, and the list fades to imply more.
 const CARDS = [
   { term: "Buenos días", def: "Good morning" },
+  { term: "Buenas noches", def: "Good night" },
   { term: "¿Cómo estás?", def: "How are you?" },
   { term: "Por favor", def: "Please" },
   { term: "Gracias", def: "Thank you" },
+  { term: "De nada", def: "You're welcome" },
+  { term: "Lo siento", def: "I'm sorry" },
   { term: "¿Cuánto cuesta?", def: "How much is it?" },
   { term: "¿Dónde está el baño?", def: "Where's the bathroom?" },
+  { term: "No entiendo", def: "I don't understand" },
+  { term: "¿Habla inglés?", def: "Do you speak English?" },
+  { term: "Me llamo…", def: "My name is…" },
 ];
 
 const PHASES = ["typing", "sent", "tool1", "tool1done", "tool2", "updated", "reply"];
@@ -30,8 +39,8 @@ const DURATION = {
   sent: 700,
   tool1: 950,
   tool1done: 350,
-  tool2: 1300,
-  updated: 1500,
+  tool2: 1400,
+  updated: 2200,
   reply: 5200,
 };
 const TYPE_MS = 34;
@@ -61,6 +70,25 @@ function BrandMark({ className }) {
   );
 }
 
+/** One card row, styled like the real deck page (ManageCards). */
+function CardRow({ card, i, animate }) {
+  return (
+    <li
+      className={[
+        "rounded-lg border bg-card p-3",
+        animate ? "animate-in fade-in slide-in-from-bottom-1 fill-mode-both" : "",
+      ].join(" ")}
+      style={animate ? { animationDelay: `${i * 90}ms`, animationDuration: "450ms" } : undefined}
+    >
+      <div className="flex flex-wrap items-center gap-2">
+        <p className="m-0 font-semibold text-foreground">{card.term}</p>
+        <span className="rounded-full border px-1.5 text-[10px] font-medium text-muted-foreground">New</span>
+      </div>
+      <p className="mt-0.5 text-sm text-muted-foreground">{card.def}</p>
+    </li>
+  );
+}
+
 export function ClaudeConnectorDemo() {
   const sectionRef = useRef(null);
   const [visible, setVisible] = useState(false);
@@ -68,7 +96,6 @@ export function ClaudeConnectorDemo() {
   const [phase, setPhase] = useState(reduced ? "reply" : "typing");
   const [typed, setTyped] = useState(reduced ? Number.MAX_SAFE_INTEGER : 0);
 
-  // Run only while on screen.
   useEffect(() => {
     const el = sectionRef.current;
     if (!el || typeof IntersectionObserver === "undefined") {
@@ -127,7 +154,7 @@ export function ClaudeConnectorDemo() {
 
       <div className="grid items-stretch gap-5 lg:grid-cols-2 lg:gap-6">
         {/* --- Claude chat --- */}
-        <div className="flex h-[540px] flex-col overflow-hidden rounded-2xl border bg-card shadow-xl lg:h-auto lg:min-h-[440px]">
+        <div className="flex h-[560px] flex-col overflow-hidden rounded-2xl border bg-card shadow-xl lg:h-auto lg:min-h-[480px]">
           <div className="flex items-center justify-between border-b px-5 py-3.5">
             <div className="flex items-center gap-2 font-semibold text-foreground">
               <ClaudeMark className="h-5 w-5 fill-[#D97757]" />
@@ -142,7 +169,6 @@ export function ClaudeConnectorDemo() {
           <div className="flex min-h-0 flex-1 flex-col justify-end gap-3 overflow-hidden px-5 py-5 lg:justify-start">
             {at("sent") && (
               <div className="ml-auto max-w-[88%] space-y-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                {/* The attached document */}
                 <div className="ml-auto flex w-fit items-center gap-2.5 rounded-xl border bg-muted/60 px-3 py-2">
                   <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
                     <FileText className="h-4 w-4 text-primary" />
@@ -152,7 +178,6 @@ export function ClaudeConnectorDemo() {
                     <div className="text-[11px] text-muted-foreground">PDF document</div>
                   </div>
                 </div>
-                {/* The prompt */}
                 <div className="rounded-2xl rounded-br-md bg-primary/10 px-4 py-2.5 text-[15px] text-foreground">
                   {PROMPT}
                 </div>
@@ -160,28 +185,29 @@ export function ClaudeConnectorDemo() {
             )}
 
             {at("tool1") && <ToolRow name="create_collection" done={at("tool1done")} />}
-            {at("tool2") && <ToolRow name="add_card" done={updated} />}
+            {at("tool2") && <ToolRow name={`add_card ×${CARD_COUNT}`} done={updated} />}
 
-            {/* Phones: the deck window is hidden, so show the result inline. */}
+            {/* Phones: the deck window is hidden, so show a compact result inline. */}
             {updated && (
-              <div className="rounded-xl border bg-muted/40 p-3.5 animate-in fade-in slide-in-from-bottom-2 duration-500 lg:hidden">
+              <div className="rounded-xl border bg-card p-3.5 animate-in fade-in slide-in-from-bottom-2 duration-500 lg:hidden">
                 <div className="mb-2.5 flex items-center justify-between gap-2">
                   <span className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
                     <BrandMark className="h-5 w-5" />
                     {DECK}
                   </span>
                   <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
-                    6 cards
+                    {CARD_COUNT} cards
                   </span>
                 </div>
-                <div className="grid grid-cols-2 gap-1.5">
-                  {CARDS.slice(0, 4).map((card) => (
-                    <div key={card.term} className="rounded-lg border bg-card px-2.5 py-1.5">
-                      <div className="truncate text-[12px] font-semibold text-primary">{card.term}</div>
-                      <div className="truncate text-[11px] text-muted-foreground">{card.def}</div>
-                    </div>
+                <ul className="space-y-1.5">
+                  {CARDS.slice(0, 4).map((card, i) => (
+                    <li key={card.term} className="rounded-lg border bg-card px-2.5 py-1.5">
+                      <div className="truncate text-[13px] font-semibold text-foreground">{card.term}</div>
+                      <div className="truncate text-[12px] text-muted-foreground">{card.def}</div>
+                    </li>
                   ))}
-                </div>
+                </ul>
+                <div className="mt-1.5 text-center text-[11px] text-muted-foreground">+{CARD_COUNT - 4} more</div>
               </div>
             )}
 
@@ -207,8 +233,8 @@ export function ClaudeConnectorDemo() {
           </div>
         </div>
 
-        {/* --- The deck on RecallCards (larger screens) --- */}
-        <div className="hidden min-h-[440px] flex-col overflow-hidden rounded-2xl border bg-card shadow-xl lg:flex">
+        {/* --- The deck on recallcards.net (styled like the real deck page) --- */}
+        <div className="hidden h-[560px] flex-col overflow-hidden rounded-2xl border bg-card shadow-xl lg:flex lg:h-auto lg:min-h-[480px]">
           <div className="flex items-center gap-2 border-b bg-muted/40 px-5 py-3.5">
             <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground/25" />
             <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground/25" />
@@ -218,49 +244,40 @@ export function ClaudeConnectorDemo() {
             </span>
           </div>
 
-          <div className="relative flex-1 px-6 py-6">
-            {/* Deck header */}
-            <div className="flex items-center gap-3">
-              <BrandMark className="h-10 w-10 shrink-0 rounded-xl" />
+          <div className="flex min-h-0 flex-1 flex-col px-6 py-5">
+            {/* Deck header, like the real ManageCards page */}
+            <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="truncate text-xl font-bold text-foreground">{DECK}</span>
-                  {updated && (
-                    <span className="flex items-center gap-1 whitespace-nowrap rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-200 animate-in fade-in zoom-in-90 duration-300 dark:bg-emerald-950/40 dark:text-emerald-400 dark:ring-emerald-900">
-                      <Check className="h-3 w-3" strokeWidth={3} />
-                      Added via Claude
-                    </span>
-                  )}
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  {updated ? "6 cards · by you" : "Waiting for cards…"}
-                </div>
+                <h3 className="truncate text-xl font-bold text-primary">{DECK}</h3>
+                <p className="mt-0.5 text-sm text-muted-foreground">
+                  {updated ? `${CARD_COUNT} cards` : "No cards yet"}
+                </p>
               </div>
+              {updated && (
+                <span className="flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-200 animate-in fade-in zoom-in-90 duration-300 dark:bg-emerald-950/40 dark:text-emerald-400 dark:ring-emerald-900">
+                  <Check className="h-3 w-3" strokeWidth={3} />
+                  Added via Claude
+                </span>
+              )}
             </div>
 
-            <div className="my-5 h-px bg-border" />
-
-            {/* Cards appear here, staggered */}
-            {updated ? (
-              <div className="grid grid-cols-2 gap-3">
-                {CARDS.map((card, i) => (
-                  <div
-                    key={card.term}
-                    className="rounded-xl border bg-gradient-to-br from-primary/5 to-accent/5 px-3.5 py-3 animate-in fade-in zoom-in-95 fill-mode-both"
-                    style={{ animationDelay: `${i * 110}ms`, animationDuration: "500ms" }}
-                  >
-                    <div className="truncate text-[15px] font-bold text-primary">{card.term}</div>
-                    <div className="mt-0.5 truncate text-[13px] text-muted-foreground">{card.def}</div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-3">
-                {CARDS.map((_, i) => (
-                  <div key={i} className="h-[62px] rounded-xl border border-dashed bg-muted/30" />
-                ))}
-              </div>
-            )}
+            {/* Card list — vertical rows, fading at the bottom to imply all 30 */}
+            <div className="relative mt-4 min-h-0 flex-1 overflow-hidden">
+              {updated ? (
+                <ul className="space-y-2">
+                  {CARDS.map((card, i) => (
+                    <CardRow key={card.term} card={card} i={i} animate />
+                  ))}
+                </ul>
+              ) : (
+                <ul className="space-y-2">
+                  {CARDS.slice(0, 7).map((_, i) => (
+                    <li key={i} className="h-[58px] rounded-lg border border-dashed bg-muted/30" />
+                  ))}
+                </ul>
+              )}
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-card to-transparent" />
+            </div>
           </div>
         </div>
       </div>
