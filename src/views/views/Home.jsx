@@ -101,7 +101,7 @@ const Home = () => {
 
       {/* Hero */}
       <section className="bg-background">
-        <div className="container px-4 py-12 sm:py-16 md:py-20">
+        <div className="container flex min-h-[60vh] flex-col justify-center px-4 py-16 sm:py-24 md:py-28">
           <div className="mx-auto w-full max-w-6xl">
             <div className="text-center animate-fade-in">
             <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-primary/10 border border-primary/20 mb-5 sm:mb-6">
