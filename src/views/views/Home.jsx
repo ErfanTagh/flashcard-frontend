@@ -70,7 +70,7 @@ const Home = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5">
+    <div className="min-h-screen bg-background">
       {/* Navigation */}
       <nav className="container py-4 sm:py-6 px-4 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
@@ -90,11 +90,20 @@ const Home = () => {
         </Button>
       </nav>
 
-      {/* Hero Section */}
-      <main className="container px-4 py-8 sm:py-12 md:py-20">
-        <div className="flex flex-col items-center w-full max-w-6xl mx-auto">
-          {/* Main Hero Content */}
-          <div className="text-center mb-10 sm:mb-16 animate-fade-in">
+      {/* Claude connector — the lead feature, on a soft brand-tinted band */}
+      <section className="border-b bg-gradient-to-br from-primary/[0.08] via-background to-accent/[0.06]">
+        <div className="container px-4 py-10 sm:py-16">
+          <div className="mx-auto w-full max-w-6xl">
+            <ClaudeConnectorDemo />
+          </div>
+        </div>
+      </section>
+
+      {/* Hero */}
+      <section className="bg-background">
+        <div className="container px-4 py-12 sm:py-16 md:py-20">
+          <div className="mx-auto w-full max-w-6xl">
+            <div className="text-center animate-fade-in">
             <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-primary/10 border border-primary/20 mb-5 sm:mb-6">
               <Star className="h-4 w-4 text-primary fill-primary" />
               <span className="text-xs sm:text-sm font-medium text-primary">Your personal flashcard study tool</span>
@@ -133,16 +142,16 @@ const Home = () => {
                 Learn More
               </Button>
             </div>
+            </div>
           </div>
+        </div>
+      </section>
 
-          {/* Claude connector demo */}
-
-          <ClaudeConnectorDemo />
-
-
-          {/* Features Grid */}
-          <div id="features-section" className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8 w-full mb-10 sm:mb-16">
-            <div className="rounded-xl border-2 bg-card/50 backdrop-blur-sm text-card-foreground shadow-lg hover:shadow-2xl hover:border-primary/50 transition-all duration-300 hover:-translate-y-2 group">
+      {/* Features */}
+      <section id="features-section" className="border-y bg-muted/40">
+        <div className="container px-4 py-12 sm:py-16">
+          <div className="mx-auto grid w-full max-w-6xl sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
+            <div className="rounded-xl border-2 bg-card text-card-foreground shadow-lg hover:shadow-2xl hover:border-primary/50 transition-all duration-300 hover:-translate-y-2 group">
               <div className="p-6 sm:p-8">
                 <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <Sparkles className="h-7 w-7 sm:h-8 sm:w-8 text-primary" />
@@ -154,7 +163,7 @@ const Home = () => {
               </div>
             </div>
 
-            <div className="rounded-xl border-2 bg-card/50 backdrop-blur-sm text-card-foreground shadow-lg hover:shadow-2xl hover:border-primary/50 transition-all duration-300 hover:-translate-y-2 group">
+            <div className="rounded-xl border-2 bg-card text-card-foreground shadow-lg hover:shadow-2xl hover:border-primary/50 transition-all duration-300 hover:-translate-y-2 group">
               <div className="p-6 sm:p-8">
                 <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-accent/20 to-accent/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <Zap className="h-7 w-7 sm:h-8 sm:w-8 text-accent" />
@@ -166,7 +175,7 @@ const Home = () => {
               </div>
             </div>
 
-            <div className="rounded-xl border-2 bg-card/50 backdrop-blur-sm text-card-foreground shadow-lg hover:shadow-2xl hover:border-primary/50 transition-all duration-300 hover:-translate-y-2 group">
+            <div className="rounded-xl border-2 bg-card text-card-foreground shadow-lg hover:shadow-2xl hover:border-primary/50 transition-all duration-300 hover:-translate-y-2 group">
               <div className="p-6 sm:p-8">
                 <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <Target className="h-7 w-7 sm:h-8 sm:w-8 text-primary" />
@@ -178,10 +187,14 @@ const Home = () => {
               </div>
             </div>
           </div>
+        </div>
+      </section>
 
-          {/* Benefits Section */}
-          <div className="w-full max-w-4xl mx-auto">
-            <div className="rounded-2xl border-2 bg-gradient-to-br from-card to-card/50 backdrop-blur-sm p-6 sm:p-8 md:p-12 shadow-xl">
+      {/* Benefits */}
+      <section className="bg-background">
+        <div className="container px-4 py-12 sm:py-16">
+          <div className="mx-auto w-full max-w-4xl">
+            <div className="rounded-2xl border-2 bg-card p-6 sm:p-8 md:p-12 shadow-xl">
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-6 sm:mb-8 text-primary">
                 Why Choose RecallCards?
               </h2>
@@ -202,10 +215,14 @@ const Home = () => {
               </div>
             </div>
           </div>
+        </div>
+      </section>
 
-          {/* Apps in progress */}
-          <div className="w-full max-w-4xl mx-auto mt-10 sm:mt-16">
-            <div className="relative overflow-hidden rounded-2xl border-2 bg-gradient-to-br from-card to-card/50 backdrop-blur-sm p-6 sm:p-8 md:p-12 shadow-xl">
+      {/* Apps in progress */}
+      <section className="border-t bg-muted/40">
+        <div className="container px-4 py-12 sm:py-16">
+          <div className="mx-auto w-full max-w-4xl">
+            <div className="relative overflow-hidden rounded-2xl border-2 bg-card p-6 sm:p-8 md:p-12 shadow-xl">
               {/* Brand-coloured glow, purely decorative */}
               <div
                 aria-hidden="true"
@@ -242,7 +259,7 @@ const Home = () => {
             </div>
           </div>
         </div>
-      </main>
+      </section>
     </div>
   );
 }

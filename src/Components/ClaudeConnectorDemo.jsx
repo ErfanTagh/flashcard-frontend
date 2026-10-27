@@ -106,7 +106,7 @@ export function ClaudeConnectorDemo() {
   const updated = at("updated");
 
   return (
-    <section ref={sectionRef} className="w-full mb-10 sm:mb-16">
+    <section ref={sectionRef} className="w-full">
       {/* Heading */}
       <div className="mx-auto mb-6 sm:mb-10 max-w-2xl text-center">
         <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#D97757]/25 bg-[#D97757]/5 py-1 pl-1 pr-3 text-sm font-medium text-foreground">
