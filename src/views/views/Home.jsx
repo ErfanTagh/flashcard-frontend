@@ -77,7 +77,7 @@ const Home = () => {
           <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shrink-0">
             <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-primary-foreground" />
           </div>
-          <span className="text-lg sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent truncate">
+          <span className="text-lg sm:text-2xl md:text-3xl font-bold text-primary truncate">
             RecallCards
           </span>
         </div>
@@ -99,10 +99,10 @@ const Home = () => {
               <Star className="h-4 w-4 text-primary fill-primary" />
               <span className="text-xs sm:text-sm font-medium text-primary">Your personal flashcard study tool</span>
             </div>
-            <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold mb-4 sm:mb-6 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+            <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold mb-4 sm:mb-6 text-primary">
               Master Anything with
               <br />
-              <span className="bg-gradient-to-r from-accent via-primary to-accent bg-clip-text text-transparent">
+              <span className="text-primary">
                 Smart Flashcards
               </span>
             </h1>
@@ -182,7 +182,7 @@ const Home = () => {
           {/* Benefits Section */}
           <div className="w-full max-w-4xl mx-auto">
             <div className="rounded-2xl border-2 bg-gradient-to-br from-card to-card/50 backdrop-blur-sm p-6 sm:p-8 md:p-12 shadow-xl">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-6 sm:mb-8 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-6 sm:mb-8 text-primary">
                 Why Choose RecallCards?
               </h2>
               <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
@@ -217,7 +217,7 @@ const Home = () => {
                   <span className="inline-flex h-2 w-2 rounded-full bg-gradient-to-r from-primary to-accent" />
                   In development
                 </span>
-                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 text-primary">
                   Mobile apps are on the way
                 </h2>
                 <p className="text-sm sm:text-base text-muted-foreground max-w-xl mx-auto leading-relaxed">

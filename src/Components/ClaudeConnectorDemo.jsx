@@ -116,7 +116,7 @@ export function ClaudeConnectorDemo() {
           <ClaudeMark className="h-4 w-4 fill-[#D97757]" />
           Works with Claude
         </span>
-        <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+        <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight text-primary">
           Turn anything into a deck, just by asking Claude
         </h2>
         <p className="mt-3 text-sm sm:text-lg text-muted-foreground">
