@@ -558,7 +558,7 @@ function Collections() {
                     variant="outline"
                     onClick={() => { setSelectedCollection(collection); navigate(`/quiz?collection=${encodeURIComponent(collection)}`); }}
                     disabled={total === 0}
-                    className="text-violet-600 hover:text-violet-700 dark:text-violet-400"
+                    className="text-primary hover:text-primary/80"
                   >
                     <GraduationCap className="h-4 w-4 mr-2" />
                     Quiz

@@ -17,7 +17,7 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 220 15% 20%;
 
-    --primary: 262 83% 58%;
+    --primary: 221 83% 53%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 210 100% 92%;
@@ -26,7 +26,7 @@ All colors MUST be HSL.
     --muted: 220 20% 94%;
     --muted-foreground: 220 10% 45%;
 
-    --accent: 340 82% 65%;
+    --accent: 199 89% 48%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
@@ -34,7 +34,7 @@ All colors MUST be HSL.
 
     --border: 220 15% 88%;
     --input: 220 15% 88%;
-    --ring: 262 83% 58%;
+    --ring: 221 83% 53%;
 
     --radius: 0.75rem;
 
@@ -42,7 +42,7 @@ All colors MUST be HSL.
 
     --sidebar-foreground: 220 15% 20%;
 
-    --sidebar-primary: 262 83% 58%;
+    --sidebar-primary: 221 83% 53%;
 
     --sidebar-primary-foreground: 0 0% 100%;
 
@@ -52,7 +52,7 @@ All colors MUST be HSL.
 
     --sidebar-border: 220 15% 88%;
 
-    --sidebar-ring: 262 83% 58%;
+    --sidebar-ring: 221 83% 53%;
   }
 
   .dark {
@@ -65,7 +65,7 @@ All colors MUST be HSL.
     --popover: 220 18% 14%;
     --popover-foreground: 220 15% 95%;
 
-    --primary: 262 83% 58%;
+    --primary: 221 83% 53%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 220 20% 18%;
@@ -74,7 +74,7 @@ All colors MUST be HSL.
     --muted: 220 20% 18%;
     --muted-foreground: 220 10% 60%;
 
-    --accent: 340 82% 65%;
+    --accent: 199 89% 48%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 62.8% 30.6%;
@@ -82,15 +82,15 @@ All colors MUST be HSL.
 
     --border: 220 15% 25%;
     --input: 220 15% 25%;
-    --ring: 262 83% 58%;
+    --ring: 221 83% 53%;
     --sidebar-background: 220 18% 14%;
     --sidebar-foreground: 220 15% 95%;
-    --sidebar-primary: 262 83% 58%;
+    --sidebar-primary: 221 83% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 220 20% 18%;
     --sidebar-accent-foreground: 220 15% 95%;
     --sidebar-border: 220 15% 25%;
-    --sidebar-ring: 262 83% 58%;
+    --sidebar-ring: 221 83% 53%;
   }
 }
 
