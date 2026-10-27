@@ -7,72 +7,68 @@ on:
       - master
   workflow_dispatch:
 
+# RecallCards runs as app #4 on the shared gateway box (37.27.31.223), beside
+# 123resume, jsonsanitypro and spec-review. See my-simple-resume/SERVER-HANDOFF.md.
+# The frontend's build context sits under the backend's compose (it builds the
+# SPA and bakes in the Auth0 config), so the compose is driven from there. This
+# deploy touches ONLY the recallcards-frontend container.
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy to Server
+      - name: Deploy frontend to server
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: 65.109.168.192
-          username: work
+          host: 37.27.31.223
+          username: root
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            set -e  # Exit on error
+            set -euo pipefail
 
-            # Navigate to frontend directory
-            FRONTEND_DIR=~/website/flashcard-frontend
-            if [ ! -d "$FRONTEND_DIR" ]; then
-              echo "Error: Frontend directory not found at $FRONTEND_DIR"
-              exit 1
-            fi
-
-            cd "$FRONTEND_DIR"
-
-            # Save .env file if it exists (shouldn't be in git)
-            if [ -f "$FRONTEND_DIR/.env" ]; then
-              cp "$FRONTEND_DIR/.env" "$FRONTEND_DIR/.env.backup"
-            fi
-
-            # Fetch latest changes and reset to match remote exactly
-            # This discards any local changes to match the repository
+            # Update the frontend source. git reset keeps untracked files, so
+            # nothing here needs the .env (that lives in the backend dir below).
+            cd /root/recallcards/flashcard-frontend
             git fetch origin
             git reset --hard origin/main || git reset --hard origin/master
 
-            # Restore .env file if it was backed up
-            if [ -f "$FRONTEND_DIR/.env.backup" ]; then
-              mv "$FRONTEND_DIR/.env.backup" "$FRONTEND_DIR/.env"
-            fi
+            # The compose that builds the frontend lives in the backend dir, and
+            # reads the Auth0 build args from the .env there.
+            cd /root/recallcards/flashcard-backend
+            docker network inspect recallcards-net >/dev/null 2>&1 || docker network create recallcards-net
 
-            # Navigate to backend directory (where docker-compose.yml is located)
-            BACKEND_DIR=~/website/flashcard-backend
-            if [ ! -d "$BACKEND_DIR" ]; then
-              echo "Error: Backend directory not found at $BACKEND_DIR"
+            # Rebuild and restart ONLY the frontend. --no-deps leaves the backend
+            # and MongoDB running. The shared gateway proxies to it with `resolve`,
+            # so it re-resolves the new container IP on its own within seconds.
+            docker compose -f docker-compose.prod.yml up -d --build --no-deps frontend
+
+            # Health gate.
+            sleep 6
+            docker compose -f docker-compose.prod.yml ps frontend
+            if [ "$(docker inspect -f '{{.State.Running}}' recallcards-frontend)" != "true" ]; then
+              echo "::error::recallcards-frontend is not running after deploy"
+              docker logs --tail 50 recallcards-frontend || true
               exit 1
             fi
 
-            cd "$BACKEND_DIR"
-
-            # Ensure Docker network exists
-            docker network create web 2>/dev/null || true
-
-            # Ensure .env file exists in frontend directory (for build args)
-            if [ ! -f "$FRONTEND_DIR/.env" ]; then
-              echo "Warning: .env file not found in frontend directory"
-              echo "Build will use default values from docker-compose.yml"
+            # End-to-end through the gateway: this exercises the SPA and its
+            # /api proxy to the backend. Retry briefly while the gateway
+            # re-resolves the new frontend IP.
+            ok=0
+            for i in $(seq 1 10); do
+              code=$(curl -fsS -o /dev/null -w '%{http_code}' --max-time 6 https://recallcards.net/ || true)
+              if [ "$code" = "200" ]; then ok=1; break; fi
+              sleep 3
+            done
+            if [ "$ok" != "1" ]; then
+              echo "::error::recallcards.net did not return 200 after deploy"
+              docker logs --tail 40 recallcards-frontend || true
+              exit 1
             fi
 
-            # Rebuild frontend service with build args
-            docker compose build --no-cache frontend
+            docker image prune -f \
+              --filter "label=com.docker.compose.project=flashcard-backend" \
+              --filter "until=24h" || true
 
-            # Stop old container and start new one
-            docker compose up -d --force-recreate frontend
-
-            # Verify container is running
-            docker compose ps frontend
-
-            # Show logs if there are any issues
-            docker compose logs --tail=20 frontend
-
-            echo "Frontend deployment completed successfully!"
+            echo "Frontend deploy OK"
