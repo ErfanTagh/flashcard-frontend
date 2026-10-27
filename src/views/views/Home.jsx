@@ -91,7 +91,7 @@ const Home = () => {
       </nav>
 
       {/* Claude connector — the lead feature, on a soft brand-tinted band */}
-      <section className="border-b bg-gradient-to-b from-primary/10 to-background">
+      <section className="bg-gradient-to-b from-primary/10 to-background">
         <div className="container px-4 py-10 sm:py-16">
           <div className="mx-auto w-full max-w-6xl">
             <ClaudeConnectorDemo />
@@ -148,7 +148,7 @@ const Home = () => {
       </section>
 
       {/* Features */}
-      <section id="features-section" className="border-y bg-muted/40">
+      <section id="features-section" className="bg-muted/40">
         <div className="container px-4 py-12 sm:py-16">
           <div className="mx-auto grid w-full max-w-6xl sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
             <div className="rounded-xl border-2 bg-card text-card-foreground shadow-lg hover:shadow-2xl hover:border-primary/50 transition-all duration-300 hover:-translate-y-2 group">
@@ -219,7 +219,7 @@ const Home = () => {
       </section>
 
       {/* Apps in progress */}
-      <section className="border-t bg-muted/40">
+      <section className="bg-muted/40">
         <div className="container px-4 py-12 sm:py-16">
           <div className="mx-auto w-full max-w-4xl">
             <div className="relative overflow-hidden rounded-2xl border-2 bg-card p-6 sm:p-8 md:p-12 shadow-xl">
