@@ -210,9 +210,9 @@ export function ClaudeConnectorDemo() {
         {/* --- The deck on RecallCards (larger screens) --- */}
         <div className="hidden min-h-[440px] flex-col overflow-hidden rounded-2xl border bg-card shadow-xl lg:flex">
           <div className="flex items-center gap-2 border-b bg-muted/40 px-5 py-3.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
-            <span className="h-2.5 w-2.5 rounded-full bg-[#febc2e]" />
-            <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
+            <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground/25" />
+            <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground/25" />
+            <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground/25" />
             <span className="ml-3 rounded-md bg-background px-3 py-1 text-xs text-muted-foreground ring-1 ring-border">
               recallcards.net
             </span>

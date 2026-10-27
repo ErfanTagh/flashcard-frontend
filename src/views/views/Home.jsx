@@ -91,7 +91,7 @@ const Home = () => {
       </nav>
 
       {/* Claude connector — the lead feature, on a soft brand-tinted band */}
-      <section className="border-b bg-gradient-to-br from-primary/[0.08] via-background to-accent/[0.06]">
+      <section className="border-b bg-gradient-to-b from-primary/10 to-background">
         <div className="container px-4 py-10 sm:py-16">
           <div className="mx-auto w-full max-w-6xl">
             <ClaudeConnectorDemo />
