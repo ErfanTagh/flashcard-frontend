@@ -4,6 +4,7 @@ import { Sparkles, Zap, Target, BookOpen, BarChart3, ArrowRight, CheckCircle2, S
 import { Button } from "@/components/ui/button";
 import { setPostLoginDest } from "@/lib/postLogin";
 import { AppleIcon, AndroidIcon } from "@/Components/BrandIcons";
+import { ClaudeConnectorDemo } from "@/Components/ClaudeConnectorDemo";
 
 const Home = () => {
   const { isAuthenticated, loginWithRedirect, user } = useAuth();
@@ -133,6 +134,11 @@ const Home = () => {
               </Button>
             </div>
           </div>
+
+          {/* Claude connector demo */}
+
+          <ClaudeConnectorDemo />
+
 
           {/* Features Grid */}
           <div id="features-section" className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8 w-full mb-10 sm:mb-16">
