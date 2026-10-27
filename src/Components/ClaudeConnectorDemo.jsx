@@ -109,7 +109,7 @@ export function ClaudeConnectorDemo() {
     <section ref={sectionRef} className="w-full">
       {/* Heading */}
       <div className="mx-auto mb-6 sm:mb-10 max-w-2xl text-center">
-        <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#D97757]/25 bg-[#D97757]/5 py-1 pl-1 pr-3 text-sm font-medium text-foreground">
+        <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 py-1 pl-1 pr-3 text-sm font-medium text-foreground">
           <span className="rounded-full bg-gradient-to-r from-primary to-accent px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-white">
             New
           </span>
