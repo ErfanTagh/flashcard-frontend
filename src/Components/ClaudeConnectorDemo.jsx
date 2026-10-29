@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { ArrowRight, Check, Loader2, FileText, BookOpen } from "lucide-react";
 import { CLAUDE_MARK } from "@/Components/claudeMark";
 
@@ -136,13 +137,22 @@ export function ClaudeConnectorDemo() {
     <section ref={sectionRef} className="w-full">
       {/* Heading */}
       <div className="mx-auto mb-6 sm:mb-10 max-w-2xl text-center">
-        <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 py-1 pl-1 pr-3 text-sm font-medium text-foreground">
+        <Link
+          to="/blog/claude-connector"
+          className="group mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 py-1 pl-1 pr-3 text-sm font-medium text-foreground no-underline transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:bg-primary/10 hover:shadow-md hover:shadow-primary/10"
+          title="Read the guide: how to use the RecallCards connector"
+        >
           <span className="rounded-full bg-gradient-to-r from-primary to-accent px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-white">
             New
           </span>
           <ClaudeMark className="h-4 w-4 fill-[#D97757]" />
-          Works with Claude
-        </span>
+          {/* Swaps to "Read the guide" on hover. */}
+          <span className="whitespace-nowrap group-hover:hidden">Works with Claude</span>
+          <span className="hidden items-center gap-1 whitespace-nowrap text-primary group-hover:inline-flex">
+            Read the guide
+            <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+          </span>
+        </Link>
         <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight text-primary">
           Turn anything into a deck, just by asking Claude
         </h2>
