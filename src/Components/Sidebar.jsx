@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, LogOut, Home, Layers, Compass, BarChart3, Play, GraduationCap } from "lucide-react";
+import { User, LogOut, Home, Layers, Compass, BarChart3, Play, GraduationCap, Newspaper } from "lucide-react";
 import { Link, NavLink } from "react-router-dom";
 
 /**
@@ -19,6 +19,7 @@ const PLACES = [
   { to: "/collections", label: "Your decks", icon: Layers },
   { to: "/explore", label: "Explore", icon: Compass },
   { to: "/progress", label: "Progress", icon: BarChart3 },
+  { to: "/blog", label: "Blog", icon: Newspaper },
 ];
 
 const ACTIONS = [

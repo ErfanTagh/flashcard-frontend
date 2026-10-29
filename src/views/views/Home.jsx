@@ -81,13 +81,21 @@ const Home = () => {
             RecallCards
           </span>
         </div>
-        <Button
-          onClick={() => { setPostLoginDest("/collections"); loginWithRedirect(); }}
-          className="shrink-0 h-9 px-3 text-sm sm:h-10 sm:px-4 sm:text-base bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all"
-        >
-          Get Started
-          <ArrowRight className="ml-1.5 sm:ml-2 h-4 w-4" />
-        </Button>
+        <div className="flex shrink-0 items-center gap-1 sm:gap-3">
+          <Link
+            to="/blog"
+            className="hidden sm:inline-flex rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground no-underline transition-colors hover:text-primary"
+          >
+            Blog
+          </Link>
+          <Button
+            onClick={() => { setPostLoginDest("/collections"); loginWithRedirect(); }}
+            className="h-9 px-3 text-sm sm:h-10 sm:px-4 sm:text-base bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all"
+          >
+            Get Started
+            <ArrowRight className="ml-1.5 sm:ml-2 h-4 w-4" />
+          </Button>
+        </div>
       </nav>
 
       {/* Claude connector — the lead feature, on a soft brand-tinted band */}
