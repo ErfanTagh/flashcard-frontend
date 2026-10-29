@@ -1,6 +1,7 @@
 import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, Check, Lightbulb, BookOpen } from "lucide-react";
 import { getBlogPost } from "@/lib/blogPosts";
+import PublicNav from "@/Components/PublicNav";
 
 /** Inline **bold** and `code`. */
 function renderInline(text, keyBase) {
@@ -173,6 +174,7 @@ export default function BlogPost() {
   if (!post) {
     return (
       <div className="min-h-screen bg-background">
+      <PublicNav />
         <div className="container mx-auto max-w-2xl px-4 py-24 text-center">
           <h1 className="text-2xl font-bold text-foreground">Post not found</h1>
           <Link to="/blog" className="mt-4 inline-flex items-center gap-2 text-primary no-underline hover:underline">
@@ -185,6 +187,7 @@ export default function BlogPost() {
 
   return (
     <div className="min-h-screen bg-background">
+      <PublicNav />
       {/* Header band */}
       <div className="bg-gradient-to-b from-primary/10 to-background">
         <div className="container mx-auto max-w-3xl px-4 pt-10 pb-8 sm:pt-14">

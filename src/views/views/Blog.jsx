@@ -1,12 +1,14 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Clock } from "lucide-react";
 import { getBlogPosts } from "@/lib/blogPosts";
+import PublicNav from "@/Components/PublicNav";
 
 export default function Blog() {
   const posts = getBlogPosts();
 
   return (
     <div className="min-h-screen bg-background">
+      <PublicNav />
       {/* Header band */}
       <div className="bg-gradient-to-b from-primary/10 to-background">
         <div className="container mx-auto max-w-4xl px-4 pt-12 pb-10 text-center sm:pt-16">
