@@ -27,12 +27,13 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { prepareImageForUpload, uploadImage } from "@/lib/image";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FolderOpen, Trash2, Edit2, Star, StarOff, Plus, BookOpen, Check, Play, GraduationCap, Share2, Copy, ImageIcon, FileJson, ListChecks, Users, MoreHorizontal, Globe } from "lucide-react";
+import { FolderOpen, Trash2, Edit2, Star, StarOff, Plus, BookOpen, Check, Play, GraduationCap, Share2, Copy, ImageIcon, FileJson, ListChecks, Users, MoreHorizontal, Globe, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import ImportDeckDialog from "@/Components/ImportDeckDialog";
+import GenerateDeckDialog from "@/Components/GenerateDeckDialog";
 import { Textarea } from "@/components/ui/textarea";
 import { apiFetch } from "@/lib/api";
 import AuthedImage from "@/Components/AuthedImage";
@@ -67,6 +68,7 @@ function Collections() {
   const [progress, setProgress] = useState({});
   const [owners, setOwners] = useState({});
   const [showImportDialog, setShowImportDialog] = useState(false);
+  const [showGenerateDialog, setShowGenerateDialog] = useState(false);
   const [coverUploading, setCoverUploading] = useState(null);
   const [shareFor, setShareFor] = useState(null);
   const [shareLink, setShareLink] = useState("");
@@ -463,11 +465,15 @@ function Collections() {
                 two different widths against a lot of empty panel, which reads
                 as an accident rather than a pair. */}
             <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:shrink-0">
+              <Button onClick={() => setShowGenerateDialog(true)} className="gap-2 w-full sm:w-auto">
+                <Sparkles className="h-4 w-4" />
+                Generate with AI
+              </Button>
               <Button variant="outline" onClick={() => setShowImportDialog(true)} className="gap-2 w-full sm:w-auto">
                 <FileJson className="h-4 w-4" />
                 Import JSON
               </Button>
-              <Button onClick={() => setShowCreateDialog(true)} className="gap-2 w-full sm:w-auto">
+              <Button variant="outline" onClick={() => setShowCreateDialog(true)} className="gap-2 w-full sm:w-auto">
                 <Plus className="h-4 w-4" />
                 New Collection
               </Button>
@@ -668,11 +674,17 @@ function Collections() {
             <CardContent className="py-12 text-center">
               <BookOpen className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
               <h3 className="text-xl font-semibold mb-2">No Collections Yet</h3>
-              <p className="text-muted-foreground mb-4">Create your first collection to get started</p>
-              <Button onClick={() => setShowCreateDialog(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Collection
-              </Button>
+              <p className="text-muted-foreground mb-4">Upload a document and let AI build your first deck — or create one yourself.</p>
+              <div className="flex flex-col items-center justify-center gap-2 sm:flex-row">
+                <Button onClick={() => setShowGenerateDialog(true)}>
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Generate with AI
+                </Button>
+                <Button variant="outline" onClick={() => setShowCreateDialog(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Collection
+                </Button>
+              </div>
             </CardContent>
           </Card>
         )}
@@ -870,6 +882,13 @@ function Collections() {
       <ImportDeckDialog
         open={showImportDialog}
         onOpenChange={setShowImportDialog}
+        userEmail={user?.email}
+        onImported={() => { fetchCollections(); loadCovers(); }}
+      />
+
+      <GenerateDeckDialog
+        open={showGenerateDialog}
+        onOpenChange={setShowGenerateDialog}
         userEmail={user?.email}
         onImported={() => { fetchCollections(); loadCovers(); }}
       />
