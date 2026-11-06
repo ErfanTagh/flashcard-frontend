@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import { ArrowLeft, BookOpen, Plus, Check, Search, Library, Play } from "lucide-react";
+import { ArrowLeft, BookOpen, Plus, Check, Search, Library, Play, Link2 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 
 /**
@@ -43,6 +43,17 @@ function Explore() {
   };
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [user?.email]);
+
+  const copyLink = async (deck) => {
+    const link = `${window.location.origin}/import/${encodeURIComponent(deck.share_id)}`;
+    try {
+      await navigator.clipboard.writeText(link);
+      toast({ title: "Link copied", description: `Send it to share "${deck.collection}". People need a free account to open it.` });
+    } catch {
+      // No clipboard (an insecure context, say): show the link to copy by hand.
+      toast({ title: "Copy this link", description: link });
+    }
+  };
 
   const add = async (deck) => {
     if (!isAuthenticated || !user?.email) {
@@ -128,7 +139,7 @@ function Explore() {
             {visible.map((deck) => (
               <Card
                 key={deck.share_id}
-                className="flex flex-wrap items-center gap-3 overflow-hidden p-3 transition-colors hover:border-primary/40 sm:flex-nowrap sm:gap-4 sm:p-4"
+                className="flex items-center gap-3 overflow-hidden p-3 transition-colors hover:!border-primary/40 max-sm:flex-wrap sm:gap-4 sm:p-4"
               >
                 <Link
                   to={`/import/${encodeURIComponent(deck.share_id)}`}
@@ -157,6 +168,19 @@ function Explore() {
                     {deck.mine ? "by you" : `by ${deck.owner_name || "someone"}`}
                   </p>
                 </div>
+
+                {/* Anyone can pass a public deck on: copy its link. */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => copyLink(deck)}
+                  title="Copy link to this deck"
+                  aria-label={`Copy link to ${deck.collection}`}
+                  className="h-10 shrink-0 gap-1.5 px-2.5 text-muted-foreground hover:text-white"
+                >
+                  <Link2 className="h-4 w-4" />
+                  <span className="hidden sm:inline">Copy link</span>
+                </Button>
 
                 {/* Three states, and only one of them is an offer: a deck
                     already held is reported, not offered again. */}

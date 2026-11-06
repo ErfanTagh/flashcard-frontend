@@ -74,6 +74,9 @@ function Collections() {
   const [shareLink, setShareLink] = useState("");
   const [isSharing, setIsSharing] = useState(false);
   const [shareAllowsEdit, setShareAllowsEdit] = useState(false);
+  // "share" when the Share button opened the dialog, "published" when it
+  // opened straight after publishing -- same link, different headline.
+  const [shareContext, setShareContext] = useState("share");
   const [isAddingCard, setIsAddingCard] = useState(false);
 
   useEffect(() => {
@@ -293,19 +296,20 @@ function Collections() {
         ? [...current, collection]
         : current.filter((c) => c !== collection));
 
-      toast(wanted
-        ? {
-            title: `"${collection}" is in Explore`,
-            // Publishing does not change who may edit, so a deck already
-            // shared for editing is now editable by everyone who finds it.
-            description: data.allow_edit
-              ? "Anyone can find and add it. Note it is still open for edits."
-              : "Anyone can now find and add it.",
-          }
-        : {
-            title: `"${collection}" removed from Explore`,
-            description: "People who already added it keep it.",
-          });
+      if (wanted) {
+        // A published deck is reached through its share link, so hand that
+        // link over right away: publishing is usually followed by "and now
+        // send it to someone".
+        setShareContext("published");
+        setShareFor(collection);
+        setShareLink(`${window.location.origin}${data.path}`);
+        setShareAllowsEdit(Boolean(data.allow_edit));
+      } else {
+        toast({
+          title: `"${collection}" removed from Explore`,
+          description: "People who already added it keep it. Its link still works.",
+        });
+      }
     } catch (e) {
       toast({ title: "Couldn't change that", description: e.message, variant: "destructive" });
     } finally {
@@ -364,6 +368,7 @@ function Collections() {
 
   const handleShare = async (collection) => {
     if (!user?.email) return;
+    setShareContext("share");
     setIsSharing(true);
     setShareFor(collection);
     setShareLink("");
@@ -422,7 +427,14 @@ function Collections() {
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({ token: user.email }),
       });
-      toast({ title: "Sharing stopped", description: "The old link no longer works. Copies already made are unaffected." });
+      const wasPublic = published.includes(shareFor);
+      setPublished((current) => current.filter((c) => c !== shareFor));
+      toast({
+        title: "Sharing stopped",
+        description: wasPublic
+          ? "The link no longer works and the deck is off Explore. People who already added it keep it."
+          : "The old link no longer works. People who already added it keep it.",
+      });
     } catch {
       toast({ title: "Couldn't stop sharing", variant: "destructive" });
     } finally {
@@ -951,11 +963,18 @@ function Collections() {
       <Dialog open={shareFor !== null} onOpenChange={(open) => { if (!open) { setShareFor(null); setShareLink(""); } }}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Share &ldquo;{shareFor}&rdquo;</DialogTitle>
+            <DialogTitle>
+              {shareContext === "published"
+                ? <>&ldquo;{shareFor}&rdquo; is on Explore</>
+                : <>Share &ldquo;{shareFor}&rdquo;</>}
+            </DialogTitle>
             <DialogDescription>
-              Anyone with this link can add their own copy of this collection. They
-              get the cards, not your progress, and their copy is independent of
-              yours from then on.
+              {shareContext === "published"
+                ? "Anyone browsing Explore can find it now. To send it to someone directly, share this link. "
+                : "Anyone with this link can add this deck to their collections. "}
+              People need a free account to open it. They get the cards, never
+              your progress.
+              {shareContext === "share" && published.includes(shareFor) && " It's also listed on Explore."}
             </DialogDescription>
           </DialogHeader>
 
@@ -995,8 +1014,13 @@ function Collections() {
           </label>
 
           <DialogFooter className="sm:justify-between gap-2">
-            <Button variant="ghost" onClick={handleStopSharing} className="text-destructive">
-              Stop sharing
+            <Button
+              variant="ghost"
+              onClick={handleStopSharing}
+              className="text-destructive"
+              title={published.includes(shareFor) ? "Turns the link off and takes the deck off Explore" : "Turns the link off"}
+            >
+              {published.includes(shareFor) ? "Stop sharing & unpublish" : "Stop sharing"}
             </Button>
             <Button variant="outline" onClick={() => { setShareFor(null); setShareLink(""); }}>
               Done
