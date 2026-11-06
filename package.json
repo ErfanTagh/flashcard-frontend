@@ -40,6 +40,7 @@
     "clsx": "^2.1.1",
     "font-awesome": "^4.7.0",
     "lucide-react": "^0.544.0",
+    "pdfjs-dist": "4.10.38",
     "primeicons": "^6.0.1",
     "primereact": "^8.6.1",
     "react": "^18.2.0",

@@ -1,30 +1,26 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import {
-  Sparkles, Upload, FileText, FileImage, X, AlertCircle, ArrowLeft, Trash2, Loader2,
+  Sparkles, Upload, FileText, FileImage, File as FileIcon, X, AlertCircle, ArrowLeft, Trash2, Loader2, Plus,
 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { prepareImageForUpload } from "@/lib/image";
+import { fileKind, makePreview, releasePreview } from "@/lib/filePreview";
 
 /**
  * Build a deck from documents, with Claude.
  *
- * Two steps in one dialog. First the person adds files -- a PDF, photos of
- * their notes, a screenshot, a text file -- writes an optional instruction and
- * picks how many cards. Then the generated cards are shown for review: they can
- * edit any card, drop ones they do not want, name the deck, and only then save.
+ * A full-screen dialog in two steps. First the person adds files -- a PDF,
+ * photos of their notes, a screenshot, a text file -- and writes an optional
+ * instruction. Each file shows as a tile with a preview: the photo itself, the
+ * first page of a PDF, the opening lines of a text file. Then the generated
+ * cards are shown for review: they can edit any card, drop ones they do not
+ * want, name the deck, and only then save.
  *
  * Nothing is stored until they save. Generation returns the cards; saving goes
  * through the ordinary JSON-import endpoint, the one place that validates and
@@ -32,15 +28,14 @@ import { prepareImageForUpload } from "@/lib/image";
  * store things.
  */
 
+// Match the server (ai_generate.py). Shown so the limits are visible before an
+// upload fails.
 const MAX_FILES = 10;
-// Matches the server. Shown so the limits are visible before an upload fails.
 const MAX_TOTAL_MB = 18;
 
 const ACCEPT = ".pdf,.txt,.md,.csv,.json,image/*,application/pdf";
 
-function isImage(file) {
-  return (file.type || "").startsWith("image/");
-}
+let nextId = 1;
 
 function prettySize(bytes) {
   if (bytes < 1024) return `${bytes} B`;
@@ -48,25 +43,108 @@ function prettySize(bytes) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+const KIND_ICON = { image: FileImage, pdf: FileText, text: FileText, other: FileIcon };
+const KIND_LABEL = { image: "Image", pdf: "PDF", text: "Text", other: "File" };
+
+/** One picked file: a preview filling the tile, its name and size underneath. */
+function FileTile({ entry, onRemove, disabled }) {
+  const { file, preview } = entry;
+  const kind = fileKind(file);
+  const Icon = KIND_ICON[kind];
+  const [broken, setBroken] = useState(false); // e.g. HEIC, which most browsers can't draw
+
+  let body;
+  if (!preview) {
+    body = (
+      <div className="flex h-full items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  } else if (preview.url && !broken) {
+    body = (
+      <img
+        src={preview.url}
+        alt=""
+        onError={() => setBroken(true)}
+        className={`h-full w-full ${kind === "pdf" ? "object-contain object-top bg-white" : "object-cover"}`}
+      />
+    );
+  } else if (preview.text) {
+    body = (
+      <p className="h-full overflow-hidden whitespace-pre-wrap break-words bg-white p-3 text-left font-mono text-[10px] leading-snug text-zinc-600 dark:bg-zinc-900 dark:text-zinc-300">
+        {preview.text}
+      </p>
+    );
+  } else {
+    body = (
+      <div className="flex h-full flex-col items-center justify-center gap-2 text-muted-foreground">
+        <Icon className="h-10 w-10" />
+        <span className="text-xs font-medium uppercase tracking-wide">{KIND_LABEL[kind]}</span>
+      </div>
+    );
+  }
+
+  return (
+    <li className="group relative flex flex-col overflow-hidden rounded-xl border bg-card shadow-sm transition-shadow hover:shadow-md">
+      <div className="relative aspect-[3/4] overflow-hidden border-b bg-muted/60">
+        {body}
+        {kind === "pdf" && preview?.pages > 0 && (
+          <span className="absolute bottom-2 left-2 rounded-md bg-black/60 px-1.5 py-0.5 text-[11px] font-medium text-white">
+            {preview.pages} page{preview.pages === 1 ? "" : "s"}
+          </span>
+        )}
+      </div>
+      <div className="min-w-0 px-2.5 py-2">
+        <p className="m-0 truncate text-xs font-medium text-foreground" title={file.name}>{file.name}</p>
+        <p className="m-0 mt-0.5 flex items-center gap-1 text-[11px] text-muted-foreground">
+          <Icon className="h-3 w-3 shrink-0" />
+          {KIND_LABEL[kind]} · {prettySize(file.size)}
+        </p>
+      </div>
+      <button
+        type="button"
+        onClick={onRemove}
+        disabled={disabled}
+        className="absolute right-2 top-2 rounded-full bg-black/55 p-1.5 text-white shadow transition-colors hover:bg-black/80 disabled:hidden"
+        aria-label={`Remove ${file.name}`}
+      >
+        <X className="h-3.5 w-3.5" />
+      </button>
+    </li>
+  );
+}
+
 function GenerateDeckDialog({ open, onOpenChange, userEmail, onImported }) {
   const { toast } = useToast();
   const fileInput = useRef(null);
 
-  const [files, setFiles] = useState([]);
+  // [{id, file, preview}] -- preview is null until it has been made.
+  const [entries, setEntries] = useState([]);
   const [prompt, setPrompt] = useState("");
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState(null);
+  const [dragging, setDragging] = useState(false);
 
   // Review step.
   const [cards, setCards] = useState(null); // null until generated
   const [deckName, setDeckName] = useState("");
   const [saving, setSaving] = useState(false);
 
+  // Object URLs outlive the component unless released; keep a handle on the
+  // current set so unmounting can let them go.
+  const entriesRef = useRef(entries);
+  entriesRef.current = entries;
+  useEffect(() => () => entriesRef.current.forEach((e) => releasePreview(e.preview)), []);
+
+  const files = entries.map((e) => e.file);
+
   const reset = () => {
-    setFiles([]);
+    entries.forEach((e) => releasePreview(e.preview));
+    setEntries([]);
     setPrompt("");
     setGenerating(false);
     setError(null);
+    setDragging(false);
     setCards(null);
     setDeckName("");
     setSaving(false);
@@ -75,24 +153,48 @@ function GenerateDeckDialog({ open, onOpenChange, userEmail, onImported }) {
   const addFiles = (chosen) => {
     setError(null);
     const incoming = Array.from(chosen || []);
-    setFiles((current) => {
-      // De-duplicate by name+size so picking the same file twice does nothing.
-      const seen = new Set(current.map((f) => `${f.name}:${f.size}`));
-      const merged = [...current];
-      for (const f of incoming) {
-        const key = `${f.name}:${f.size}`;
-        if (!seen.has(key)) { seen.add(key); merged.push(f); }
-      }
-      return merged.slice(0, MAX_FILES);
-    });
+    const seen = new Set(entries.map((e) => `${e.file.name}:${e.file.size}`));
+    const fresh = [];
+    for (const file of incoming) {
+      const key = `${file.name}:${file.size}`;
+      if (seen.has(key)) continue; // picking the same file twice does nothing
+      seen.add(key);
+      fresh.push({ id: nextId++, file, preview: null });
+    }
+
+    const room = MAX_FILES - entries.length;
+    if (fresh.length > room) {
+      setError(`You can add up to ${MAX_FILES} files at a time; ${fresh.length - Math.max(room, 0)} were left out.`);
+    }
+    const accepted = fresh.slice(0, Math.max(room, 0));
+    if (accepted.length === 0) return;
+    setEntries((current) => [...current, ...accepted]);
+
+    // Previews arrive one by one; each tile shows a spinner until its own is ready.
+    for (const entry of accepted) {
+      makePreview(entry.file).then((preview) => {
+        setEntries((current) => {
+          if (!current.some((e) => e.id === entry.id)) {
+            releasePreview(preview); // removed while its preview was being made
+            return current;
+          }
+          return current.map((e) => (e.id === entry.id ? { ...e, preview } : e));
+        });
+      });
+    }
   };
 
-  const removeFile = (index) => {
-    setFiles((current) => current.filter((_, i) => i !== index));
+  const removeFile = (id) => {
+    setEntries((current) => {
+      const gone = current.find((e) => e.id === id);
+      if (gone) releasePreview(gone.preview);
+      return current.filter((e) => e.id !== id);
+    });
   };
 
   const totalBytes = files.reduce((sum, f) => sum + f.size, 0);
   const overSize = totalBytes > MAX_TOTAL_MB * 1024 * 1024;
+  const usedPercent = Math.min(100, (totalBytes / (MAX_TOTAL_MB * 1024 * 1024)) * 100);
 
   const handleGenerate = async () => {
     setError(null);
@@ -114,7 +216,7 @@ function GenerateDeckDialog({ open, onOpenChange, userEmail, onImported }) {
         // not decode as an image (e.g. HEIC in this browser) are sent as-is;
         // the server reads those directly.
         let toSend = file;
-        if (isImage(file)) {
+        if (fileKind(file) === "image") {
           try { toSend = await prepareImageForUpload(file); } catch { toSend = file; }
         }
         body.append("files", toSend, toSend.name || file.name);
@@ -186,6 +288,20 @@ function GenerateDeckDialog({ open, onOpenChange, userEmail, onImported }) {
   };
 
   const reviewing = cards !== null;
+  const pickFiles = () => fileInput.current?.click();
+
+  const dropHandlers = {
+    onDragOver: (e) => { e.preventDefault(); if (!generating) setDragging(true); },
+    onDragLeave: (e) => { if (!e.currentTarget.contains(e.relatedTarget)) setDragging(false); },
+    onDrop: (e) => { e.preventDefault(); setDragging(false); if (!generating) addFiles(e.dataTransfer.files); },
+  };
+
+  const errorLine = error && (
+    <p role="alert" className="flex items-start gap-2 text-sm text-destructive">
+      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+      {error}
+    </p>
+  );
 
   return (
     <Dialog
@@ -195,164 +311,197 @@ function GenerateDeckDialog({ open, onOpenChange, userEmail, onImported }) {
         onOpenChange(next);
       }}
     >
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
-            {reviewing ? "Review your deck" : "Generate a deck from your documents"}
+      {/* Full screen: the default dialog is a centred box, translated by -50%. */}
+      <DialogContent className="left-0 top-0 flex h-[100dvh] max-h-[100dvh] w-screen max-w-none translate-x-0 translate-y-0 flex-col gap-0 rounded-none border-0 p-0 sm:rounded-none data-[state=open]:slide-in-from-left-0 data-[state=open]:slide-in-from-top-0 data-[state=closed]:slide-out-to-left-0 data-[state=closed]:slide-out-to-top-0">
+        {/* ---- Header ---- (a div: the site styles bare <header>/<footer> elements) */}
+        <div className="shrink-0 border-b bg-background px-4 py-4 pr-14 sm:px-8">
+          <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-accent">
+              <Sparkles className="h-4 w-4 text-primary-foreground" />
+            </span>
+            {reviewing ? "Review your deck" : "Generate a deck with AI"}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="mt-1">
             {reviewing
               ? "Edit anything, drop cards you don't want, name the deck, then save. Nothing is saved until you do."
-              : "Upload PDFs, photos of your notes, screenshots or text. Claude reads them and writes the cards."}
+              : "Add PDFs, photos of your notes, screenshots or text. Claude reads them and writes the cards."}
           </DialogDescription>
-        </DialogHeader>
+        </div>
 
-        {/* ---- Step 1: inputs ---- */}
-        {!reviewing && (
-          <div className="space-y-5">
-            {/* Drop zone */}
-            <div
-              role="button"
-              tabIndex={0}
-              onClick={() => fileInput.current?.click()}
-              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") fileInput.current?.click(); }}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={(e) => { e.preventDefault(); addFiles(e.dataTransfer.files); }}
-              className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 px-4 py-8 text-center transition-colors hover:border-primary/50 hover:bg-primary/10"
-            >
-              <Upload className="h-6 w-6 text-primary" />
-              <p className="text-sm font-medium text-foreground">Drop files here, or click to choose</p>
-              <p className="text-xs text-muted-foreground">
-                PDF, images (JPEG/PNG/WEBP/GIF) or text · up to {MAX_FILES} files, {MAX_TOTAL_MB}MB total
-              </p>
-              <input
-                ref={fileInput}
-                type="file"
-                accept={ACCEPT}
-                multiple
-                className="sr-only"
-                onChange={(e) => { addFiles(e.target.files); e.target.value = ""; }}
-              />
-            </div>
+        {/* ---- Scrolling body ---- */}
+        <div className="min-h-0 flex-1 overflow-y-auto bg-muted/30">
+          <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-8">
+            <input
+              ref={fileInput}
+              type="file"
+              accept={ACCEPT}
+              multiple
+              className="sr-only"
+              onChange={(e) => { addFiles(e.target.files); e.target.value = ""; }}
+            />
 
-            {files.length > 0 && (
-              <ul className="space-y-2">
-                {files.map((file, i) => (
-                  <li key={`${file.name}:${file.size}:${i}`} className="flex items-center gap-3 rounded-lg border bg-card p-2.5">
-                    {isImage(file)
-                      ? <FileImage className="h-4 w-4 shrink-0 text-muted-foreground" />
-                      : <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />}
-                    <span className="min-w-0 flex-1 truncate text-sm">{file.name}</span>
-                    <span className="shrink-0 text-xs text-muted-foreground">{prettySize(file.size)}</span>
-                    <button
-                      type="button"
-                      onClick={() => removeFile(i)}
-                      className="shrink-0 rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
-                      aria-label={`Remove ${file.name}`}
+            {/* Step 1: files and instructions */}
+            {!reviewing && (
+              <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-8">
+                <section {...dropHandlers} className="min-w-0">
+                  {entries.length === 0 ? (
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      onClick={pickFiles}
+                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") pickFiles(); }}
+                      className={`flex min-h-[45vh] cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed px-6 py-12 text-center transition-colors ${
+                        dragging ? "border-primary bg-primary/10" : "border-primary/30 bg-background hover:border-primary/50 hover:bg-primary/5"
+                      }`}
                     >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </li>
-                ))}
-                <li className={`text-right text-xs ${overSize ? "text-destructive" : "text-muted-foreground"}`}>
-                  {prettySize(totalBytes)} of {MAX_TOTAL_MB}MB
-                </li>
-              </ul>
-            )}
-
-            <div className="space-y-2">
-              <Label htmlFor="gen-prompt">Instructions (optional)</Label>
-              <Textarea
-                id="gen-prompt"
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                placeholder="e.g. Focus on definitions and dates. Make the questions in German. Skip the introduction."
-                className="min-h-[72px] resize-none"
-                maxLength={1000}
-              />
-              <p className="text-xs text-muted-foreground">
-                Claude decides how many cards to make from your material.
-              </p>
-            </div>
-
-            {error && (
-              <p className="flex items-start gap-2 text-sm text-destructive">
-                <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-                {error}
-              </p>
-            )}
-          </div>
-        )}
-
-        {/* ---- Step 2: review ---- */}
-        {reviewing && (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="gen-deck-name">Deck name</Label>
-              <Input
-                id="gen-deck-name"
-                value={deckName}
-                onChange={(e) => setDeckName(e.target.value)}
-                placeholder="Name this deck"
-                maxLength={60}
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-medium">
-                {cards.length} card{cards.length === 1 ? "" : "s"}
-              </p>
-            </div>
-
-            {cards.length === 0 ? (
-              <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
-                No cards left. Go back and generate again.
-              </p>
-            ) : (
-              <ul className="space-y-3">
-                {cards.map((card, i) => (
-                  <li key={i} className="flex gap-3 rounded-lg border bg-card p-3">
-                    <span className="mt-2 w-5 shrink-0 text-right text-xs text-muted-foreground">{i + 1}</span>
-                    <div className="min-w-0 flex-1 space-y-2">
-                      <Input
-                        value={card.term}
-                        onChange={(e) => updateCard(i, "term", e.target.value)}
-                        placeholder="Term"
-                        className="font-medium"
-                        maxLength={200}
-                      />
-                      <Textarea
-                        value={card.definition}
-                        onChange={(e) => updateCard(i, "definition", e.target.value)}
-                        placeholder="Definition"
-                        className="min-h-[56px] resize-none text-sm"
-                        maxLength={2000}
-                      />
+                      <span className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
+                        <Upload className="h-7 w-7 text-primary" />
+                      </span>
+                      <p className="text-base font-semibold text-foreground">Drop files here, or click to choose</p>
+                      <p className="max-w-sm text-sm text-muted-foreground">
+                        PDF, images (JPEG, PNG, WEBP, GIF) or text files. Up to {MAX_FILES} files, {MAX_TOTAL_MB}MB in total.
+                      </p>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => removeCard(i)}
-                      className="mt-1 shrink-0 self-start rounded p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                      aria-label={`Remove card ${i + 1}`}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </li>
-                ))}
-              </ul>
+                  ) : (
+                    <>
+                      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">
+                            {entries.length} of {MAX_FILES} file{MAX_FILES === 1 ? "" : "s"}
+                          </p>
+                          <div className="mt-1.5 flex items-center gap-2">
+                            <div className="h-1.5 w-32 overflow-hidden rounded-full bg-muted">
+                              <div
+                                className={`h-full rounded-full ${overSize ? "bg-destructive" : "bg-primary"}`}
+                                style={{ width: `${usedPercent}%` }}
+                              />
+                            </div>
+                            <span className={`text-xs ${overSize ? "text-destructive" : "text-muted-foreground"}`}>
+                              {prettySize(totalBytes)} of {MAX_TOTAL_MB}MB
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button variant="ghost" size="sm" onClick={() => { entries.forEach((e) => releasePreview(e.preview)); setEntries([]); setError(null); }} disabled={generating}>
+                            Clear all
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={pickFiles} disabled={generating || entries.length >= MAX_FILES}>
+                            <Plus className="mr-1.5 h-4 w-4" />Add files
+                          </Button>
+                        </div>
+                      </div>
+
+                      <ul
+                        className={`m-0 grid list-none grid-cols-2 gap-3 rounded-2xl p-0 transition-colors sm:grid-cols-3 sm:gap-4 md:grid-cols-4 xl:grid-cols-5 ${
+                          dragging ? "outline-dashed outline-2 outline-offset-8 outline-primary" : ""
+                        }`}
+                      >
+                        {entries.map((entry) => (
+                          <FileTile key={entry.id} entry={entry} disabled={generating} onRemove={() => removeFile(entry.id)} />
+                        ))}
+                        {entries.length < MAX_FILES && !generating && (
+                          <li>
+                            <button
+                              type="button"
+                              onClick={pickFiles}
+                              className="flex aspect-[3/4] w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-primary/30 bg-background text-sm font-medium text-primary transition-colors hover:border-primary/50 hover:bg-primary/5"
+                            >
+                              <Plus className="h-6 w-6" />
+                              Add more
+                            </button>
+                          </li>
+                        )}
+                      </ul>
+                    </>
+                  )}
+                </section>
+
+                <aside className="space-y-4 lg:sticky lg:top-0 lg:self-start">
+                  <div className="space-y-2 rounded-2xl border bg-background p-4">
+                    <Label htmlFor="gen-prompt">Instructions (optional)</Label>
+                    <Textarea
+                      id="gen-prompt"
+                      value={prompt}
+                      onChange={(e) => setPrompt(e.target.value)}
+                      placeholder="e.g. Focus on definitions and dates. Make the questions in German. Skip the introduction."
+                      className="min-h-[120px] resize-y"
+                      maxLength={1000}
+                      disabled={generating}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Claude decides how many cards to make from your material.
+                    </p>
+                  </div>
+                  {errorLine}
+                </aside>
+              </div>
             )}
 
-            {error && (
-              <p className="flex items-start gap-2 text-sm text-destructive">
-                <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-                {error}
-              </p>
+            {/* Step 2: review */}
+            {reviewing && (
+              <div className="space-y-5">
+                <div className="flex flex-wrap items-end justify-between gap-4">
+                  <div className="w-full max-w-md space-y-2">
+                    <Label htmlFor="gen-deck-name">Deck name</Label>
+                    <Input
+                      id="gen-deck-name"
+                      value={deckName}
+                      onChange={(e) => setDeckName(e.target.value)}
+                      placeholder="Name this deck"
+                      maxLength={60}
+                      className="bg-background"
+                    />
+                  </div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    {cards.length} card{cards.length === 1 ? "" : "s"}
+                  </p>
+                </div>
+
+                {cards.length === 0 ? (
+                  <p className="rounded-2xl border border-dashed bg-background p-10 text-center text-sm text-muted-foreground">
+                    No cards left. Go back and generate again.
+                  </p>
+                ) : (
+                  <ul className="m-0 grid list-none gap-3 p-0 lg:grid-cols-2">
+                    {cards.map((card, i) => (
+                      <li key={i} className="flex gap-3 rounded-xl border bg-background p-3">
+                        <span className="mt-2 w-5 shrink-0 text-right text-xs text-muted-foreground">{i + 1}</span>
+                        <div className="min-w-0 flex-1 space-y-2">
+                          <Input
+                            value={card.term}
+                            onChange={(e) => updateCard(i, "term", e.target.value)}
+                            placeholder="Term"
+                            className="font-medium"
+                            maxLength={200}
+                          />
+                          <Textarea
+                            value={card.definition}
+                            onChange={(e) => updateCard(i, "definition", e.target.value)}
+                            placeholder="Definition"
+                            className="min-h-[64px] resize-y text-sm"
+                            maxLength={2000}
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeCard(i)}
+                          className="mt-1 shrink-0 self-start rounded p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                          aria-label={`Remove card ${i + 1}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {errorLine}
+              </div>
             )}
           </div>
-        )}
+        </div>
 
-        <DialogFooter className="gap-2 sm:justify-between">
+        {/* ---- Footer ---- */}
+        <div className="flex shrink-0 items-center justify-between gap-3 border-t bg-background px-4 py-3 sm:px-8">
           {!reviewing ? (
             <>
               <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
@@ -370,11 +519,11 @@ function GenerateDeckDialog({ open, onOpenChange, userEmail, onImported }) {
                 <ArrowLeft className="mr-2 h-4 w-4" />Back
               </Button>
               <Button onClick={handleSave} disabled={saving || cards.length === 0}>
-                {saving ? "Saving…" : `Save deck`}
+                {saving ? "Saving…" : "Save deck"}
               </Button>
             </>
           )}
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );
