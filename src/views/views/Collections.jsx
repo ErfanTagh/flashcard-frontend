@@ -517,6 +517,10 @@ function Collections() {
 
               return (
               // Small hop on hover; progress line appears only while hovered.
+              // Wraps on phones only. Spelled max-sm:flex-wrap, not flex-wrap +
+              // sm:flex-nowrap: Bootstrap's own .flex-wrap is !important and
+              // loads after Tailwind, so it kept every row wrapping.
+              //
               // The whole row opens the deck's cards. Clicks on the controls
               // inside it (Study, Quiz, the menu, the cover picture) and on
               // anything they open -- React bubbles portal events, so the menu
@@ -528,7 +532,7 @@ function Collections() {
                   if (window.getSelection?.().toString()) return; // selecting the name, not opening it
                   navigate(`/collections/${encodeURIComponent(collection)}/cards`);
                 }}
-                className="group/deck relative flex cursor-pointer flex-wrap items-center gap-3 overflow-hidden rounded-lg bg-white p-3 pb-4 transition-transform duration-200 hover:-translate-y-1 sm:flex-nowrap sm:gap-4 sm:p-4 sm:pb-5"
+                className="group/deck relative flex cursor-pointer items-center gap-3 overflow-hidden rounded-lg bg-white p-3 pb-4 transition-transform duration-200 hover:-translate-y-1 max-sm:flex-wrap sm:gap-4 sm:p-4 sm:pb-5"
               >
                 {/* A small square rather than a banner: in a row the deck's
                     picture identifies it, it does not need to fill it.
@@ -554,7 +558,7 @@ function Collections() {
                   />
                 </label>
 
-                <div className="min-w-0 flex-1 md:min-w-[8rem]">
+                <div className="min-w-[5rem] flex-1">
                   {/* A real link as well, for the keyboard and for opening in a new tab. */}
                   <Link
                     to={`/collections/${encodeURIComponent(collection)}/cards`}
@@ -585,16 +589,56 @@ function Collections() {
                     <GraduationCap className="h-4 w-4 mr-2" />
                     Quiz
                   </Button>
+                  {/* Sharing and publishing sit on the row with the other deck
+                      actions rather than behind the menu. The row is much
+                      narrower than the window (sidebar, padding: ~500px at a
+                      1024px window), so they appear from xl as icons (named
+                      by title and aria-label), get their words from 1440px,
+                      and below xl stay in the menu. A deck someone else
+                      owns can be neither shared nor published by its follower. */}
+                  {!isLinked && (
+                    <Button
+                      variant="ghost"
+                      onClick={() => handleShare(collection)}
+                      title="Share a link to this deck"
+                      aria-label={`Share ${collection}`}
+                      className="hidden px-2.5 text-muted-foreground hover:text-primary xl:inline-flex min-[1440px]:px-3"
+                    >
+                      <Share2 className="h-4 w-4 min-[1440px]:mr-2" />
+                      <span className="hidden min-[1440px]:inline">Share</span>
+                    </Button>
+                  )}
+                  {!isLinked && (() => {
+                    const isPublic = published.includes(collection);
+                    return (
+                      <Button
+                        variant="ghost"
+                        disabled={publishing === collection}
+                        onClick={() => handlePublish(collection, !isPublic)}
+                        title={isPublic ? "On Explore — click to remove it" : "Publish to Explore, the public library"}
+                        aria-label={isPublic ? `Remove ${collection} from Explore` : `Publish ${collection} to Explore`}
+                        aria-pressed={isPublic}
+                        className={`hidden px-2.5 xl:inline-flex min-[1440px]:px-3 ${isPublic
+                          ? "text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-950"
+                          : "text-muted-foreground hover:text-primary"}`}
+                      >
+                        <Globe className="h-4 w-4 min-[1440px]:mr-2" />
+                        <span className="hidden min-[1440px]:inline">{isPublic ? "On Explore" : "Publish"}</span>
+                      </Button>
+                    );
+                  })()}
                   {/* Only ever an action: a deck that already is the default
                       says so in the line under its name. */}
                   {collection !== defaultCollection && (
                     <Button
                       variant="ghost"
                       onClick={() => handleSetDefault(collection)}
-                      className="hidden text-amber-600 hover:text-amber-700 hover:bg-amber-50 lg:inline-flex dark:text-amber-500 dark:hover:bg-amber-950"
+                      title="Set as default deck"
+                      aria-label={`Set ${collection} as default deck`}
+                      className="hidden px-2.5 text-amber-600 hover:text-amber-700 hover:bg-amber-50 xl:inline-flex min-[1440px]:px-3 dark:text-amber-500 dark:hover:bg-amber-950"
                     >
-                      <Star className="h-4 w-4 mr-2" />
-                      Set default
+                      <Star className="h-4 w-4 min-[1440px]:mr-2" />
+                      <span className="hidden min-[1440px]:inline">Set default</span>
                     </Button>
                   )}
                 </div>
@@ -624,12 +668,13 @@ function Collections() {
                     <ListChecks className="h-4 w-4 mr-2" /> Manage cards
                   </DropdownMenuItem>
                   {!isLinked && (
-                    <DropdownMenuItem onClick={() => handleShare(collection)}>
+                    <DropdownMenuItem className="xl:hidden" onClick={() => handleShare(collection)}>
                       <Share2 className="h-4 w-4 mr-2" /> Share
                     </DropdownMenuItem>
                   )}
                   {!isLinked && (
                     <DropdownMenuItem
+                      className="xl:hidden"
                       disabled={publishing === collection}
                       onClick={() => handlePublish(collection, !published.includes(collection))}
                     >
@@ -638,7 +683,7 @@ function Collections() {
                     </DropdownMenuItem>
                   )}
                   {collection !== defaultCollection && (
-                    <DropdownMenuItem className="lg:hidden" onClick={() => handleSetDefault(collection)}>
+                    <DropdownMenuItem className="xl:hidden" onClick={() => handleSetDefault(collection)}>
                       <Star className="h-4 w-4 mr-2" /> Set as default
                     </DropdownMenuItem>
                   )}
