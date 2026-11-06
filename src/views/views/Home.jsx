@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { Sparkles, Zap, Target, BookOpen, BarChart3, ArrowRight, CheckCircle2, Star } from "lucide-react";
+import { Sparkles, Zap, Target, BookOpen, BarChart3, ArrowRight, CheckCircle2, Star, Compass } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { setPostLoginDest } from "@/lib/postLogin";
 import { AppleIcon, AndroidIcon } from "@/Components/BrandIcons";
@@ -10,6 +10,12 @@ const Home = () => {
   const { isAuthenticated, loginWithRedirect, user } = useAuth();
 
   if (isAuthenticated) {
+    // The name given at sign-up. When none was, the auth provider fills
+    // `name` with the email prefix (and sets nickname to the same), which is
+    // not a name to greet anyone by.
+    const realName = user?.given_name || (user?.name && user.name !== user.nickname ? user.name : "");
+    const firstName = realName.trim().split(/\s+/)[0] || "";
+
     return (
       <div className="min-h-screen bg-background">
         {/* WelcomeSection */}
@@ -17,7 +23,7 @@ const Home = () => {
           <div className="container py-8 sm:py-12 px-4">
             <div className="text-center animate-fade-in">
               <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold text-foreground mb-2 sm:mb-3">
-                Welcome{user?.given_name ? ` ${user.given_name}` : ''}! 👋
+                Welcome{firstName ? ` ${firstName}` : ''}! 👋
               </h1>
               <p className="text-base sm:text-lg md:text-xl text-muted-foreground">
                 Ready to review your flashcards and learn something new?
@@ -27,10 +33,12 @@ const Home = () => {
         </div>
 
         <main className="container py-8 sm:py-12 px-4">
-          <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
+          {/* Three across on wide screens. At two across, the last card
+              spans the row rather than sitting alone at half width. */}
+          <div className="grid gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-3">
             <Link 
               to="/collections" 
-              className="rounded-lg border bg-card text-card-foreground shadow-sm hover:shadow-xl hover:border-primary/50 transition-all duration-300 sm:hover:-translate-y-1 group no-underline"
+              className="rounded-lg border bg-card text-card-foreground shadow-sm hover:shadow-xl hover:!border-primary/50 transition-all duration-300 sm:hover:-translate-y-1 group no-underline"
             >
               <div className="p-5 sm:p-6">
                 <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
@@ -47,8 +55,26 @@ const Home = () => {
             </Link>
 
             <Link 
+              to="/explore" 
+              className="rounded-lg border bg-card text-card-foreground shadow-sm hover:shadow-xl hover:!border-primary/50 transition-all duration-300 sm:hover:-translate-y-1 group no-underline"
+            >
+              <div className="p-5 sm:p-6">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                  <Compass className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
+                </div>
+                <h3 className="flex items-center gap-2 text-xl sm:text-2xl font-semibold leading-none tracking-tight mb-2 text-foreground">
+                  Explore
+                </h3>
+                <p className="text-sm text-muted-foreground mb-4">Browse public decks shared by other learners and add them to yours</p>
+                <div className="flex items-center text-primary font-medium text-sm group-hover:gap-2 transition-all">
+                  Browse Decks <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </Link>
+
+            <Link 
               to="/progress" 
-              className="rounded-lg border bg-card text-card-foreground shadow-sm hover:shadow-xl hover:border-primary/50 transition-all duration-300 sm:hover:-translate-y-1 group no-underline"
+              className="rounded-lg border bg-card text-card-foreground shadow-sm hover:shadow-xl hover:!border-primary/50 transition-all duration-300 sm:hover:-translate-y-1 group no-underline md:col-span-2 xl:col-span-1"
             >
               <div className="p-5 sm:p-6">
                 <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
