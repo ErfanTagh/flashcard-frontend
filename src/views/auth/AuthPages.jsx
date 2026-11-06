@@ -139,6 +139,64 @@ const REASONS = {
   add: "Create a free account to add this deck. You'll come straight back and it's added for you.",
 };
 
+// --- Continue with Google ----------------------------------------------------
+
+let providersPromise = null;
+function useGoogleEnabled() {
+  const [enabled, setEnabled] = useState(false);
+  useEffect(() => {
+    providersPromise ??= fetch("/api/auth/providers")
+      .then((r) => (r.ok ? r.json() : {}))
+      .catch(() => ({}));
+    let live = true;
+    providersPromise.then((p) => live && setEnabled(Boolean(p?.google)));
+    return () => {
+      live = false;
+    };
+  }, []);
+  return enabled;
+}
+
+function GoogleMark() {
+  return (
+    <svg viewBox="0 0 48 48" className="h-5 w-5" aria-hidden="true">
+      <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+      <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+      <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+      <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+    </svg>
+  );
+}
+
+/** A full-page trip to Google and back, via the API (accounts.py). */
+function GoogleSignIn({ returnTo, label = "Continue with Google" }) {
+  const enabled = useGoogleEnabled();
+  if (!enabled) return null;
+  const href = `/api/auth/google/start${returnTo ? `?next=${encodeURIComponent(returnTo)}` : ""}`;
+  return (
+    <>
+      <Button asChild variant="outline" className="h-11 w-full gap-3 bg-background text-foreground">
+        <a href={href} className="no-underline">
+          <GoogleMark />
+          {label}
+        </a>
+      </Button>
+      <div className="my-5 flex items-center gap-3 text-xs uppercase tracking-wide text-muted-foreground">
+        <span className="h-px flex-1 bg-border" />
+        or
+        <span className="h-px flex-1 bg-border" />
+      </div>
+    </>
+  );
+}
+
+const GOOGLE_ERRORS = {
+  google: "Google sign-in didn't work. Please try again.",
+  google_cancelled: "Google sign-in was cancelled.",
+  google_unavailable: "Google sign-in isn't available right now. Use your email and password instead.",
+  rate_limited: "Too many attempts. Wait a few minutes and try again.",
+};
+
 // --- Check your inbox -----------------------------------------------------
 
 const NEXT_STEPS = [
@@ -218,7 +276,7 @@ export function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState(() => GOOGLE_ERRORS[params.get("error")] || "");
   const [unverified, setUnverified] = useState(false);
 
   const submit = async (event) => {
@@ -269,6 +327,7 @@ export function Login() {
     >
       {REASONS[reason] && !error && <Notice tone="info">{REASONS[reason]}</Notice>}
       {error && <Notice>{error}</Notice>}
+      <GoogleSignIn returnTo={returnTo} />
       <form onSubmit={submit} noValidate>
         <Field
           id="email"
@@ -354,6 +413,7 @@ export function Signup() {
     >
       {REASONS[reason] && <Notice tone="info">{REASONS[reason]}</Notice>}
       {error && <Notice>{error}</Notice>}
+      <GoogleSignIn returnTo={returnTo} label="Sign up with Google" />
       <form onSubmit={submit} noValidate>
         <Field
           id="name"
@@ -610,3 +670,46 @@ export function ResetPassword() {
   );
 }
 
+// --- Back from Google ----------------------------------------------------------
+
+export function OAuthCallback() {
+  const { exchangeGoogleCode } = useAuth();
+  const [params] = useSearchParams();
+  const code = params.get("code");
+  const next = params.get("next");
+  const [error, setError] = useState(code ? "" : "This sign-in link is incomplete.");
+  const started = useRef(false);
+
+  useEffect(() => {
+    // Once: the code works a single time, and StrictMode runs effects twice.
+    if (!code || started.current) return;
+    started.current = true;
+    if (isSafePath(next)) setPostLoginDest(next);
+    // Keep the one-time code out of the address bar and history.
+    window.history.replaceState({}, document.title, "/auth/callback");
+    exchangeGoogleCode(code).catch((err) => setError(err.message));
+  }, [code, next, exchangeGoogleCode]);
+
+  if (error) {
+    return (
+      <AuthShell icon={XCircle} tone="error" title="Google sign-in didn't work">
+        <p className="mb-4 text-center text-sm">{error}</p>
+        <Button asChild className="w-full">
+          <Link to="/login">Back to sign in</Link>
+        </Button>
+      </AuthShell>
+    );
+  }
+
+  return (
+    <AuthShell
+      badge={
+        <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      }
+      title="Signing you in"
+      subtitle="One moment…"
+    />
+  );
+}

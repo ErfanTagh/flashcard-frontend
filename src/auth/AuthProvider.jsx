@@ -193,6 +193,16 @@ export function AuthProvider({ children }) {
     []
   );
 
+  /** The one-time code Google sign-in hands back, swapped for a session. */
+  const exchangeGoogleCode = useCallback(
+    async (code) => {
+      const next = toSession(await authRequest("google/exchange", { code }));
+      setSession(next);
+      return next;
+    },
+    [setSession]
+  );
+
   const verifyEmail = useCallback(
     async (token) => {
       const next = toSession(await authRequest("verify", { token }));
@@ -251,9 +261,10 @@ export function AuthProvider({ children }) {
       verifyEmail,
       resetPassword,
       resendVerification: (email, next) => authRequest("resend-verification", { email, next }),
+      exchangeGoogleCode,
       forgotPassword: (email) => authRequest("forgot-password", { email }),
     }),
-    [user, getAccessTokenSilently, renewAccessToken, loginWithRedirect, logout, signIn, signUp, verifyEmail, resetPassword]
+    [user, getAccessTokenSilently, renewAccessToken, loginWithRedirect, logout, signIn, signUp, verifyEmail, resetPassword, exchangeGoogleCode]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -18,7 +18,7 @@ import Blog from "./views/views/Blog.jsx";
 import BlogPost from "./views/views/BlogPost.jsx";
 import SharedDeck from "./views/views/SharedDeck.jsx";
 import BrowseDeck from "./views/views/BrowseDeck.jsx";
-import { Login, Signup, VerifyEmail, ForgotPassword, ResetPassword } from "./views/auth/AuthPages.jsx";
+import { Login, Signup, VerifyEmail, ForgotPassword, ResetPassword, OAuthCallback } from "./views/auth/AuthPages.jsx";
 
 import { useEffect, useRef } from "react";
 import { Route, BrowserRouter, Routes, Navigate, useNavigate, useLocation } from "react-router-dom";
@@ -36,7 +36,7 @@ import { apiPost } from "@/lib/api";
 
 // Pages where someone signs in. A user who appears while on one of them has
 // just signed in and belongs somewhere else.
-const AUTH_PAGES = ["/login", "/signup", "/verify-email", "/forgot-password", "/reset-password"];
+const AUTH_PAGES = ["/login", "/signup", "/verify-email", "/forgot-password", "/reset-password", "/auth/callback"];
 
 // Memoised per component: building the wrapper during render produced a brand
 // new component type on every render, so React unmounted and remounted the
@@ -156,6 +156,7 @@ const AppContent = () => {
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/auth/callback" element={<OAuthCallback />} />
         <Route
           path="profile"
           element={<ProtectedRoute component={Profile} />}
