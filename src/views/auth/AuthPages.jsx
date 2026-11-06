@@ -136,6 +136,7 @@ function withReturnTo(path, returnTo, reason) {
 const REASONS = {
   deck: "Create a free account to see this deck. You'll go straight back to it.",
   explore: "Create a free account to browse decks other learners have shared.",
+  add: "Create a free account to add this deck. You'll come straight back and it's added for you.",
 };
 
 // --- Check your inbox -----------------------------------------------------

@@ -245,18 +245,22 @@ function ImportShare() {
           <div className="space-y-3">
             <Button
               onClick={() => {
-                shareLog("login clicked on share page for", shareId);
+                shareLog("add clicked signed out on share page for", shareId);
+                // Remembered so the deck is added by itself once they are
+                // signed in (App.jsx); the sign-up also carries the way back
+                // in its activation link, for another device.
                 setPendingShare(shareId);
-                loginWithRedirect({ appState: { returnTo: `/import/${shareId}` } });
+                const back = `/import/${shareId}`;
+                navigate(`/signup?returnTo=${encodeURIComponent(back)}&reason=add`);
               }}
               className="w-full h-12 text-base"
             >
-              Log in to add it
-              <ArrowRight className="h-5 w-5 ml-2" />
+              <Users className="h-5 w-5 mr-2" />
+              Add to my collections
             </Button>
             <p className="text-xs text-center text-muted-foreground">
-              After you log in or sign up, you come straight back here and the
-              deck is added for you.
+              Free account needed. After signing up you come straight back here
+              and the deck is added for you.
             </p>
           </div>
         )}

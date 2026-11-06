@@ -137,13 +137,11 @@ const AppContent = () => {
       <div className="flex min-w-0 flex-1 flex-col">
       <Routes>
         <Route path="/" element={<Home />} />
-        {/* Deck links are for members only: a signed-out visitor is sent to
-            create an account and comes back to the deck afterwards. The API
-            refuses these to anyone signed out as well. */}
-        <Route
-          path="/import/:shareId"
-          element={<ProtectedRoute component={ImportShare} screen="signup" reason="deck" />}
-        />
+        {/* Open to anyone holding the link, but only as a summary: the API
+            sends a signed-out visitor the deck's name, owner, size and cover,
+            never the cards. Adding it is what asks them to sign up. */}
+        <Route path="/import/:shareId" element={<ImportShare />} />
+        {/* Editing through a link is for members only. */}
         <Route
           path="/shared/:shareId"
           element={<ProtectedRoute component={SharedDeck} screen="signup" reason="deck" />}
