@@ -168,7 +168,7 @@ export default function BrowseDeck() {
                       <img src={imageSrc} alt="" className="mb-4 max-h-[45%] max-w-full rounded-lg object-contain" />
                     )}
                     {card.definition && (
-                      <p className="mb-4 text-lg leading-relaxed text-foreground md:text-xl">{card.definition}</p>
+                      <p className="mb-4 whitespace-pre-line text-lg leading-relaxed text-foreground md:text-xl">{card.definition}</p>
                     )}
                     <p className="mb-3 text-sm text-muted-foreground">Click to see the front again</p>
                     <RotateCcw className="h-4 w-4 text-muted-foreground" />

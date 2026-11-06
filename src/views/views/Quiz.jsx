@@ -355,7 +355,7 @@ function Quiz() {
                       <p className="font-semibold">Your answer:</p>
                       <p className="text-muted-foreground">{userAnswer}</p>
                       <p className="font-semibold mt-4">Correct answer:</p>
-                      <p className="text-foreground">{currentCard.definition}</p>
+                      <p className="text-foreground whitespace-pre-line">{currentCard.definition}</p>
                     </div>
                   </div>
                   <Button onClick={handleNext} size="lg" className="w-full">

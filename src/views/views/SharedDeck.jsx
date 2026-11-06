@@ -215,7 +215,7 @@ function SharedDeck() {
               >
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold break-words">{card.term}</p>
-                  <p className="text-sm text-muted-foreground break-words mt-0.5">
+                  <p className="text-sm text-muted-foreground break-words whitespace-pre-line mt-0.5">
                     {card.definition || <span className="italic">Picture only</span>}
                   </p>
                 </div>

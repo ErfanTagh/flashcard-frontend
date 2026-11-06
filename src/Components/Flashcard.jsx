@@ -407,7 +407,7 @@ function Flashcard() {
                         />
                       )}
                       {backText && (
-                        <p className="text-xl md:text-2xl text-foreground leading-relaxed mb-4">{backText}</p>
+                        <p className="text-xl md:text-2xl text-foreground leading-relaxed mb-4 whitespace-pre-line">{backText}</p>
                       )}
                       <p className="text-sm text-muted-foreground mb-4">Click to see term again</p>
                       <RotateCcw className="h-4 w-4 text-muted-foreground" />

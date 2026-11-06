@@ -335,7 +335,7 @@ function ManageCards() {
                       />
                     </div>
                   ) : (
-                    <p className="text-sm text-muted-foreground break-words mt-0.5">
+                    <p className="text-sm text-muted-foreground break-words whitespace-pre-line mt-0.5">
                       {card.definition}
                     </p>
                   )}
