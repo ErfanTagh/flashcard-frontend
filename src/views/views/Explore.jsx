@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import { ArrowLeft, BookOpen, Plus, Check, Search, Library, Play, Link2 } from "lucide-react";
+import { ArrowLeft, BookOpen, Plus, Check, Search, Library, Play, Link2, Eye } from "lucide-react";
+import PublicNav from "@/Components/PublicNav";
+import { setPendingShare } from "@/lib/pendingShare";
 import { apiFetch } from "@/lib/api";
 
 /**
@@ -57,7 +59,10 @@ function Explore() {
 
   const add = async (deck) => {
     if (!isAuthenticated || !user?.email) {
-      navigate(`/import/${encodeURIComponent(deck.share_id)}`);
+      // Sign up, then come back with the deck added (App.jsx acts on the marker).
+      setPendingShare(deck.share_id);
+      const back = `/import/${deck.share_id}`;
+      navigate(`/signup?returnTo=${encodeURIComponent(back)}&reason=add`);
       return;
     }
     setBusy(deck.share_id);
@@ -91,19 +96,23 @@ function Explore() {
 
   return (
     <div className="min-h-screen bg-background">
+      <PublicNav />
       <main className="container py-8 px-4">
-        <Button variant="ghost" onClick={() => navigate("/collections")} className="mb-6">
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Collections
-        </Button>
+        {isAuthenticated && (
+          <Button variant="ghost" onClick={() => navigate("/collections")} className="mb-6">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Collections
+          </Button>
+        )}
 
         <div className="mb-6">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
             Explore
           </h1>
           <p className="mt-1 text-muted-foreground">
-            Decks other people have published. Adding one keeps it up to date
-            with the owner's copy, and your progress stays yours.
+            Decks other people have published. Flip through any of them, no
+            account needed. Adding one keeps it up to date with the owner's
+            copy, and your progress stays yours.
           </p>
         </div>
 
@@ -168,6 +177,14 @@ function Explore() {
                     {deck.mine ? "by you" : `by ${deck.owner_name || "someone"}`}
                   </p>
                 </div>
+
+                {/* Read it right here, account or not. */}
+                <Button asChild variant="outline" size="sm" className="h-10 shrink-0 gap-1.5 px-2.5 sm:px-3">
+                  <Link to={`/browse/${encodeURIComponent(deck.share_id)}`} className="no-underline">
+                    <Eye className="h-4 w-4" />
+                    <span className="hidden sm:inline">Browse cards</span>
+                  </Link>
+                </Button>
 
                 {/* Anyone can pass a public deck on: copy its link. */}
                 <Button

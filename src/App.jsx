@@ -17,6 +17,7 @@ import Explore from "./views/views/Explore.jsx";
 import Blog from "./views/views/Blog.jsx";
 import BlogPost from "./views/views/BlogPost.jsx";
 import SharedDeck from "./views/views/SharedDeck.jsx";
+import BrowseDeck from "./views/views/BrowseDeck.jsx";
 import { Login, Signup, VerifyEmail, ForgotPassword, ResetPassword } from "./views/auth/AuthPages.jsx";
 
 import { useEffect, useRef } from "react";
@@ -141,6 +142,9 @@ const AppContent = () => {
             sends a signed-out visitor the deck's name, owner, size and cover,
             never the cards. Adding it is what asks them to sign up. */}
         <Route path="/import/:shareId" element={<ImportShare />} />
+        {/* Flip through a deck published to Explore, read-only, no account
+            needed. The API sends cards only for published decks. */}
+        <Route path="/browse/:shareId" element={<BrowseDeck />} />
         {/* Editing through a link is for members only. */}
         <Route
           path="/shared/:shareId"
@@ -176,11 +180,8 @@ const AppContent = () => {
                   path="collections/:collectionName/cards"
                   element={<ProtectedRoute component={ManageCards} />}
                 />
-                {/* Members only, like every deck view. */}
-                <Route
-                  path="explore"
-                  element={<ProtectedRoute component={Explore} screen="signup" reason="explore" />}
-                />
+                {/* Open to visitors: published decks are readable by anyone. */}
+                <Route path="explore" element={<Explore />} />
                 <Route path="blog" element={<Blog />} />
                 <Route path="blog/:id" element={<BlogPost />} />
                 <Route

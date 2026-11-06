@@ -265,6 +265,16 @@ function ImportShare() {
           </div>
         )}
 
+        {/* A published deck can be read before deciding, account or not. */}
+        {share.public && share.cards?.length > 0 && (
+          <Button asChild variant="outline" className="mt-3 h-11 w-full">
+            <Link to={`/browse/${encodeURIComponent(shareId)}`} className="no-underline">
+              <Layers className="h-4 w-4 mr-2" />
+              Browse the cards
+            </Link>
+          </Button>
+        )}
+
         <div className="mt-8 flex items-center justify-center gap-2 text-xs text-muted-foreground">
           <Check className="h-3.5 w-3.5" />
           Cards only — the sharer&rsquo;s progress stays private
