@@ -299,13 +299,22 @@ function ManageCards() {
         ) : (
           <ul className="space-y-2">
             {visible.map((card) => (
+              // Hover: the card lifts a little with a soft brand shadow, an
+              // accent bar grows down its left edge and the term picks up the
+              // brand colour. Same small hop as the deck rows. Keyboard focus
+              // inside the card shows the same state. The border colour needs
+              // "!": Bootstrap's .border sets border-color with !important.
               <li
                 key={card.term}
-                className="group flex items-start gap-3 rounded-lg border bg-card p-3 sm:p-4 transition-colors hover:border-primary/40"
+                className="group relative flex items-start gap-3 overflow-hidden rounded-lg border bg-card p-3 sm:p-4 transition-[transform,box-shadow,border-color] duration-200 ease-out hover:!border-primary/40 hover:shadow-lg hover:shadow-primary/10 focus-within:!border-primary/40 motion-safe:hover:-translate-y-0.5"
               >
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-y-0 left-0 w-1 origin-top scale-y-0 bg-gradient-to-b from-primary to-accent transition-transform duration-300 ease-out group-hover:scale-y-100 group-focus-within:scale-y-100"
+                />
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="m-0 font-semibold break-words">{card.term}</p>
+                    <p className="m-0 font-semibold break-words transition-colors duration-200 group-hover:text-primary">{card.term}</p>
                     {card.needs_review && (
                       <Badge className="bg-accent text-accent-foreground">Review</Badge>
                     )}
@@ -337,7 +346,10 @@ function ManageCards() {
                   )}
                 </div>
 
-                <div className="flex gap-1 shrink-0">
+                {/* Slightly muted until the card is hovered or focused, so a
+                    long list reads as words rather than a column of icons.
+                    Touch screens have no hover, so they always get full strength. */}
+                <div className="flex gap-1 shrink-0 transition-opacity duration-200 sm:opacity-60 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
                   <Button
                     size="sm" variant="ghost"
                     onClick={() => toggleFlag(card)}
