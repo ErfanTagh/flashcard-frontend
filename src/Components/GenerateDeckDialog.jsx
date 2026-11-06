@@ -54,7 +54,6 @@ function GenerateDeckDialog({ open, onOpenChange, userEmail, onImported }) {
 
   const [files, setFiles] = useState([]);
   const [prompt, setPrompt] = useState("");
-  const [count, setCount] = useState(20);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState(null);
 
@@ -66,7 +65,6 @@ function GenerateDeckDialog({ open, onOpenChange, userEmail, onImported }) {
   const reset = () => {
     setFiles([]);
     setPrompt("");
-    setCount(20);
     setGenerating(false);
     setError(null);
     setCards(null);
@@ -122,7 +120,6 @@ function GenerateDeckDialog({ open, onOpenChange, userEmail, onImported }) {
         body.append("files", toSend, toSend.name || file.name);
       }
       body.append("prompt", prompt);
-      body.append("count", String(count));
 
       const res = await apiFetch("/api/generate-cards", { method: "POST", body });
       const text = await res.text();
@@ -264,31 +261,19 @@ function GenerateDeckDialog({ open, onOpenChange, userEmail, onImported }) {
               </ul>
             )}
 
-            <div className="grid gap-4 sm:grid-cols-[1fr_auto]">
-              <div className="space-y-2">
-                <Label htmlFor="gen-prompt">Instructions (optional)</Label>
-                <Textarea
-                  id="gen-prompt"
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  placeholder="e.g. Focus on definitions and dates. Make the questions in German. Skip the introduction."
-                  className="min-h-[72px] resize-none"
-                  maxLength={1000}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="gen-count">Cards</Label>
-                <Input
-                  id="gen-count"
-                  type="number"
-                  min={1}
-                  max={50}
-                  value={count}
-                  onChange={(e) => setCount(Math.max(1, Math.min(50, Number(e.target.value) || 1)))}
-                  className="w-24"
-                />
-                <p className="text-xs text-muted-foreground">1–50</p>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="gen-prompt">Instructions (optional)</Label>
+              <Textarea
+                id="gen-prompt"
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder="e.g. Focus on definitions and dates. Make the questions in German. Skip the introduction."
+                className="min-h-[72px] resize-none"
+                maxLength={1000}
+              />
+              <p className="text-xs text-muted-foreground">
+                Claude decides how many cards to make from your material.
+              </p>
             </div>
 
             {error && (
@@ -375,7 +360,7 @@ function GenerateDeckDialog({ open, onOpenChange, userEmail, onImported }) {
                 {generating ? (
                   <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Reading your documents…</>
                 ) : (
-                  <><Sparkles className="mr-2 h-4 w-4" />Generate {count} cards</>
+                  <><Sparkles className="mr-2 h-4 w-4" />Generate deck</>
                 )}
               </Button>
             </>
