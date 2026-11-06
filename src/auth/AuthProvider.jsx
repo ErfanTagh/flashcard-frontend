@@ -129,14 +129,17 @@ export function AuthProvider({ children }) {
     return () => window.removeEventListener("storage", onStorage);
   }, []);
 
-  const refresh = useCallback(() => {
+  // `staleToken`: an access token the API just refused. Its expiry may look
+  // fine, so refresh anyway -- unless another tab already replaced it.
+  const refresh = useCallback((staleToken = null) => {
     if (refreshing.current) return refreshing.current;
 
     refreshing.current = withRefreshLock(async () => {
       // Another tab may have refreshed while this one waited for the lock.
       const stored = readSession();
       if (!stored) return null;
-      if (stored.expires_at - Date.now() > REFRESH_MARGIN_MS) return stored;
+      const stillFresh = stored.expires_at - Date.now() > REFRESH_MARGIN_MS;
+      if (stillFresh && (!staleToken || stored.access_token !== staleToken)) return stored;
 
       try {
         const next = toSession(await authRequest("refresh", { refresh_token: stored.refresh_token }));
@@ -165,6 +168,16 @@ export function AuthProvider({ children }) {
     const next = await refresh();
     return next?.access_token ?? null;
   }, [refresh]);
+
+  /** After a 401: a token to retry with, or null when signed out. */
+  const renewAccessToken = useCallback(
+    async (refusedToken) => {
+      if (!sessionRef.current) return null;
+      const next = await refresh(refusedToken || null);
+      return next?.access_token ?? null;
+    },
+    [refresh]
+  );
 
   const signIn = useCallback(
     async (email, password) => {
@@ -230,6 +243,7 @@ export function AuthProvider({ children }) {
       isLoading: false,
       error: null,
       getAccessTokenSilently,
+      renewAccessToken,
       loginWithRedirect,
       logout,
       signIn,
@@ -239,7 +253,7 @@ export function AuthProvider({ children }) {
       resendVerification: (email, next) => authRequest("resend-verification", { email, next }),
       forgotPassword: (email) => authRequest("forgot-password", { email }),
     }),
-    [user, getAccessTokenSilently, loginWithRedirect, logout, signIn, signUp, verifyEmail, resetPassword]
+    [user, getAccessTokenSilently, renewAccessToken, loginWithRedirect, logout, signIn, signUp, verifyEmail, resetPassword]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

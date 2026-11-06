@@ -15,11 +15,13 @@
  */
 
 let provideToken = async () => null;
+let renewToken = null;
 let devUser = null;
 
 /** Called once by useApiAuth, with the token getter. */
-export function setTokenProvider(getToken) {
+export function setTokenProvider(getToken, renew = null) {
   provideToken = typeof getToken === "function" ? getToken : async () => null;
+  renewToken = typeof renew === "function" ? renew : null;
 }
 
 /**
@@ -34,6 +36,7 @@ export function setDevUser(email) {
 /** Forget the caller, on sign-out. */
 export function clearCaller() {
   provideToken = async () => null;
+  renewToken = null;
   devUser = null;
 }
 
@@ -55,7 +58,7 @@ async function withAuth(headers) {
   } else if (devUser) {
     merged.set("X-Dev-User", devUser);
   }
-  return merged;
+  return { headers: merged, token };
 }
 
 /**
@@ -65,8 +68,24 @@ async function withAuth(headers) {
  * to set it, boundary included, and overriding it breaks the upload.
  */
 export async function apiFetch(path, options = {}) {
-  const headers = await withAuth(options.headers);
-  return fetch(path, { ...options, headers });
+  const { headers, token } = await withAuth(options.headers);
+  const response = await fetch(path, { ...options, headers });
+  if (response.status !== 401 || !renewToken) return response;
+
+  // Refused while the app believes it is signed in: the token may be stale
+  // in a way its expiry time does not show, or the request may have left
+  // before a token was to hand. Renew once and retry; a renewal that fails
+  // signs the user out, and the original 401 stands.
+  let fresh = null;
+  try {
+    fresh = await renewToken(token);
+  } catch (error) {
+    console.warn("[api] could not renew the access token:", error?.message || error);
+  }
+  if (!fresh || fresh === token) return response;
+  const retryHeaders = new Headers(headers);
+  retryHeaders.set("Authorization", `Bearer ${fresh}`);
+  return fetch(path, { ...options, headers: retryHeaders });
 }
 
 /** apiFetch for a JSON body, which is the common case. */

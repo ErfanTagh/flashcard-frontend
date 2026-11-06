@@ -40,8 +40,14 @@ function SharedDeck() {
   const load = async () => {
     try {
       const query = user?.email ? `?email=${encodeURIComponent(user.email)}` : "";
-      const data = await (await apiFetch(`/api/shares/${encodeURIComponent(shareId)}${query}`)).json();
-      if (data.status !== 200) setError(data.error || "This link is no longer available");
+      const res = await apiFetch(`/api/shares/${encodeURIComponent(shareId)}${query}`);
+      const data = await res.json();
+      // Only a 404 means the link is gone; anything else is not the link's fault.
+      if (data.status !== 200) {
+        setError(res.status === 404
+          ? (data.error || "This link is no longer available")
+          : "Couldn't load this deck right now. Reload the page to try again.");
+      }
       else setShare(data);
     } catch {
       setError("Couldn't reach the server.");

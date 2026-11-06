@@ -40,8 +40,13 @@ function ImportShare() {
         const data = await res.json();
         if (cancelled) return;
         if (data.status !== 200) {
-          shareLog("share", shareId, "failed to load:", data.error || data.status);
-          setError(data.error || "This link is no longer available");
+          shareLog("share", shareId, "failed to load:", data.error || data.status, `(HTTP ${res.status})`);
+          // Only a 404 means the link is gone. Anything else -- a refused
+          // session, a server error -- says so, rather than calling a working
+          // link dead.
+          setError(res.status === 404
+            ? (data.error || "This link is no longer available")
+            : "Couldn't load this deck right now. Reload the page to try again.");
           // A dead link must also kill the pending marker, or the app-level
           // recovery would bounce the user back here forever.
           if (readPendingShare() === shareId) clearPendingShare();

@@ -1,5 +1,4 @@
-import { useEffect } from "react";
-import { clearCaller, setDevUser, setTokenProvider } from "@/lib/api";
+import { setDevUser, setTokenProvider } from "@/lib/api";
 import { isDevBypass, useAuth } from "./useAuth";
 
 /**
@@ -11,18 +10,18 @@ import { isDevBypass, useAuth } from "./useAuth";
  * honours it only when it was started with RECALLCARDS_DEV_AUTH.
  */
 export function useApiAuth(user) {
-  const { getAccessTokenSilently } = useAuth();
+  const { getAccessTokenSilently, renewAccessToken } = useAuth();
 
-  useEffect(() => {
-    if (isDevBypass) {
-      setTokenProvider(null);
-      setDevUser(user?.email || null);
-      return;
-    }
-
-    setTokenProvider(getAccessTokenSilently);
+  // Installed while rendering, not in an effect. React runs a child's effects
+  // before its parent's, so a page that loads its data on mount -- the deck
+  // behind a share link, opened in a new tab -- could otherwise send its first
+  // request before this ran, with no token. Both calls only swap a module
+  // reference, so doing it on every render is cheap and idempotent.
+  if (isDevBypass) {
+    setTokenProvider(null);
+    setDevUser(user?.email || null);
+  } else {
+    setTokenProvider(getAccessTokenSilently, renewAccessToken);
     setDevUser(null);
-  }, [getAccessTokenSilently, user?.email]);
-
-  useEffect(() => clearCaller, []);
+  }
 }
