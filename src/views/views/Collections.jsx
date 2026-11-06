@@ -602,7 +602,7 @@ function Collections() {
                       onClick={() => handleShare(collection)}
                       title="Share a link to this deck"
                       aria-label={`Share ${collection}`}
-                      className="hidden px-2.5 text-muted-foreground hover:text-primary xl:inline-flex min-[1440px]:px-3"
+                      className="hidden px-2.5 text-muted-foreground hover:text-white xl:inline-flex min-[1440px]:px-3"
                     >
                       <Share2 className="h-4 w-4 min-[1440px]:mr-2" />
                       <span className="hidden min-[1440px]:inline">Share</span>
@@ -620,7 +620,7 @@ function Collections() {
                         aria-pressed={isPublic}
                         className={`hidden px-2.5 xl:inline-flex min-[1440px]:px-3 ${isPublic
                           ? "text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-950"
-                          : "text-muted-foreground hover:text-primary"}`}
+                          : "text-muted-foreground hover:text-white"}`}
                       >
                         <Globe className="h-4 w-4 min-[1440px]:mr-2" />
                         <span className="hidden min-[1440px]:inline">{isPublic ? "On Explore" : "Publish"}</span>
