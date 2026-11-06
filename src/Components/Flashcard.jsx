@@ -31,6 +31,9 @@ function Flashcard() {
   const [editMode, setEditMode] = useState(false);
   const [editInputs, setEditInputs] = useState({ term: "", definition: "" });
   const [currentIndex, setCurrentIndex] = useState(0);
+  // The card whose answer the back face keeps showing while the card turns
+  // back to the front after "Next" -- see goToCard. Null otherwise.
+  const [leavingCard, setLeavingCard] = useState(null);
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -47,18 +50,24 @@ function Flashcard() {
   const totalCards = cards.length;
   const card = cards[currentIndex] || null;
   const isInReview = Boolean(card?.needs_review);
+  // The back face may still be showing the card being left (goToCard).
+  const backCard = leavingCard || card;
   // Only ever shown on the definition side: the term side is a recall test,
   // and nothing that is not the question belongs on it.
-  const attribution = attributionLine(card, multiAuthor);
+  const attribution = attributionLine(backCard, multiAuthor);
 
   const frontText = card ? card.term : "You Don't Have Anything to Memorize";
-  const backText = card ? card.definition : "Please Add Cards!";
+  const backText = backCard ? backCard.definition : "Please Add Cards!";
   // Pictures are served by id to whoever the token says is asking, so the
   // bytes are fetched rather than pointed at: see AuthedImage.
-  const backImage = useAuthedImage(card?.image ? ownedImagePath(card.image) : null);
+  const backImage = useAuthedImage(backCard?.image ? ownedImagePath(backCard.image) : null);
 
   const handleFlip = () => {
     if (!editMode) {
+      // Turning to the back mid-way through a "Next" must show this card's
+      // answer, not the one being left.
+      clearTimeout(flipTimer.current);
+      setLeavingCard(null);
       setIsFlipped((v) => !v);
     }
   };
@@ -104,24 +113,24 @@ function Flashcard() {
     setEditInputs({ term: card?.term || "", definition: card?.definition || "" });
   }, [card?.term, card?.definition]);
 
-  // Moving on while the definition is showing means the card rotates back to
-  // its term. Swapping the data straight away would paint the next card's
-  // definition onto the back face while it is still turned towards the user, so
-  // hold the swap until the card is edge-on and neither face is readable.
+  // Moving on while the definition is showing means the card turns back to
+  // its term. Each face shows what it should for the whole turn: the back keeps
+  // the card being left until the turn is over, and the front -- facing away
+  // when the turn starts -- shows the next term from the start.
+  //
+  // This used to swap both faces at FLIP_MS / 2, assuming the card is edge-on
+  // half-way through. With the ease-out curve it is edge-on at about a fifth
+  // of the way, so the front showed the OLD term for ~150ms before the new one
+  // replaced it. Splitting the faces needs no timing guess at all.
   const goToCard = (index) => {
     clearTimeout(flipTimer.current);
-
-    const settle = () => {
-      setCurrentIndex(index);
-      setEditMode(false);
-    };
-
     if (isFlipped) {
+      setLeavingCard(card);
       setIsFlipped(false);
-      flipTimer.current = setTimeout(settle, FLIP_MS / 2);
-    } else {
-      settle();
+      flipTimer.current = setTimeout(() => setLeavingCard(null), FLIP_MS + 50);
     }
+    setCurrentIndex(index);
+    setEditMode(false);
   };
 
   const handleNextCard = () => {

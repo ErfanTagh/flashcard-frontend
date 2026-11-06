@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Check, ChevronLeft, ChevronRight, Lock, RotateCcw, Shuffle, Users, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,11 @@ export default function BrowseDeck() {
   const [error, setError] = useState("");
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
+  // While the card turns back to the front after moving on, the back face
+  // keeps the card being left, so the next answer never flashes past.
+  const [leavingCard, setLeavingCard] = useState(null);
+  const leaveTimer = useRef(null);
+  useEffect(() => () => clearTimeout(leaveTimer.current), []);
 
   useEffect(() => {
     let live = true;
@@ -56,14 +61,27 @@ export default function BrowseDeck() {
   const go = useCallback(
     (step) => {
       if (!total) return;
+      clearTimeout(leaveTimer.current);
+      if (flipped) {
+        setLeavingCard(cards[index]);
+        leaveTimer.current = setTimeout(() => setLeavingCard(null), 550);
+      }
       setFlipped(false);
       setIndex((i) => (i + step + total) % total);
     },
-    [total]
+    [total, flipped, cards, index]
   );
+
+  const flip = useCallback(() => {
+    clearTimeout(leaveTimer.current);
+    setLeavingCard(null);
+    setFlipped((f) => !f);
+  }, []);
 
   const shuffle = () => {
     setCards((current) => [...current].sort(() => Math.random() - 0.5));
+    clearTimeout(leaveTimer.current);
+    setLeavingCard(null);
     setIndex(0);
     setFlipped(false);
   };
@@ -76,12 +94,12 @@ export default function BrowseDeck() {
       else if (e.key === "ArrowLeft") go(-1);
       else if (e.key === " " || e.key === "Enter") {
         e.preventDefault();
-        setFlipped((f) => !f);
+        flip();
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [go]);
+  }, [go, flip]);
 
   const addDeck = () => {
     // Signed out: sign up, then the deck is added by itself (App.jsx).
@@ -92,8 +110,9 @@ export default function BrowseDeck() {
   };
 
   const card = cards[index];
-  const imageSrc = card?.image
-    ? `/api/images/${encodeURIComponent(card.image)}?share=${encodeURIComponent(shareId)}`
+  const backCard = leavingCard || card;
+  const imageSrc = backCard?.image
+    ? `/api/images/${encodeURIComponent(backCard.image)}?share=${encodeURIComponent(shareId)}`
     : null;
 
   return (
@@ -150,7 +169,7 @@ export default function BrowseDeck() {
                 role="button"
                 tabIndex={0}
                 aria-label={flipped ? "Show the front" : "Show the back"}
-                onClick={() => setFlipped((f) => !f)}
+                onClick={flip}
                 className={`relative h-[22rem] w-full cursor-pointer rounded-lg outline-none transition-transform duration-500 ease-out transform-style-preserve-3d focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-4 sm:h-[26rem] ${
                   flipped ? "rotate-y-180" : ""
                 }`}
@@ -167,8 +186,8 @@ export default function BrowseDeck() {
                     {imageSrc && (
                       <img src={imageSrc} alt="" className="mb-4 max-h-[45%] max-w-full rounded-lg object-contain" />
                     )}
-                    {card.definition && (
-                      <p className="mb-4 whitespace-pre-line text-lg leading-relaxed text-foreground md:text-xl">{card.definition}</p>
+                    {backCard.definition && (
+                      <p className="mb-4 whitespace-pre-line text-lg leading-relaxed text-foreground md:text-xl">{backCard.definition}</p>
                     )}
                     <p className="mb-3 text-sm text-muted-foreground">Click to see the front again</p>
                     <RotateCcw className="h-4 w-4 text-muted-foreground" />
