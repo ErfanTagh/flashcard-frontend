@@ -517,9 +517,18 @@ function Collections() {
 
               return (
               // Small hop on hover; progress line appears only while hovered.
+              // The whole row opens the deck's cards. Clicks on the controls
+              // inside it (Study, Quiz, the menu, the cover picture) and on
+              // anything they open -- React bubbles portal events, so the menu
+              // items land here too -- keep doing their own thing.
               <div
                 key={collection}
-                className="group/deck relative flex flex-wrap items-center gap-3 overflow-hidden rounded-lg bg-white p-3 pb-4 transition-transform duration-200 hover:-translate-y-1 sm:flex-nowrap sm:gap-4 sm:p-4 sm:pb-5"
+                onClick={(e) => {
+                  if (e.target.closest("button, a, input, label, [role='menu'], [role='menuitem'], [role='dialog']")) return;
+                  if (window.getSelection?.().toString()) return; // selecting the name, not opening it
+                  navigate(`/collections/${encodeURIComponent(collection)}/cards`);
+                }}
+                className="group/deck relative flex cursor-pointer flex-wrap items-center gap-3 overflow-hidden rounded-lg bg-white p-3 pb-4 transition-transform duration-200 hover:-translate-y-1 sm:flex-nowrap sm:gap-4 sm:p-4 sm:pb-5"
               >
                 {/* A small square rather than a banner: in a row the deck's
                     picture identifies it, it does not need to fill it.
@@ -546,7 +555,13 @@ function Collections() {
                 </label>
 
                 <div className="min-w-0 flex-1 md:min-w-[8rem]">
-                  <p className="truncate font-semibold leading-tight">{collection}</p>
+                  {/* A real link as well, for the keyboard and for opening in a new tab. */}
+                  <Link
+                    to={`/collections/${encodeURIComponent(collection)}/cards`}
+                    className="block truncate font-semibold leading-tight text-foreground no-underline hover:text-primary"
+                  >
+                    {collection}
+                  </Link>
                   <p className="mt-0.5 truncate text-xs text-muted-foreground">
                     {total} card{total === 1 ? "" : "s"}
                     {collection === defaultCollection && " · Default"}
@@ -555,10 +570,11 @@ function Collections() {
 
                 </div>
 
-                {/* A row this wide has the space, and hiding the three things
-                    people actually do behind a menu made them cost two clicks
-                    and a guess. They stay in the menu on narrow screens, where
-                    the space genuinely is not there. */}
+                {/* A row this wide has the space, and hiding the things people
+                    actually do behind a menu made them cost two clicks and a
+                    guess. They stay in the menu on narrow screens, where the
+                    space genuinely is not there. There is no "Cards" button:
+                    the row itself opens the cards. */}
                 <div className="hidden shrink-0 items-center gap-2 md:flex">
                   <Button
                     variant="outline"
@@ -568,13 +584,6 @@ function Collections() {
                   >
                     <GraduationCap className="h-4 w-4 mr-2" />
                     Quiz
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => navigate(`/collections/${encodeURIComponent(collection)}/cards`)}
-                  >
-                    <ListChecks className="h-4 w-4 mr-2" />
-                    Cards
                   </Button>
                   {/* Only ever an action: a deck that already is the default
                       says so in the line under its name. */}
