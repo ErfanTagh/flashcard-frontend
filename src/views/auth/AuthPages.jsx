@@ -1,6 +1,18 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { BookOpen, CheckCircle2, Loader2, MailCheck, XCircle } from "lucide-react";
+import {
+  BookOpen,
+  CheckCircle2,
+  Inbox,
+  KeyRound,
+  Loader2,
+  LogIn,
+  MousePointerClick,
+  Sparkles,
+  UserPlus,
+  XCircle,
+} from "lucide-react";
+import EmailSentAnimation from "@/Components/EmailSentAnimation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,19 +29,45 @@ import { setPostLoginDest } from "@/lib/postLogin";
 
 const PASSWORD_MIN = 8;
 
-function AuthShell({ title, subtitle, children, footer }) {
+// Round badge above the title, tinted by what the page is about.
+const BADGE_TONES = {
+  brand: "bg-primary/10 text-primary",
+  success: "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400",
+  error: "bg-destructive/10 text-destructive",
+};
+
+function AuthShell({ icon: Icon, badge, tone = "brand", title, subtitle, children, footer }) {
+  // A screen that replaces a long form (signup -> "check your email") would
+  // otherwise open at the form's scroll position, with its badge out of view.
+  // "instant": the site sets scroll-behavior: smooth, and a smooth scroll gets
+  // cut short by the layout change of the screen swapping in.
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, []);
+
+  const titleTone =
+    tone === "success" ? "text-emerald-600 dark:text-emerald-400" : tone === "error" ? "text-destructive" : "text-foreground";
+
   return (
-    <div className="flex min-h-[80vh] items-center justify-center bg-background px-4 py-10">
-      <div className="w-full max-w-md">
+    <div className="flex min-h-[85vh] items-center justify-center bg-gradient-to-br from-background via-primary/5 to-accent/10 px-4 py-12">
+      <div className="w-full max-w-md motion-safe:animate-fade-in">
         <Link to="/" className="mb-6 flex items-center justify-center gap-2 no-underline">
           <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-accent shadow-lg">
             <BookOpen className="h-5 w-5 text-primary-foreground" />
           </span>
           <span className="text-2xl font-bold text-primary">RecallCards</span>
         </Link>
-        <div className="rounded-2xl border bg-card p-6 shadow-sm sm:p-8">
-          <h1 className="mb-1 text-2xl font-semibold text-foreground">{title}</h1>
-          {subtitle && <p className="mb-6 text-sm text-muted-foreground">{subtitle}</p>}
+        <div className="rounded-2xl border bg-card p-6 shadow-elevated sm:p-8">
+          <div className="mb-6 text-center">
+            {badge ||
+              (Icon && (
+                <div className={`mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full ${BADGE_TONES[tone]}`}>
+                  <Icon className="h-8 w-8" />
+                </div>
+              ))}
+            <h1 className={`mb-2 text-2xl font-bold sm:text-3xl ${titleTone}`}>{title}</h1>
+            {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
+          </div>
           {children}
         </div>
         {footer && <div className="mt-6 text-center text-sm text-muted-foreground">{footer}</div>}
@@ -86,7 +124,13 @@ function withReturnTo(path, returnTo) {
 
 // --- Check your inbox -----------------------------------------------------
 
-function CheckInbox({ email, title = "Check your inbox", message }) {
+const NEXT_STEPS = [
+  { icon: Inbox, text: "Open the email from RecallCards" },
+  { icon: MousePointerClick, text: "Click the link to activate your account" },
+  { icon: Sparkles, text: "You're signed in and ready to study" },
+];
+
+function CheckInbox({ email, title = "Check your email!", message }) {
   const { resendVerification } = useAuth();
   const [state, setState] = useState({ busy: false, info: "", error: "" });
 
@@ -102,28 +146,43 @@ function CheckInbox({ email, title = "Check your inbox", message }) {
 
   return (
     <AuthShell
-      title={title}
-      footer={
-        <>
-          Already confirmed? <Link to="/login" className="font-medium text-primary">Sign in</Link>
-        </>
+      badge={<EmailSentAnimation />}
+      title={<span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">{title}</span>}
+      subtitle={
+        message || (
+          <>
+            We sent a link to <strong className="break-all text-foreground">{email}</strong>.
+          </>
+        )
       }
     >
-      <div className="mb-4 flex justify-center">
-        <MailCheck className="h-12 w-12 text-primary" />
+      <div className="mb-6 rounded-xl border border-primary/20 bg-primary/5 p-4 text-left">
+        <p className="mb-3 text-sm font-semibold text-foreground">What's next?</p>
+        <ol className="m-0 list-none space-y-2.5 p-0">
+          {NEXT_STEPS.map(({ icon: StepIcon, text }, index) => (
+            <li
+              key={text}
+              className="flex items-center gap-3 text-sm text-foreground motion-safe:animate-fade-in"
+              style={{ animationDelay: `${300 + index * 150}ms`, animationFillMode: "both" }}
+            >
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-accent text-primary-foreground">
+                <StepIcon className="h-3.5 w-3.5" />
+              </span>
+              {text}
+            </li>
+          ))}
+        </ol>
       </div>
-      <p className="mb-4 text-sm text-foreground">
-        {message || (
-          <>
-            We sent a link to <strong className="break-all">{email}</strong>. Open it to activate your account.
-          </>
-        )}
-      </p>
-      <p className="mb-4 text-sm text-muted-foreground">
-        It can take a minute to arrive. Check your spam folder if you don't see it.
+
+      <p className="mb-4 text-center text-sm text-muted-foreground">
+        Didn't get it? It can take a minute. Check your spam folder too.
       </p>
       {state.info && <Notice tone="info">{state.info}</Notice>}
       {state.error && <Notice>{state.error}</Notice>}
+
+      <Button asChild size="lg" className="mb-3 w-full">
+        <Link to="/login">Go to sign in</Link>
+      </Button>
       <Button variant="outline" className="w-full" disabled={state.busy} onClick={resend}>
         {state.busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         Send the link again
@@ -176,8 +235,9 @@ export function Login() {
 
   return (
     <AuthShell
-      title="Sign in"
-      subtitle="Welcome back. Pick up where you left off."
+      icon={LogIn}
+      title="Welcome back"
+      subtitle="Sign in to pick up where you left off."
       footer={
         <>
           New to RecallCards?{" "}
@@ -257,6 +317,7 @@ export function Signup() {
 
   return (
     <AuthShell
+      icon={UserPlus}
       title="Create your account"
       subtitle="Free. We'll email you a link to activate it."
       footer={
@@ -336,21 +397,33 @@ export function VerifyEmail() {
 
   if (state === "working") {
     return (
-      <AuthShell title="Activating your account">
-        <div className="flex items-center gap-3 text-sm text-muted-foreground">
-          <Loader2 className="h-5 w-5 animate-spin text-primary" /> One moment…
-        </div>
-      </AuthShell>
+      <AuthShell
+        badge={
+          <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        }
+        title="Activating your account"
+        subtitle="One moment while we confirm your email…"
+      />
     );
   }
 
   if (state === "done") {
     return (
-      <AuthShell title="Your account is active">
-        <div className="mb-4 flex justify-center">
-          <CheckCircle2 className="h-12 w-12 text-primary" />
+      <AuthShell
+        badge={
+          <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 motion-safe:animate-pop-in dark:bg-emerald-900/30 dark:text-emerald-400">
+            <CheckCircle2 className="h-8 w-8" />
+          </div>
+        }
+        tone="success"
+        title="Email confirmed!"
+        subtitle="Your account is active and you're signed in."
+      >
+        <div className="mb-4 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin text-primary" /> Taking you to your decks…
         </div>
-        <p className="mb-4 text-sm">You're signed in. Taking you to your decks…</p>
         <Button asChild className="w-full">
           <Link to="/collections">Go to my decks</Link>
         </Button>
@@ -360,6 +433,8 @@ export function VerifyEmail() {
 
   return (
     <AuthShell
+      icon={XCircle}
+      tone="error"
       title="This link didn't work"
       footer={
         <>
@@ -367,11 +442,8 @@ export function VerifyEmail() {
         </>
       }
     >
-      <div className="mb-4 flex justify-center">
-        <XCircle className="h-12 w-12 text-destructive" />
-      </div>
-      <p className="mb-4 text-sm">{error}</p>
-      <p className="mb-4 text-sm text-muted-foreground">
+      <p className="mb-4 text-center text-sm">{error}</p>
+      <p className="mb-4 text-center text-sm text-muted-foreground">
         Links work once and expire after two days. Sign in with your email and password and we'll offer to send a new
         one.
       </p>
@@ -407,7 +479,9 @@ export function ForgotPassword() {
 
   return (
     <AuthShell
-      title="Reset your password"
+      icon={KeyRound}
+      badge={sent ? <EmailSentAnimation /> : undefined}
+      title={sent ? "Check your email!" : "Reset your password"}
       subtitle={sent ? undefined : "We'll email you a link to choose a new one."}
       footer={
         <>
@@ -472,6 +546,7 @@ export function ResetPassword() {
 
   return (
     <AuthShell
+      icon={KeyRound}
       title="Choose a new password"
       footer={
         <Link to="/forgot-password" className="font-medium text-primary">
