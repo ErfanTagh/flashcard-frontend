@@ -175,7 +175,10 @@ export function AuthProvider({ children }) {
     [setSession]
   );
 
-  const signUp = useCallback((email, password, name) => authRequest("signup", { email, password, name }), []);
+  const signUp = useCallback(
+    (email, password, name, next) => authRequest("signup", { email, password, name, next }),
+    []
+  );
 
   const verifyEmail = useCallback(
     async (token) => {
@@ -233,7 +236,7 @@ export function AuthProvider({ children }) {
       signUp,
       verifyEmail,
       resetPassword,
-      resendVerification: (email) => authRequest("resend-verification", { email }),
+      resendVerification: (email, next) => authRequest("resend-verification", { email, next }),
       forgotPassword: (email) => authRequest("forgot-password", { email }),
     }),
     [user, getAccessTokenSilently, loginWithRedirect, logout, signIn, signUp, verifyEmail, resetPassword]

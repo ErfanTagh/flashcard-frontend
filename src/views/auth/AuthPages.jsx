@@ -108,19 +108,35 @@ function SubmitButton({ busy, children }) {
   );
 }
 
+/** A path on this site, never a way off it (//host, a scheme, a backslash). */
+function isSafePath(path) {
+  return typeof path === "string" && path.startsWith("/") && !path.startsWith("//") && !path.includes("\\");
+}
+
 /** Remember where a ?returnTo asked to go, for App.jsx to act on. */
 function useReturnTo() {
   const [params] = useSearchParams();
-  const returnTo = params.get("returnTo");
+  const raw = params.get("returnTo");
+  const returnTo = isSafePath(raw) ? raw : null;
   useEffect(() => {
-    if (returnTo && returnTo.startsWith("/") && !returnTo.startsWith("//")) setPostLoginDest(returnTo);
+    if (returnTo) setPostLoginDest(returnTo);
   }, [returnTo]);
   return returnTo;
 }
 
-function withReturnTo(path, returnTo) {
-  return returnTo ? `${path}?returnTo=${encodeURIComponent(returnTo)}` : path;
+function withReturnTo(path, returnTo, reason) {
+  const query = new URLSearchParams();
+  if (returnTo) query.set("returnTo", returnTo);
+  if (reason) query.set("reason", reason);
+  const text = query.toString();
+  return text ? `${path}?${text}` : path;
 }
+
+// Why a signed-out visitor was sent here, said above the form.
+const REASONS = {
+  deck: "Create a free account to see this deck. You'll go straight back to it.",
+  explore: "Create a free account to browse decks other learners have shared.",
+};
 
 // --- Check your inbox -----------------------------------------------------
 
@@ -130,14 +146,14 @@ const NEXT_STEPS = [
   { icon: Sparkles, text: "You're signed in and ready to study" },
 ];
 
-function CheckInbox({ email, title = "Check your email!", message }) {
+function CheckInbox({ email, title = "Check your email!", message, next }) {
   const { resendVerification } = useAuth();
   const [state, setState] = useState({ busy: false, info: "", error: "" });
 
   const resend = async () => {
     setState({ busy: true, info: "", error: "" });
     try {
-      await resendVerification(email);
+      await resendVerification(email, next);
       setState({ busy: false, info: "A new link is on its way.", error: "" });
     } catch (error) {
       setState({ busy: false, info: "", error: error.message });
@@ -196,6 +212,8 @@ function CheckInbox({ email, title = "Check your email!", message }) {
 export function Login() {
   const { signIn } = useAuth();
   const returnTo = useReturnTo();
+  const [params] = useSearchParams();
+  const reason = params.get("reason");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -222,6 +240,7 @@ export function Login() {
     return (
       <CheckInbox
         email={email.trim()}
+        next={returnTo}
         title="Confirm your email first"
         message={
           <>
@@ -241,12 +260,13 @@ export function Login() {
       footer={
         <>
           New to RecallCards?{" "}
-          <Link to={withReturnTo("/signup", returnTo)} className="font-medium text-primary">
+          <Link to={withReturnTo("/signup", returnTo, reason)} className="font-medium text-primary">
             Create an account
           </Link>
         </>
       }
     >
+      {REASONS[reason] && !error && <Notice tone="info">{REASONS[reason]}</Notice>}
       {error && <Notice>{error}</Notice>}
       <form onSubmit={submit} noValidate>
         <Field
@@ -283,6 +303,8 @@ export function Login() {
 export function Signup() {
   const { signUp } = useAuth();
   const returnTo = useReturnTo();
+  const [params] = useSearchParams();
+  const reason = params.get("reason");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -304,7 +326,7 @@ export function Signup() {
     }
     setBusy(true);
     try {
-      await signUp(email.trim(), password, name.trim());
+      await signUp(email.trim(), password, name.trim(), returnTo);
       setSentTo(email.trim());
     } catch (err) {
       setError(err.message);
@@ -313,7 +335,7 @@ export function Signup() {
     }
   };
 
-  if (sentTo) return <CheckInbox email={sentTo} />;
+  if (sentTo) return <CheckInbox email={sentTo} next={returnTo} />;
 
   return (
     <AuthShell
@@ -323,12 +345,13 @@ export function Signup() {
       footer={
         <>
           Already have an account?{" "}
-          <Link to={withReturnTo("/login", returnTo)} className="font-medium text-primary">
+          <Link to={withReturnTo("/login", returnTo, reason)} className="font-medium text-primary">
             Sign in
           </Link>
         </>
       }
     >
+      {REASONS[reason] && <Notice tone="info">{REASONS[reason]}</Notice>}
       {error && <Notice>{error}</Notice>}
       <form onSubmit={submit} noValidate>
         <Field
@@ -379,6 +402,7 @@ export function VerifyEmail() {
   const { verifyEmail } = useAuth();
   const [params] = useSearchParams();
   const token = params.get("token");
+  const next = params.get("next");
   const [state, setState] = useState(token ? "working" : "failed");
   const [error, setError] = useState(token ? "" : "This link is missing its code.");
   const started = useRef(false);
@@ -387,6 +411,9 @@ export function VerifyEmail() {
     // Once: the link is single use, and StrictMode runs effects twice.
     if (!token || started.current) return;
     started.current = true;
+    // Where they were going when they signed up -- a deck link, say. Carried
+    // in the email itself, so it works on whichever device opens it.
+    if (isSafePath(next)) setPostLoginDest(next);
     verifyEmail(token)
       .then(() => setState("done"))
       .catch((err) => {
@@ -581,3 +608,4 @@ export function ResetPassword() {
     </AuthShell>
   );
 }
+

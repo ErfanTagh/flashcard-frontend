@@ -137,12 +137,17 @@ const AppContent = () => {
       <div className="flex min-w-0 flex-1 flex-col">
       <Routes>
         <Route path="/" element={<Home />} />
-        {/* Readable without an account: a share link has to show what it holds
-            before asking anyone to sign up. */}
-        <Route path="/import/:shareId" element={<ImportShare />} />
-        {/* Editing someone else's deck through a link. Public like the import
-            page: it explains itself and asks for a login only to contribute. */}
-        <Route path="/shared/:shareId" element={<SharedDeck />} />
+        {/* Deck links are for members only: a signed-out visitor is sent to
+            create an account and comes back to the deck afterwards. The API
+            refuses these to anyone signed out as well. */}
+        <Route
+          path="/import/:shareId"
+          element={<ProtectedRoute component={ImportShare} screen="signup" reason="deck" />}
+        />
+        <Route
+          path="/shared/:shareId"
+          element={<ProtectedRoute component={SharedDeck} screen="signup" reason="deck" />}
+        />
         <Route path="/home" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
@@ -173,9 +178,11 @@ const AppContent = () => {
                   path="collections/:collectionName/cards"
                   element={<ProtectedRoute component={ManageCards} />}
                 />
-                {/* Readable signed out, like a share link: the point of a
-                    public library is that you can see it before joining. */}
-                <Route path="explore" element={<Explore />} />
+                {/* Members only, like every deck view. */}
+                <Route
+                  path="explore"
+                  element={<ProtectedRoute component={Explore} screen="signup" reason="explore" />}
+                />
                 <Route path="blog" element={<Blog />} />
                 <Route path="blog/:id" element={<BlogPost />} />
                 <Route
