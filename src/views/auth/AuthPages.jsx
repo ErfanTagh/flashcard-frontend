@@ -1,0 +1,508 @@
+import React, { useEffect, useRef, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
+import { BookOpen, CheckCircle2, Loader2, MailCheck, XCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useAuth } from "@/hooks/useAuth";
+import { setPostLoginDest } from "@/lib/postLogin";
+
+/*
+ * Sign in, sign up, confirm an email, reset a password.
+ *
+ * None of these pages navigates after signing someone in. App.jsx already
+ * does that the moment it sees a user -- to a pending share, to the page that
+ * asked for a login, or to the decks -- so doing it here as well would race it.
+ */
+
+const PASSWORD_MIN = 8;
+
+function AuthShell({ title, subtitle, children, footer }) {
+  return (
+    <div className="flex min-h-[80vh] items-center justify-center bg-background px-4 py-10">
+      <div className="w-full max-w-md">
+        <Link to="/" className="mb-6 flex items-center justify-center gap-2 no-underline">
+          <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-accent shadow-lg">
+            <BookOpen className="h-5 w-5 text-primary-foreground" />
+          </span>
+          <span className="text-2xl font-bold text-primary">RecallCards</span>
+        </Link>
+        <div className="rounded-2xl border bg-card p-6 shadow-sm sm:p-8">
+          <h1 className="mb-1 text-2xl font-semibold text-foreground">{title}</h1>
+          {subtitle && <p className="mb-6 text-sm text-muted-foreground">{subtitle}</p>}
+          {children}
+        </div>
+        {footer && <div className="mt-6 text-center text-sm text-muted-foreground">{footer}</div>}
+      </div>
+    </div>
+  );
+}
+
+function Notice({ tone = "error", children }) {
+  const styles =
+    tone === "error"
+      ? "border-destructive/30 bg-destructive/10 text-destructive"
+      : "border-primary/30 bg-primary/10 text-foreground";
+  return (
+    <div role={tone === "error" ? "alert" : "status"} className={`mb-4 rounded-lg border px-3 py-2 text-sm ${styles}`}>
+      {children}
+    </div>
+  );
+}
+
+function Field({ id, label, ...props }) {
+  return (
+    <div className="mb-4">
+      <Label htmlFor={id} className="mb-1.5 block">
+        {label}
+      </Label>
+      <Input id={id} name={id} {...props} />
+    </div>
+  );
+}
+
+function SubmitButton({ busy, children }) {
+  return (
+    <Button type="submit" disabled={busy} className="mt-2 w-full">
+      {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+      {children}
+    </Button>
+  );
+}
+
+/** Remember where a ?returnTo asked to go, for App.jsx to act on. */
+function useReturnTo() {
+  const [params] = useSearchParams();
+  const returnTo = params.get("returnTo");
+  useEffect(() => {
+    if (returnTo && returnTo.startsWith("/") && !returnTo.startsWith("//")) setPostLoginDest(returnTo);
+  }, [returnTo]);
+  return returnTo;
+}
+
+function withReturnTo(path, returnTo) {
+  return returnTo ? `${path}?returnTo=${encodeURIComponent(returnTo)}` : path;
+}
+
+// --- Check your inbox -----------------------------------------------------
+
+function CheckInbox({ email, title = "Check your inbox", message }) {
+  const { resendVerification } = useAuth();
+  const [state, setState] = useState({ busy: false, info: "", error: "" });
+
+  const resend = async () => {
+    setState({ busy: true, info: "", error: "" });
+    try {
+      await resendVerification(email);
+      setState({ busy: false, info: "A new link is on its way.", error: "" });
+    } catch (error) {
+      setState({ busy: false, info: "", error: error.message });
+    }
+  };
+
+  return (
+    <AuthShell
+      title={title}
+      footer={
+        <>
+          Already confirmed? <Link to="/login" className="font-medium text-primary">Sign in</Link>
+        </>
+      }
+    >
+      <div className="mb-4 flex justify-center">
+        <MailCheck className="h-12 w-12 text-primary" />
+      </div>
+      <p className="mb-4 text-sm text-foreground">
+        {message || (
+          <>
+            We sent a link to <strong className="break-all">{email}</strong>. Open it to activate your account.
+          </>
+        )}
+      </p>
+      <p className="mb-4 text-sm text-muted-foreground">
+        It can take a minute to arrive. Check your spam folder if you don't see it.
+      </p>
+      {state.info && <Notice tone="info">{state.info}</Notice>}
+      {state.error && <Notice>{state.error}</Notice>}
+      <Button variant="outline" className="w-full" disabled={state.busy} onClick={resend}>
+        {state.busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        Send the link again
+      </Button>
+    </AuthShell>
+  );
+}
+
+// --- Sign in ----------------------------------------------------------------
+
+export function Login() {
+  const { signIn } = useAuth();
+  const returnTo = useReturnTo();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [unverified, setUnverified] = useState(false);
+
+  const submit = async (event) => {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    try {
+      await signIn(email.trim(), password);
+    } catch (err) {
+      if (err.code === "email_not_verified") {
+        setUnverified(true);
+      } else {
+        setError(err.message);
+      }
+      setBusy(false);
+    }
+  };
+
+  if (unverified) {
+    return (
+      <CheckInbox
+        email={email.trim()}
+        title="Confirm your email first"
+        message={
+          <>
+            Your account for <strong className="break-all">{email.trim()}</strong> isn't activated yet. Open the link
+            we emailed you, or ask for a new one.
+          </>
+        }
+      />
+    );
+  }
+
+  return (
+    <AuthShell
+      title="Sign in"
+      subtitle="Welcome back. Pick up where you left off."
+      footer={
+        <>
+          New to RecallCards?{" "}
+          <Link to={withReturnTo("/signup", returnTo)} className="font-medium text-primary">
+            Create an account
+          </Link>
+        </>
+      }
+    >
+      {error && <Notice>{error}</Notice>}
+      <form onSubmit={submit} noValidate>
+        <Field
+          id="email"
+          label="Email"
+          type="email"
+          autoComplete="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <Field
+          id="password"
+          label="Password"
+          type="password"
+          autoComplete="current-password"
+          required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <div className="-mt-2 mb-4 text-right">
+          <Link to="/forgot-password" className="text-sm text-primary">
+            Forgot password?
+          </Link>
+        </div>
+        <SubmitButton busy={busy}>Sign in</SubmitButton>
+      </form>
+    </AuthShell>
+  );
+}
+
+// --- Sign up ----------------------------------------------------------------
+
+export function Signup() {
+  const { signUp } = useAuth();
+  const returnTo = useReturnTo();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [sentTo, setSentTo] = useState("");
+
+  const submit = async (event) => {
+    event.preventDefault();
+    setError("");
+    if (password.length < PASSWORD_MIN) {
+      setError(`Use at least ${PASSWORD_MIN} characters for your password.`);
+      return;
+    }
+    if (password !== confirm) {
+      setError("The two passwords don't match.");
+      return;
+    }
+    setBusy(true);
+    try {
+      await signUp(email.trim(), password, name.trim());
+      setSentTo(email.trim());
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (sentTo) return <CheckInbox email={sentTo} />;
+
+  return (
+    <AuthShell
+      title="Create your account"
+      subtitle="Free. We'll email you a link to activate it."
+      footer={
+        <>
+          Already have an account?{" "}
+          <Link to={withReturnTo("/login", returnTo)} className="font-medium text-primary">
+            Sign in
+          </Link>
+        </>
+      }
+    >
+      {error && <Notice>{error}</Notice>}
+      <form onSubmit={submit} noValidate>
+        <Field
+          id="name"
+          label="Name (optional)"
+          autoComplete="given-name"
+          maxLength={60}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <Field
+          id="email"
+          label="Email"
+          type="email"
+          autoComplete="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <Field
+          id="password"
+          label={`Password (at least ${PASSWORD_MIN} characters)`}
+          type="password"
+          autoComplete="new-password"
+          required
+          minLength={PASSWORD_MIN}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <Field
+          id="confirm"
+          label="Confirm password"
+          type="password"
+          autoComplete="new-password"
+          required
+          value={confirm}
+          onChange={(e) => setConfirm(e.target.value)}
+        />
+        <SubmitButton busy={busy}>Create account</SubmitButton>
+      </form>
+    </AuthShell>
+  );
+}
+
+// --- The emailed activation link -------------------------------------------
+
+export function VerifyEmail() {
+  const { verifyEmail } = useAuth();
+  const [params] = useSearchParams();
+  const token = params.get("token");
+  const [state, setState] = useState(token ? "working" : "failed");
+  const [error, setError] = useState(token ? "" : "This link is missing its code.");
+  const started = useRef(false);
+
+  useEffect(() => {
+    // Once: the link is single use, and StrictMode runs effects twice.
+    if (!token || started.current) return;
+    started.current = true;
+    verifyEmail(token)
+      .then(() => setState("done"))
+      .catch((err) => {
+        setError(err.message);
+        setState("failed");
+      });
+  }, [token, verifyEmail]);
+
+  if (state === "working") {
+    return (
+      <AuthShell title="Activating your account">
+        <div className="flex items-center gap-3 text-sm text-muted-foreground">
+          <Loader2 className="h-5 w-5 animate-spin text-primary" /> One moment…
+        </div>
+      </AuthShell>
+    );
+  }
+
+  if (state === "done") {
+    return (
+      <AuthShell title="Your account is active">
+        <div className="mb-4 flex justify-center">
+          <CheckCircle2 className="h-12 w-12 text-primary" />
+        </div>
+        <p className="mb-4 text-sm">You're signed in. Taking you to your decks…</p>
+        <Button asChild className="w-full">
+          <Link to="/collections">Go to my decks</Link>
+        </Button>
+      </AuthShell>
+    );
+  }
+
+  return (
+    <AuthShell
+      title="This link didn't work"
+      footer={
+        <>
+          Already activated? <Link to="/login" className="font-medium text-primary">Sign in</Link>
+        </>
+      }
+    >
+      <div className="mb-4 flex justify-center">
+        <XCircle className="h-12 w-12 text-destructive" />
+      </div>
+      <p className="mb-4 text-sm">{error}</p>
+      <p className="mb-4 text-sm text-muted-foreground">
+        Links work once and expire after two days. Sign in with your email and password and we'll offer to send a new
+        one.
+      </p>
+      <Button asChild className="w-full">
+        <Link to="/login">Sign in</Link>
+      </Button>
+    </AuthShell>
+  );
+}
+
+// --- Forgot / reset password --------------------------------------------------
+
+export function ForgotPassword() {
+  const { forgotPassword } = useAuth();
+  const [email, setEmail] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [sent, setSent] = useState(false);
+
+  const submit = async (event) => {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    try {
+      await forgotPassword(email.trim());
+      setSent(true);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <AuthShell
+      title="Reset your password"
+      subtitle={sent ? undefined : "We'll email you a link to choose a new one."}
+      footer={
+        <>
+          Remembered it? <Link to="/login" className="font-medium text-primary">Sign in</Link>
+        </>
+      }
+    >
+      {sent ? (
+        <Notice tone="info">
+          If there's an account for <strong className="break-all">{email.trim()}</strong>, a reset link is on its way.
+          It works for one hour.
+        </Notice>
+      ) : (
+        <>
+          {error && <Notice>{error}</Notice>}
+          <form onSubmit={submit} noValidate>
+            <Field
+              id="email"
+              label="Email"
+              type="email"
+              autoComplete="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <SubmitButton busy={busy}>Send reset link</SubmitButton>
+          </form>
+        </>
+      )}
+    </AuthShell>
+  );
+}
+
+export function ResetPassword() {
+  const { resetPassword } = useAuth();
+  const [params] = useSearchParams();
+  const token = params.get("token") || "";
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(token ? "" : "This link is missing its code. Ask for a new one.");
+
+  const submit = async (event) => {
+    event.preventDefault();
+    setError("");
+    if (password.length < PASSWORD_MIN) {
+      setError(`Use at least ${PASSWORD_MIN} characters for your password.`);
+      return;
+    }
+    if (password !== confirm) {
+      setError("The two passwords don't match.");
+      return;
+    }
+    setBusy(true);
+    try {
+      await resetPassword(token, password);
+    } catch (err) {
+      setError(err.message);
+      setBusy(false);
+    }
+  };
+
+  return (
+    <AuthShell
+      title="Choose a new password"
+      footer={
+        <Link to="/forgot-password" className="font-medium text-primary">
+          Need a new link?
+        </Link>
+      }
+    >
+      {error && <Notice>{error}</Notice>}
+      <form onSubmit={submit} noValidate>
+        <Field
+          id="password"
+          label={`New password (at least ${PASSWORD_MIN} characters)`}
+          type="password"
+          autoComplete="new-password"
+          required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <Field
+          id="confirm"
+          label="Confirm new password"
+          type="password"
+          autoComplete="new-password"
+          required
+          value={confirm}
+          onChange={(e) => setConfirm(e.target.value)}
+        />
+        <SubmitButton busy={busy} disabled={!token}>
+          Save and sign in
+        </SubmitButton>
+      </form>
+    </AuthShell>
+  );
+}

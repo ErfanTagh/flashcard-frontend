@@ -17,16 +17,15 @@ import Explore from "./views/views/Explore.jsx";
 import Blog from "./views/views/Blog.jsx";
 import BlogPost from "./views/views/BlogPost.jsx";
 import SharedDeck from "./views/views/SharedDeck.jsx";
+import { Login, Signup, VerifyEmail, ForgotPassword, ResetPassword } from "./views/auth/AuthPages.jsx";
 
 import { useEffect, useRef } from "react";
 import { Route, BrowserRouter, Routes, Navigate, useNavigate, useLocation } from "react-router-dom";
-import {
-  withAuthenticationRequired,
-} from "@auth0/auth0-react";
+import { withAuthenticationRequired } from "./auth/RequireAuth";
 import Footer from "./Components/Footer/Footer.jsx";
 import { Toaster } from "@/components/ui/toaster";
 import { DevAuthProvider, withDevAuthenticationRequired } from "./utils/devAuth";
-import { useAuth } from "./hooks/useAuth";
+import { useAuth, isDevBypass as isDevMode } from "./hooks/useAuth";
 import { useApiAuth } from "./hooks/useApiAuth";
 import { CollectionsProvider } from "./hooks/useCollections";
 import { readPendingShare } from "@/lib/pendingShare";
@@ -34,8 +33,9 @@ import { readPostLoginDest, clearPostLoginDest, countPostLoginAttempt } from "@/
 import { shareLog } from "@/lib/shareDebug";
 import { apiPost } from "@/lib/api";
 
-// Check if we're in development mode and should bypass Auth0
-const isDevMode = import.meta.env.DEV && (import.meta.env.VITE_BYPASS_AUTH === 'true' || import.meta.env.MODE === 'development');
+// Pages where someone signs in. A user who appears while on one of them has
+// just signed in and belongs somewhere else.
+const AUTH_PAGES = ["/login", "/signup", "/verify-email", "/forgot-password", "/reset-password"];
 
 // Memoised per component: building the wrapper during render produced a brand
 // new component type on every render, so React unmounted and remounted the
@@ -57,54 +57,12 @@ const ProtectedRoute = ({ component, ...args }) => {
 };
 
 const AppContent = () => {
-  const { user, logout, error, isLoading, isAuthenticated, loginWithRedirect } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   // Give src/lib/api.js a way to get an access token, once, here at the top.
   useApiAuth(user);
-
-  // Recover from a redirect that came back but did not sign the user in.
-  //
-  // Auth0 returns to /?code=...&state=..., and the SDK exchanges that for a
-  // session. When that exchange throws -- "Invalid state" is the usual one,
-  // caused by the login transaction being written under a different origin or
-  // cleared mid-flight -- the SDK swallows the redirect: no callback runs, no
-  // user appears, and the person is left looking at the signed-out homepage
-  // even though Auth0 believes they are logged in. A later reload then works,
-  // because the session is restored from cache instead. That asymmetry is
-  // exactly what was being reported.
-  //
-  // So: notice it, say why in the trail, and retry the exchange once. Auth0
-  // still holds the session, so the retry returns immediately and writes a
-  // fresh, valid transaction. Once per tab, so a genuinely broken login can
-  // never bounce forever.
-  useEffect(() => {
-    if (isLoading) return;
-
-    const params = new URLSearchParams(window.location.search);
-    const cameFromAuth0 = params.has("code") && params.has("state");
-
-    if (isAuthenticated) {
-      sessionStorage.removeItem("auth_retry");
-      if (cameFromAuth0) shareLog("returned from auth0, signed in");
-      return;
-    }
-    if (!cameFromAuth0) return;
-
-    shareLog("returned from auth0 but NOT signed in; error =", error?.message || "(none)");
-
-    // Drop the spent code so a reload cannot replay it.
-    window.history.replaceState({}, document.title, window.location.pathname);
-
-    if (sessionStorage.getItem("auth_retry")) {
-      shareLog("already retried once, not looping");
-      return;
-    }
-    sessionStorage.setItem("auth_retry", "1");
-    shareLog("retrying the login exchange once");
-    loginWithRedirect?.();
-  }, [isLoading, isAuthenticated, error, loginWithRedirect]);
 
   // Where a signed-in user belongs, decided once per page load.
   //
@@ -142,7 +100,8 @@ const AppContent = () => {
 
     // Otherwise: a signed-in user sitting on the marketing homepage wants the
     // app, not the pitch.
-    const onLanding = location.pathname === "/" || location.pathname === "/home";
+    const onLanding =
+      location.pathname === "/" || location.pathname === "/home" || AUTH_PAGES.includes(location.pathname);
     const target = dest || (onLanding ? "/collections" : null);
     if (!target || target === location.pathname) {
       shareLog("signed in as", user.email, "on", location.pathname, "- staying");
@@ -154,13 +113,12 @@ const AppContent = () => {
 
   // Tell the API who this email belongs to, once per sign-in.
   //
-  // The backend only ever knew addresses, so anything that shows a person's
-  // name -- "Erfan shared a deck with you" -- had nothing to show. Auth0 holds
-  // the profile and hands it to the client only, and for a Google sign-in it
-  // fills in given_name itself, so there is nothing to ask the user for.
+  // Anything that shows a person's name -- "Erfan shared a deck with you" --
+  // reads it from the card account. The name given at sign-up comes back with
+  // the session; only a real one is sent, never the email-derived fallback.
   useEffect(() => {
     if (!user?.email) return;
-    const name = user.given_name || user.name || user.nickname || "";
+    const name = user.given_name || (user.name !== user.nickname ? user.name : "") || "";
     if (!name) return;
 
     apiPost("/api/profile", { name }).catch(() => {
@@ -168,23 +126,7 @@ const AppContent = () => {
     });
   }, [user?.email, user?.given_name, user?.name, user?.nickname]);
 
-  // Normalize origin to handle both www and non-www versions
-  const normalizeOrigin = (origin) => {
-    if (origin.includes('www.')) {
-      return origin.replace('www.', '');
-    }
-    return origin;
-  };
-
-  const handleLogout = () => {
-    if (isDevMode) {
-      logout();
-    } else {
-      logout({
-        returnTo: normalizeOrigin(window.location.origin),
-      });
-    }
-  };
+  const handleLogout = () => logout({ returnTo: "/" });
 
   return (
     // Navigation down the side, the page beside it. min-w-0 on the content
@@ -202,6 +144,11 @@ const AppContent = () => {
             page: it explains itself and asks for a login only to contribute. */}
         <Route path="/shared/:shareId" element={<SharedDeck />} />
         <Route path="/home" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route
           path="profile"
           element={<ProtectedRoute component={Profile} />}
@@ -245,7 +192,7 @@ const AppContent = () => {
 export default function App() {
   // Show dev mode indicator
   if (isDevMode) {
-    console.log('🔓 DEV MODE: Auth0 authentication bypassed');
+    console.log('🔓 DEV MODE: sign-in bypassed (VITE_BYPASS_AUTH)');
   }
 
   return (

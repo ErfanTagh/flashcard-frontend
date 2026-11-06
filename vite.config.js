@@ -34,7 +34,9 @@ export default defineConfig({
     },
     proxy: {
       "/api": {
-        target: "http://backend:5000",
+        // The backend container by default; VITE_API_PROXY points it elsewhere,
+        // e.g. a backend running directly on this machine.
+        target: process.env.VITE_API_PROXY || "http://backend:5000",
         changeOrigin: true,
         secure: false,
       },

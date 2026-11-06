@@ -1,6 +1,6 @@
 import React from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { withAuthenticationRequired } from "@auth0/auth0-react";
+import { withAuthenticationRequired } from "../../auth/RequireAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -95,7 +95,7 @@ export const ProfileComponent = () => {
               <div className="flex justify-between items-center py-3">
                 <span className="font-medium text-muted-foreground">Provider</span>
                 <Badge className="px-3 py-1 rounded-full bg-muted text-muted-foreground">
-                  {user.identities?.[0]?.provider || "Auth0"}
+                  Email &amp; password
                 </Badge>
               </div>
             </CardContent>
@@ -141,15 +141,15 @@ export const ProfileComponent = () => {
             <CardContent className="space-y-4">
               <div className="flex justify-between items-center py-3 border-b">
                 <span className="font-medium text-muted-foreground">Auth Provider</span>
-                <Badge className="px-3 py-1 rounded-full bg-muted text-muted-foreground">Auth0</Badge>
+                <Badge className="px-3 py-1 rounded-full bg-muted text-muted-foreground">RecallCards</Badge>
               </div>
               <div className="flex justify-between items-center py-3 border-b">
                 <span className="font-medium text-muted-foreground">Security Level</span>
                 <Badge className="px-3 py-1 rounded-full bg-accent text-accent-foreground">High</Badge>
               </div>
               <div className="flex justify-between items-center py-3">
-                <span className="font-medium text-muted-foreground">2FA Status</span>
-                <Badge className="px-3 py-1 rounded-full bg-muted text-muted-foreground">Optional</Badge>
+                <span className="font-medium text-muted-foreground">Password</span>
+                <a href="/forgot-password" className="text-sm font-medium text-primary">Change it</a>
               </div>
             </CardContent>
           </Card>
@@ -163,7 +163,7 @@ export const ProfileComponent = () => {
               <h3 className="text-2xl font-bold mb-4 text-foreground">Welcome to Your Dashboard</h3>
             </div>
             <p className="text-lg mb-6 text-muted-foreground opacity-80">
-              Your account is securely protected with enterprise-grade security through Auth0. Manage your
+              Your account is protected by your password and your confirmed email address. Manage your
               preferences, view your activity, and stay connected with our platform.
             </p>
             <div className="flex flex-wrap gap-3 justify-center">

@@ -10,7 +10,7 @@ on:
 # RecallCards runs as app #4 on the shared gateway box (37.27.31.223), beside
 # 123resume, jsonsanitypro and spec-review. See my-simple-resume/SERVER-HANDOFF.md.
 # The frontend's build context sits under the backend's compose (it builds the
-# SPA and bakes in the Auth0 config), so the compose is driven from there. This
+# SPA), so the compose is driven from there. This
 # deploy touches ONLY the recallcards-frontend container.
 
 jobs:
@@ -34,7 +34,7 @@ jobs:
             git reset --hard origin/main || git reset --hard origin/master
 
             # The compose that builds the frontend lives in the backend dir, and
-            # reads the Auth0 build args from the .env there.
+            # reads the .env there (the compose refuses to run without it).
             cd /root/recallcards/flashcard-backend
             docker network inspect recallcards-net >/dev/null 2>&1 || docker network create recallcards-net
 

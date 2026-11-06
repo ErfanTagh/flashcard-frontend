@@ -4,26 +4,26 @@
  * The API used to take the caller's address as an argument -- `email=` in a
  * query string, or a field named `token` that in fact held the address -- and
  * believed it. Knowing an address was the same as owning the account. The
- * backend now derives the caller from a verified Auth0 access token and
+ * backend now derives the caller from a verified access token and
  * ignores any address in the request, so the token has to be attached here.
  *
- * The token comes from Auth0's `getAccessTokenSilently`, which is only
+ * The token comes from the auth provider's `getAccessTokenSilently`, which is only
  * reachable through a React hook. Rather than drag that hook into every module
  * that happens to call the API, the app installs it once (see useApiAuth) and
- * this module asks for a token when it needs one. Auth0 caches and refreshes
+ * this module asks for a token when it needs one. The provider caches and refreshes
  * behind that call, so asking per request is cheap.
  */
 
 let provideToken = async () => null;
 let devUser = null;
 
-/** Called once by useApiAuth, with Auth0's token getter. */
+/** Called once by useApiAuth, with the token getter. */
 export function setTokenProvider(getToken) {
   provideToken = typeof getToken === "function" ? getToken : async () => null;
 }
 
 /**
- * Local development without Auth0. The backend only honours this when it is
+ * Local development with the dev bypass on. The backend only honours this when it is
  * started with RECALLCARDS_DEV_AUTH set, and refuses to honour it at all when
  * it believes it is in production.
  */

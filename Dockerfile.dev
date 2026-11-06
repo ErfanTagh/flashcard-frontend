@@ -11,10 +11,6 @@ RUN npm install
 # Copy .env files if they exist
 COPY .env* ./
 
-# Accept build args for environment variables
-ARG VITE_AUTH0_DOMAIN
-ARG VITE_AUTH0_CLIENT_ID
-ARG VITE_AUTH0_AUDIENCE
 
 # Expose Vite dev server port
 EXPOSE 3001

@@ -29,7 +29,7 @@ export default function PublicNav() {
           Blog
         </Link>
         <Button
-          onClick={() => { setPostLoginDest("/collections"); loginWithRedirect(); }}
+          onClick={() => { setPostLoginDest("/collections"); loginWithRedirect({ screen: "signup" }); }}
           className="h-9 bg-primary px-3 text-sm text-primary-foreground shadow-lg transition-all hover:bg-primary/90 hover:shadow-xl sm:h-10 sm:px-4 sm:text-base"
         >
           Get Started

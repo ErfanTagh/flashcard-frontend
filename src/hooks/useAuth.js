@@ -1,17 +1,17 @@
-import { useAuth0 } from "@auth0/auth0-react";
+import { useLocalAuth } from "../auth/AuthProvider";
 import { useDevAuth } from "../utils/devAuth";
 
-// Check if we're in development mode
-const isDevMode = import.meta.env.DEV && (import.meta.env.VITE_BYPASS_AUTH === 'true' || import.meta.env.MODE === 'development');
+// The mock sign-in from utils/devAuth, only when asked for explicitly. Plain
+// `npm run dev` uses the real local sign-in: the backend prints the emailed
+// links to its log when no mail service is configured.
+export const isDevBypass = import.meta.env.DEV && import.meta.env.VITE_BYPASS_AUTH === "true";
 
 /**
- * Unified auth hook that works with both Auth0 and dev mode
- * Components should use this instead of useAuth0 directly
+ * Unified auth hook. Components use this rather than reaching for a provider.
  */
 export const useAuth = () => {
-  if (isDevMode) {
+  if (isDevBypass) {
     return useDevAuth();
   }
-  return useAuth0();
+  return useLocalAuth();
 };
-
