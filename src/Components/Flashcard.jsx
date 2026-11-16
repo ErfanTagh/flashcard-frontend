@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { RotateCcw, Check, X, MoreHorizontal, Edit, Trash2, FolderOpen, ChevronLeft, ChevronRight, ArrowLeft } from "lucide-react";
+import { RotateCcw, Check, X, MoreHorizontal, Edit, Trash2, FolderOpen, ChevronLeft, ChevronRight, ArrowLeft, Layers, PartyPopper } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { attributionLine } from "@/lib/attribution";
 import { Input } from "@/components/ui/input";
@@ -38,7 +38,10 @@ function Flashcard() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { collections, selectedCollection, setSelectedCollection, loading: collectionsLoading } = useCollections();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  // "Need review" studies only the cards flagged for review. A card leaves the
+  // round as soon as it is marked "I know this"; "Need review" keeps it in.
+  const reviewOnly = searchParams.get("mode") === "review";
 
   // Must match the duration-500 on the flip container below.
   const FLIP_MS = 500;
@@ -47,8 +50,13 @@ function Flashcard() {
   useEffect(() => () => clearTimeout(flipTimer.current), []);
 
   const collection = selectedCollection || "Default";
-  const totalCards = cards.length;
-  const card = cards[currentIndex] || null;
+  const reviewCount = cards.filter((c) => c.needs_review).length;
+  const deck = reviewOnly ? cards.filter((c) => c.needs_review) : cards;
+  const totalCards = deck.length;
+  // Clamped here rather than wherever the deck shrinks: marking the last
+  // review card known, deleting one, or switching mode all just work.
+  const index = totalCards ? Math.min(currentIndex, totalCards - 1) : 0;
+  const card = deck[index] || null;
   const isInReview = Boolean(card?.needs_review);
   // The back face may still be showing the card being left (goToCard).
   const backCard = leavingCard || card;
@@ -135,12 +143,24 @@ function Flashcard() {
 
   const handleNextCard = () => {
     if (!totalCards) return;
-    goToCard(currentIndex < totalCards - 1 ? currentIndex + 1 : 0);
+    goToCard(index < totalCards - 1 ? index + 1 : 0);
   };
 
   const handlePreviousCard = () => {
     if (!totalCards) return;
-    goToCard(currentIndex > 0 ? currentIndex - 1 : totalCards - 1);
+    goToCard(index > 0 ? index - 1 : totalCards - 1);
+  };
+
+  const setReviewOnly = (on) => {
+    const next = new URLSearchParams(searchParams);
+    if (on) next.set("mode", "review");
+    else next.delete("mode");
+    setSearchParams(next, { replace: true });
+    clearTimeout(flipTimer.current);
+    setLeavingCard(null);
+    setIsFlipped(false);
+    setEditMode(false);
+    setCurrentIndex(0);
   };
 
   useEffect(() => {
@@ -152,8 +172,11 @@ function Flashcard() {
 
   // Every answer is recorded, so the progress page can report what was actually
   // studied rather than inferring it from the text of the definition.
+  // Returns the card as saved, for the caller to put in place together with
+  // the move to the next card -- in "Need review" the saved card can leave the
+  // deck, and doing both in one go keeps the next answer from flashing past.
   const recordOutcome = async (outcome) => {
-    if (!card) return false;
+    if (!card) return null;
 
     try {
       const response = await apiFetch("/api/review", {
@@ -168,10 +191,7 @@ function Flashcard() {
       });
       const data = await response.json();
 
-      if (data.status === 200 && data.card) {
-        setCards((prev) => prev.map((c) => (c.term === data.card.term ? data.card : c)));
-        return true;
-      }
+      if (data.status === 200 && data.card) return data.card;
     } catch (e) {
       console.error("Error recording review:", e);
     }
@@ -181,18 +201,24 @@ function Flashcard() {
       description: "Could not save your answer. Please try again.",
       variant: "destructive",
     });
-    return false;
+    return null;
   };
 
-  const handleKnown = async () => {
-    await recordOutcome("correct");
-    handleNextCard();
+  const answer = async (outcome) => {
+    const saved = await recordOutcome(outcome);
+    if (!saved) return;
+    setCards((prev) => prev.map((c) => (c.term === saved.term ? saved : c)));
+    if (reviewOnly && !saved.needs_review) {
+      // Known now, so it drops out of the round and the card after it slides
+      // into its place: stay on this position (wrapping past the end).
+      goToCard(index < totalCards - 1 ? index : 0);
+    } else {
+      handleNextCard();
+    }
   };
 
-  const handleUnknown = async () => {
-    await recordOutcome("incorrect");
-    handleNextCard();
-  };
+  const handleKnown = () => answer("correct");
+  const handleUnknown = () => answer("incorrect");
 
   const handleEdit = () => {
     setEditMode(true);
@@ -318,7 +344,41 @@ function Flashcard() {
                 </SelectContent>
               </Select>
             </div>
+            <div role="group" aria-label="Which cards to study" className="inline-flex rounded-lg border bg-muted/40 p-1">
+              <Button
+                variant={reviewOnly ? "ghost" : "default"}
+                size="sm"
+                aria-pressed={!reviewOnly}
+                onClick={() => setReviewOnly(false)}
+                className="gap-1.5"
+              >
+                <Layers className="h-4 w-4" />
+                All cards ({cards.length})
+              </Button>
+              <Button
+                variant={reviewOnly ? "default" : "ghost"}
+                size="sm"
+                aria-pressed={reviewOnly}
+                onClick={() => setReviewOnly(true)}
+                className="gap-1.5"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Need review ({reviewCount})
+              </Button>
+            </div>
           </div>
+
+          {reviewOnly && totalCards === 0 && cards.length > 0 ? (
+            <Card className="border-2 p-10 text-center">
+              <PartyPopper className="mx-auto mb-4 h-10 w-10 text-primary" />
+              <h2 className="mb-2 text-2xl font-semibold text-foreground">All caught up</h2>
+              <p className="mb-6 text-muted-foreground">
+                No card in this deck needs review. Cards you mark "Need review" while studying collect here.
+              </p>
+              <Button onClick={() => setReviewOnly(false)}>Study all cards</Button>
+            </Card>
+          ) : (
+          <>
 
           <div className="perspective-1000 relative">
             {/* Review Badge */}
@@ -473,7 +533,7 @@ function Flashcard() {
                 </div>
                 {totalCards > 0 && (
                   <p className="text-center text-sm text-muted-foreground">
-                    Card {currentIndex + 1} of {totalCards}
+                    {reviewOnly ? `Review card ${index + 1} of ${totalCards}` : `Card ${index + 1} of ${totalCards}`}
                   </p>
                 )}
                 <Button variant="outline" onClick={handleFlip} className="w-full">
@@ -481,6 +541,8 @@ function Flashcard() {
                 </Button>
               </div>
             </div>
+          )}
+          </>
           )}
 
           {error && (
